@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nadavr"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Channel Groups -->
+
+	<channel-group-type id="zone1Controls">
+		<label>Zone 1 (Main Zone)</label>
+		<channels>
+			<channel id="power" typeId="power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="mute"/>
+			<channel id="listeningMode" typeId="listeningMode"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone2Controls">
+		<label>Zone 2</label>
+		<channels>
+			<channel id="power" typeId="power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="volumeFixed"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone3Controls">
+		<label>Zone 3</label>
+		<channels>
+			<channel id="power" typeId="power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="volumeFixed"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone4Controls">
+		<label>Zone 4</label>
+		<channels>
+			<channel id="power" typeId="power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="volumeFixed"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+</thing:thing-descriptions>
