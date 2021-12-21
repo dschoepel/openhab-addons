@@ -72,7 +72,7 @@ public class NADAvrTelnetClientThread extends Thread {
 
     private int retryCount = 1;
 
-    private Socket socket = new Socket();
+    private Socket socket;
 
     private OutputStreamWriter out;
 
@@ -193,7 +193,6 @@ public class NADAvrTelnetClientThread extends Thread {
      * @param retry retry count when connection fails.
      */
     private void sendCommand(NADMessage msg, int retry) {
-
         if (connected) {
             try {
                 String data = NADProtocol.createNADCommand(msg);

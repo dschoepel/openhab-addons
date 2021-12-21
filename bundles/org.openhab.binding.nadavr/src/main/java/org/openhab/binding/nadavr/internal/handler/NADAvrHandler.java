@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
@@ -73,6 +72,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
 
     public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider) {
         super(thing);
+
         this.stateDescriptionProvider = stateDescriptionProvider;
     }
 
@@ -263,8 +263,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         logger.debug("Configuring zone channels");
         Integer zoneCount = config.getZoneCount();
 
-        @NonNull
-        ArrayList<@NonNull Channel> channels = new ArrayList<>(this.getThing().getChannels());
+        ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
 
         boolean channelsUpdated = false;
 
@@ -275,8 +274,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
 
         if (zoneCount > 1) {
-            List<@NonNull Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(
-                    ZONE2_CHANNEL_TYPES.entrySet());
+            List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(ZONE2_CHANNEL_TYPES.entrySet());
             if (zoneCount > 2) {
                 // add channels for zone 3
                 channelsToAdd.addAll(ZONE3_CHANNEL_TYPES.entrySet());
@@ -393,9 +391,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         String channelID = channelUID.getId();
         if (isLinked(channelID)) {
             State state = nadavrState.getStateForChannelID(channelID);
-            if (state != null) {
-                updateState(channelID, state);
-            }
+            updateState(channelID, state);
         }
     }
 

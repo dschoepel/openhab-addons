@@ -50,7 +50,8 @@ public abstract class NADAvrConnector {
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
     protected ScheduledExecutorService scheduler;
     protected NADAvrState state;
-    protected NADAvrConfiguration config;
+    protected NADAvrConfiguration config = new NADAvrConfiguration() {
+    };;
 
     public abstract void connect();
 

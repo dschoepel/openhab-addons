@@ -72,7 +72,7 @@ public class NADMessage {
     }
 
     public static class MessageBuilder {
-        private String prefix = "";;
+        private String prefix = "";
         private String variable = "";
         private String operator = "";
         private String value = "";

@@ -14,23 +14,23 @@ package org.openhab.binding.nadavr.internal.factory;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
 import org.openhab.binding.nadavr.internal.connector.NADAvrTelnetConnector;
 import org.openhab.core.thing.ThingUID;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link NADAvrConnectorFactory.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
-@NonNullByDefault
+// @NonNullByDefault
 public class NADAvrConnectorFactory {
 
-    // private NADAvrStateDescriptionProvider stateDescriptionProvider;
+    private NADAvrStateDescriptionProvider stateDescriptionProvider;
 
     /**
      *
@@ -41,10 +41,10 @@ public class NADAvrConnectorFactory {
         return new NADAvrTelnetConnector(config, state, stateDescriptionProvider, scheduler, thingUID);
     }
 
-    // @Reference
-    // protected void setDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
-    // this.stateDescriptionProvider = provider;
-    // }
+    @Reference
+    protected void setDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
+        this.stateDescriptionProvider = provider;
+    }
 
     // protected void unsetDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
     // this.stateDescriptionProvider = null;

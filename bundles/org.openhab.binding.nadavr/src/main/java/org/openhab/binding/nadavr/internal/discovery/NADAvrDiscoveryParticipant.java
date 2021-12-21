@@ -15,9 +15,12 @@ package org.openhab.binding.nadavr.internal.discovery;
 import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
 
 import java.net.InetAddress;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -25,7 +28,6 @@ import java.util.regex.Pattern;
 
 import javax.jmdns.ServiceInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -98,7 +100,6 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
     @Override
     public @Nullable DiscoveryResult createResult(ServiceInfo serviceInfo) {
-
         if (!serviceInfo.hasData()) {
             logger.debug("ServiceInfo does not have data");
             return null;
@@ -118,18 +119,15 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
         ThingUID thingUID = getThingUID(serviceInfo);
         logger.debug("ThingUID = {}", thingUID);
         if (thingUID != null) {
-
             Matcher matcher = NAD_AVR_PATTERN.matcher(qualifiedName);
             matcher.matches(); // we already know it matches, it was matched in getThingUID
             String serial = matcher.group(3).toLowerCase();
             String vendor = matcher.group(1).trim();
             String model = matcher.group(2).trim();
-
             if (serviceInfo.getHostAddresses().length == 0) {
                 logger.debug("Could not determine IP address for the NAD AVR");
                 return null;
             }
-
             Matcher matchHostName = NAD_AVR_HOSTNAME_PATTERN.matcher(server);
             String hostName = "";
             if (matchHostName.matches()) {
@@ -201,8 +199,18 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
      * @return
      */
     private boolean isSupportedDeviceModel(final @Nullable String deviceModel) {
-        return deviceModel != null && !deviceModel.isBlank() && Arrays.stream(NADModel.values())
-                .anyMatch(model -> StringUtils.startsWithIgnoreCase(deviceModel, model.getId()));
+        boolean isSupported = false;
+        if (deviceModel != null && !deviceModel.isBlank()) {
+            // List<NADModel> models = Arrays.asList(NADModel.values());
+            List<NADModel> models = new ArrayList<NADModel>(EnumSet.allOf(NADModel.class));
+            ListIterator<NADModel> modelIterator = models.listIterator();
+            while (modelIterator.hasNext() && !isSupported) {
+                isSupported = deviceModel.equalsIgnoreCase(modelIterator.toString());
+            }
+        }
+        return isSupported;
+        // return deviceModel != null && !deviceModel.isBlank() && Arrays.stream(NADModel.values())
+        // .anyMatch(model -> StringUtils.startsWithIgnoreCase(deviceModel, model.getId()));
     }
 
     /**

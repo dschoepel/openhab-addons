@@ -28,15 +28,9 @@ import org.openhab.binding.nadavr.internal.SourceName;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
 import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
-import org.openhab.core.library.types.DecimalType;
-import org.openhab.core.library.types.OnOffType;
-import org.openhab.core.library.types.PercentType;
-import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.types.State;
 import org.openhab.core.types.StateOption;
-import org.openhab.core.types.UnDefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,37 +97,38 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
             }
             populateInputs();
         }
-
-        switch (receivedCommand) {
-            case SOURCE_SET:
-                if (avrSourceName.size() > 0) {
-                    String key = data.getValue().toString();
-                    String sourceName = avrSourceName.getAvrSourceName(key);
-                    state.setSourceName(data.getPrefix().toString(), sourceName);
-                }
-                break;
-            case POWER_SET:
-                state.setPower(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
-                break;
-            case VOLUME_CONTROL_SET:
-                state.setVolumeControl(data.getPrefix().toString(), data.getValue().toString());
-                break;
-            case VOLUME_FIXED_SET:
-                BigDecimal volumeFixed = new BigDecimal(data.getValue().toString());
-                state.setVolumeFixed(data.getPrefix().toString(), volumeFixed);
-                break;
-            case VOLUME_SET:
-                BigDecimal volume = new BigDecimal(data.getValue().toString());
-                state.setVolume(data.getPrefix().toString(), volume);
-                break;
-            case MUTE_SET:
-                state.setMute(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
-                break;
-            case LISTENING_MODE_SET:
-                state.setListeningMode(commandPrefix, data.getValue().toString());
-                break;
-            default:
-                break;
+        if (receivedCommand != null) {
+            switch (receivedCommand) {
+                case SOURCE_SET:
+                    if (avrSourceName.size() > 0) {
+                        String key = data.getValue().toString();
+                        String sourceName = avrSourceName.getAvrSourceName(key);
+                        state.setSourceName(data.getPrefix().toString(), sourceName);
+                    }
+                    break;
+                case POWER_SET:
+                    state.setPower(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
+                    break;
+                case VOLUME_CONTROL_SET:
+                    state.setVolumeControl(data.getPrefix().toString(), data.getValue().toString());
+                    break;
+                case VOLUME_FIXED_SET:
+                    BigDecimal volumeFixed = new BigDecimal(data.getValue().toString());
+                    state.setVolumeFixed(data.getPrefix().toString(), volumeFixed);
+                    break;
+                case VOLUME_SET:
+                    BigDecimal volume = new BigDecimal(data.getValue().toString());
+                    state.setVolume(data.getPrefix().toString(), volume);
+                    break;
+                case MUTE_SET:
+                    state.setMute(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
+                    break;
+                case LISTENING_MODE_SET:
+                    state.setListeningMode(commandPrefix, data.getValue().toString());
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -186,8 +181,13 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         // Sends a series of state query commands over the telnet connection
         logger.debug("NADAvrTelnetConnector - refreshState() started....");
         telnetStateRequest = scheduler.submit(() -> {
+            // Initialize message with default "Main.Power=?" command
+            NADMessage queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Main.toString())
+                    .variable(NADCommand.POWER_QUERY.getVariable().toString())
+                    .operator(NADCommand.POWER_QUERY.getOperator().toString())
+                    .value(NADCommand.POWER_QUERY.getValue().toString()).build();
+
             // When adding new commands be sure to include in array to refresh states...
-            NADMessage queryCmd = null;
             List<NADCommand> NADRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.POWER_QUERY,
                     NADCommand.INPUT_SOURCE_QUERY, NADCommand.VOLUME_QUERY, NADCommand.LISTENING_MODE_QUERY,
                     NADCommand.MUTE_QUERY, NADCommand.VOLUME_CONTROL_QUERY, NADCommand.VOLUME_FIXED_QUERY));
@@ -250,39 +250,6 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
             return;
         }
         telnetClientThread.sendCommand(msg);
-    }
-
-    private State convertDeviceValueToOpenHabState(String data, Class<?> classToConvert) {
-        State state = UnDefType.UNDEF;
-
-        try {
-            int index;
-
-            if (data.contentEquals("N/A")) {
-                state = UnDefType.UNDEF;
-
-            } else if (classToConvert == OnOffType.class) {
-                index = Integer.parseInt(data, 10);
-                state = index == 0 ? OnOffType.OFF : OnOffType.ON;
-
-            } else if (classToConvert == DecimalType.class) {
-                index = Integer.parseInt(data, 16);
-                state = new DecimalType(index);
-
-            } else if (classToConvert == PercentType.class) {
-                index = Integer.parseInt(data, 16);
-                state = new PercentType(index);
-
-            } else if (classToConvert == StringType.class) {
-                state = new StringType(data);
-
-            }
-        } catch (Exception e) {
-            logger.debug("Cannot convert value '{}' to data type {}", data, classToConvert);
-        }
-
-        logger.debug("Converted data '{}' to openHAB state '{}' ({})", data, state, classToConvert);
-        return state;
     }
 
     // TODO this is where we need to set the source input names determined by processInfo method
