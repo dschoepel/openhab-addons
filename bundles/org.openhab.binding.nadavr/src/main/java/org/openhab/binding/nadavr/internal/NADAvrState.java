@@ -38,38 +38,38 @@ public class NADAvrState {
     private final Logger logger = LoggerFactory.getLogger(NADAvrState.class);
 
     // ----- Main ------
-    private State mainPower = OnOffType.OFF;
+    private State mainPower = UnDefType.UNDEF;
     private State listeningMode = StringType.EMPTY;
-    private State mute = OnOffType.OFF;
+    private State mute = UnDefType.UNDEF;
     private State mainVolume = DecimalType.ZERO;
     private State mainVolumeDB = DecimalType.ZERO;
     private State mainSource = StringType.EMPTY;
 
     // ----- Zone2 ------
-    private State zone2Power = OnOffType.OFF;
+    private State zone2Power = UnDefType.UNDEF;
     private State zone2Volume = DecimalType.ZERO;
     private State zone2VolumeDB = DecimalType.ZERO;
-    private State zone2Mute = OnOffType.OFF;
+    private State zone2Mute = UnDefType.UNDEF;
     private State zone2Source = StringType.EMPTY;
     private State zone2VolumeFixed = DecimalType.ZERO;
     private State zone2VolumeFixedDB = DecimalType.ZERO;
     private State zone2VolumeControl = StringType.EMPTY;
 
     // ----- Zone3 ------
-    private State zone3Power = OnOffType.OFF;
+    private State zone3Power = UnDefType.UNDEF;
     private State zone3Volume = DecimalType.ZERO;
     private State zone3VolumeDB = DecimalType.ZERO;
-    private State zone3Mute = OnOffType.OFF;
+    private State zone3Mute = UnDefType.UNDEF;
     private State zone3Source = StringType.EMPTY;
     private State zone3VolumeFixed = DecimalType.ZERO;
     private State zone3VolumeFixedDB = DecimalType.ZERO;
     private State zone3VolumeControl = StringType.EMPTY;
 
     // ----- Zone4 ------
-    private State zone4Power = OnOffType.OFF;
+    private State zone4Power = UnDefType.UNDEF;
     private State zone4Volume = DecimalType.ZERO;
     private State zone4VolumeDB = DecimalType.ZERO;
-    private State zone4Mute = OnOffType.OFF;
+    private State zone4Mute = UnDefType.UNDEF;
     private State zone4Source = StringType.EMPTY;
     private State zone4VolumeFixed = StringType.EMPTY;
     private State zone4VolumeFixedDB = DecimalType.ZERO;

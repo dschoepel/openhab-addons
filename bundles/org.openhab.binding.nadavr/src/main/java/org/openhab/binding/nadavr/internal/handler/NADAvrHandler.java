@@ -72,7 +72,6 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
 
     public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider) {
         super(thing);
-
         this.stateDescriptionProvider = stateDescriptionProvider;
     }
 
@@ -195,10 +194,11 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     }
 
     public boolean checkConfiguration() {
-        // Check zone count is within supported range
-        if (config.getZoneCount() < 1 || config.getZoneCount() > getMaxZonesForModel(thing.getThingTypeUID().getId())) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "This binding supports 1 to "
-                    + getMaxZonesForModel(thing.getThingTypeUID().getId()) + " zones. Please update the zone count.");
+        // Check that zone count is within the supported range 1 - max zones for this model
+        int maxZones = getMaxZonesForModel(thing.getThingTypeUID().getId());
+        if (config.getZoneCount() < 1 || config.getZoneCount() > maxZones) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "This binding supports 1 to " + maxZones + " zones. Please update the zone count.");
             return false;
         }
         return true;
@@ -397,10 +397,8 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
 
     @Override
     public void dispose() {
-        if (connector != null) {
-            connector.dispose();
-            connector = null;
-        }
+        connector.dispose();
+        connector = null;
         cancelRetry();
         super.dispose();
     }
