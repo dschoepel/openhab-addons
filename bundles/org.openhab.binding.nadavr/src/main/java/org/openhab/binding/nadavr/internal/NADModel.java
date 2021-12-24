@@ -30,7 +30,7 @@ public enum NADModel {
     T_777("T777", 4),
     T_778("T778", 2),
     T_787("T787", 4),
-    T_753("T753", 2);
+    T_758("T758", 2);
 
     private final String id;
     private final int maxZones;

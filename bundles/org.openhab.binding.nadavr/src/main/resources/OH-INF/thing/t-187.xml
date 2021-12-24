@@ -5,18 +5,18 @@
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<!-- Generic OnkyoAVR Thing Type -->
-	<thing-type id="T787">
-		<label>NAD T-787 Surround Sound Receiver</label>
+	<thing-type id="T187">
+		<label>NAD T-187 Surround Sound Preamplifier</label>
 		<description>Ethernet enabled NAD AV Receiver</description>
 
 		<channel-groups>
-			<channel-group typeId="zone1Controls" id="zone1"/>
-			<channel-group typeId="zone2Controls" id="zone2"/>
-			<channel-group typeId="zone3Controls" id="zone3"/>
-			<channel-group typeId="zone4Controls" id="zone4"/>
+			<channel-group typeId="zone1Controls" id="zone1" />
+			<channel-group typeId="zone2Controls" id="zone2" />
+			<channel-group typeId="zone3Controls" id="zone3" />
+			<channel-group typeId="zone4Controls" id="zone4" />
 		</channel-groups>
 
-		<config-description-ref uri="thing-type:nadavr:config"/>
+		<config-description-ref uri="thing-type:nadavr:config" />
 	</thing-type>
 
 </thing:thing-descriptions>

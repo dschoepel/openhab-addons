@@ -17,7 +17,9 @@ import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.SUPPORT
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
+import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
 import org.openhab.binding.nadavr.internal.handler.NADAvrHandler;
+import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
@@ -39,14 +41,21 @@ import org.slf4j.LoggerFactory;
 public class NADAvrHandlerFactory extends BaseThingHandlerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrHandlerFactory.class);
-    // private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_NADAVR);
     private NADAvrStateDescriptionProvider stateDescriptionProvider = new NADAvrStateDescriptionProvider();
+    private NADAvrConnector connector = new NADAvrConnector() {
 
-    // @Activate
-    // public NADAvrHandlerFactory(NADAvrStateDescriptionProvider stateDescriptionProvider) {
-    // super();
-    // this.stateDescriptionProvider = stateDescriptionProvider;
-    // }
+        @Override
+        public void connect() {
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        protected void internalSendCommand(NADMessage msg) {
+        }
+    };
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -63,7 +72,7 @@ public class NADAvrHandlerFactory extends BaseThingHandlerFactory {
         logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
                 SUPPORTED_THING_TYPE_UIDS);
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
-            return new NADAvrHandler(thing, stateDescriptionProvider);
+            return new NADAvrHandler(thing, stateDescriptionProvider, connector);
             // return new NADHandler(thing, stateDescriptionProvider);
         }
 

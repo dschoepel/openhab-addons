@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.InputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
@@ -54,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dave J Schoepel - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChangedListener {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrHandler.class);
@@ -72,16 +74,18 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     private @Nullable ScheduledFuture<?> retryJob;
     // private CommandStates avrCommandStates = new CommandStates();
 
-    public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider) {
+    public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider,
+            NADAvrConnector connector) {
         super(thing);
         this.stateDescriptionProvider = stateDescriptionProvider;
+        this.connector = connector;
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (connector == null) {
-            return;
-        }
+        // if (connector == null) {
+        // return;
+        // }
         logger.debug("handleCommand testing command = {}", command.toString());
         try {
             switch (channelUID.getId()) {
@@ -246,9 +250,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     }
 
     private void createConnection() {
-        if (connector != null) {
-            connector.dispose();
-        }
+        connector.dispose();
         connector = connectorFactory.getConnector(config, nadavrState, stateDescriptionProvider, scheduler,
                 this.getThing().getUID());
         connector.connect();
@@ -266,7 +268,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         logger.debug("Configuring zone channels");
         Integer zoneCount = config.getZoneCount();
 
-        ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
+        ArrayList<@NonNull Channel> channels = new ArrayList<>(this.getThing().getChannels());
 
         boolean channelsUpdated = false;
 
@@ -277,8 +279,8 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
 
         if (zoneCount > 1) {
-
-            List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(ZONE2_CHANNEL_TYPES.entrySet());
+            List<@NonNull Entry<@NonNull String, @NonNull ChannelTypeUID>> channelsToAdd = new ArrayList<>(
+                    ZONE2_CHANNEL_TYPES.entrySet());
 
             if (zoneCount > 2) {
                 // add channels for zone 3
