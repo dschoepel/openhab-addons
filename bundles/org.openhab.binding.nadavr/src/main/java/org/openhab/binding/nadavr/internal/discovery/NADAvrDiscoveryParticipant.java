@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 
 import javax.jmdns.ServiceInfo;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADModel;
@@ -89,7 +88,7 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
     }
 
     @Override
-    public Set<@NonNull ThingTypeUID> getSupportedThingTypeUIDs() {
+    public Set<ThingTypeUID> getSupportedThingTypeUIDs() {
         return supportedThingTypes;
     }
 

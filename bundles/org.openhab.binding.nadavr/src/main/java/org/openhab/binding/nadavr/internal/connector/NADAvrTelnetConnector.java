@@ -21,10 +21,12 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nadavr.internal.InputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
-import org.openhab.binding.nadavr.internal.SourceName;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
 import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
@@ -39,20 +41,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dave J Schoepel - Initial contribution
  */
+@NonNullByDefault
 public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTelnetListener {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrTelnetConnector.class);
 
-    // All regular commands. Example: Main.Power=on, Main.Speaker.Front.Config=Small, Source2.Name=Apple TV
-    // private static final Pattern COMMAND_PATTERN = Pattern.compile("([\\w\\[.\\]\\\\]+)=(.*)");
-    private NADAvrTelnetClientThread telnetClientThread;
+    private @Nullable NADAvrTelnetClientThread telnetClientThread;
 
     protected boolean disposing = false;
 
-    private Future<?> telnetStateRequest;
-
-    private SourceName avrSourceName = new SourceName();
-    // private static final BigDecimal NINETYNINE = new BigDecimal("99");
+    private @Nullable Future<?> telnetStateRequest;
 
     private ThingUID thingUID;
 
@@ -89,39 +87,35 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
 
         if (commandPrefix.contains(NAD_PREFIX_SOURCE) && data.getVariable().contains(NAD_VARIABLE_NAME)
                 && data.getOperator().equals(NAD_EQUALS_OPERATOR)) {
-            String key = commandPrefix.substring(6).stripTrailing();
-            if (avrSourceName.containsKeySourceName(key.toString())) {
-                avrSourceName.replaceAvrSourceName(key, data.getValue());
-            } else {
-                avrSourceName.setAvrSourceName(key, data.getValue());
-            }
+            int index = (Integer.parseInt(commandPrefix.substring(6).stripTrailing()) - 1);
+            InputSourceList.updateSourceName(index, data.getValue());
             populateInputs();
         }
         if (receivedCommand != null) {
             switch (receivedCommand) {
                 case SOURCE_SET:
-                    if (avrSourceName.size() > 0) {
-                        String key = data.getValue().toString();
-                        String sourceName = avrSourceName.getAvrSourceName(key);
+                    if (InputSourceList.size() > 0) {
+                        int index = (Integer.parseInt(data.getValue()));
+                        String sourceName = InputSourceList.getSourceName(index - 1);
                         state.setSourceName(data.getPrefix().toString(), sourceName);
                     }
                     break;
                 case POWER_SET:
-                    state.setPower(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
+                    state.setPower(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
                     break;
                 case VOLUME_CONTROL_SET:
-                    state.setVolumeControl(data.getPrefix().toString(), data.getValue().toString());
+                    state.setVolumeControl(data.getPrefix(), data.getValue());
                     break;
                 case VOLUME_FIXED_SET:
-                    BigDecimal volumeFixed = new BigDecimal(data.getValue().toString());
-                    state.setVolumeFixed(data.getPrefix().toString(), volumeFixed);
+                    BigDecimal volumeFixed = new BigDecimal(data.getValue());
+                    state.setVolumeFixed(data.getPrefix(), volumeFixed);
                     break;
                 case VOLUME_SET:
                     BigDecimal volume = new BigDecimal(data.getValue().toString());
-                    state.setVolume(data.getPrefix().toString(), volume);
+                    state.setVolume(data.getPrefix(), volume);
                     break;
                 case MUTE_SET:
-                    state.setMute(data.getPrefix().toString(), data.getValue().equalsIgnoreCase("On"));
+                    state.setMute(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
                     break;
                 case LISTENING_MODE_SET:
                     state.setListeningMode(commandPrefix, data.getValue().toString());
@@ -188,38 +182,38 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
                     .value(NADCommand.POWER_QUERY.getValue().toString()).build();
 
             // When adding new commands be sure to include in array to refresh states...
-            List<NADCommand> NADRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.POWER_QUERY,
+            List<NADCommand> nadRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.POWER_QUERY,
                     NADCommand.INPUT_SOURCE_QUERY, NADCommand.VOLUME_QUERY, NADCommand.LISTENING_MODE_QUERY,
                     NADCommand.MUTE_QUERY, NADCommand.VOLUME_CONTROL_QUERY, NADCommand.VOLUME_FIXED_QUERY));
 
             // Refresh zone state information
-            for (NADCommand NADcmd : NADRefreshCmds) {
-                if (NADcmd.getOperator() == NAD_QUERY) {
-                    logger.debug("------- >>> NADcmd = {}", NADcmd);
+            for (NADCommand nadCmd : nadRefreshCmds) {
+                if (nadCmd.getOperator() == NAD_QUERY) {
+                    logger.debug("------- >>> NADcmd = {}", nadCmd);
                     for (int zone = 1; zone <= config.getZoneCount(); zone++) {
                         switch (zone) {
                             case 1: // MainZone - 1
                                 queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Main.toString())
-                                        .variable(NADcmd.getVariable().toString())
-                                        .operator(NADcmd.getOperator().toString()).value(NADcmd.getValue().toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
                                         .build();
                                 break;
                             case 2: // Zone 2
                                 queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Zone2.toString())
-                                        .variable(NADcmd.getVariable().toString())
-                                        .operator(NADcmd.getOperator().toString()).value(NADcmd.getValue().toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
                                         .build();
                                 break;
                             case 3: // Zone 3
                                 queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Zone3.toString())
-                                        .variable(NADcmd.getVariable().toString())
-                                        .operator(NADcmd.getOperator().toString()).value(NADcmd.getValue().toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
                                         .build();
                                 break;
                             case 4: // Zone 4
                                 queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Zone4.toString())
-                                        .variable(NADcmd.getVariable().toString())
-                                        .operator(NADcmd.getOperator().toString()).value(NADcmd.getValue().toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
                                         .build();
                                 break;
                             default:
@@ -232,9 +226,9 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
             // Refresh source input names
             for (int input = 1; input <= 10; input++) {
                 String prefix = "Source" + input;
-                NADCommand NADCmd = NADCommand.SOURCE_NAME_QUERY;
-                queryCmd = new NADMessage.MessageBuilder().prefix(prefix).variable(NADCmd.getVariable().toString())
-                        .operator(NADCmd.getOperator().toString()).value(NADCmd.getValue().toString()).build();
+                NADCommand nadCmd = NADCommand.SOURCE_NAME_QUERY;
+                queryCmd = new NADMessage.MessageBuilder().prefix(prefix).variable(nadCmd.getVariable().toString())
+                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString()).build();
 
                 internalSendCommand(queryCmd);
             }
@@ -257,9 +251,10 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         logger.debug("NADAvrHandler - populateInputs() started....");
         List<StateOption> options = new ArrayList<>();
         // Build list of source names to be used by Input Source channel (options)
-        for (int i = 1; i <= avrSourceName.size(); i++) {
-            String key = String.valueOf(i);
-            String name = avrSourceName.getAvrSourceName(key);
+        for (int i = 1; i <= InputSourceList.size(); i++) {
+            // String key = String.valueOf(i);
+            // String name = avrSourceName.getAvrSourceName(key);
+            String name = InputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
         }
         logger.debug("Got Source Name input List from NAD Device {}", options);

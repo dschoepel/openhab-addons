@@ -52,7 +52,6 @@ public enum NADCommand {
      * <li>Zones are Main, Zone1-Zone4</li>
      * <li>Sources are Source1 - Source10, Ipod, Tuner</li>
      * </ul>
-     *
      */
     public static enum Prefix {
         Ipod,
@@ -76,6 +75,22 @@ public enum NADCommand {
         Zone2,
         Zone3,
         Zone4;
+    }
+
+    /**
+     * DefaultSourceNames used to initialize array to hold input source names for the AVR
+     */
+    public static enum DefaultSourceNames {
+        Source01,
+        Source02,
+        Source03,
+        Source04,
+        Source05,
+        Source06,
+        Source07,
+        Source08,
+        Source09,
+        Source10;
     }
 
     private static HashMap<String, NADCommand> commandList = new HashMap<String, NADCommand>();

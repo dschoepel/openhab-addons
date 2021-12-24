@@ -22,12 +22,13 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nadavr.internal.InputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.NADModel;
-import org.openhab.binding.nadavr.internal.SourceName;
 import org.openhab.binding.nadavr.internal.UnsupportedCommandTypeException;
 import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
 import org.openhab.binding.nadavr.internal.factory.NADAvrConnectorFactory;
@@ -59,15 +60,16 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     private final Logger logger = LoggerFactory.getLogger(NADAvrHandler.class);
     private static final int RETRY_TIME_SECONDS = 30;
 
-    private NADAvrConfiguration config;
+    private NADAvrConfiguration config = new NADAvrConfiguration() {
+    };;
     private NADAvrConnector connector;
 
-    private SourceName avrSourceName = new SourceName();
+    // private SourceName avrSourceName = new SourceName();
 
-    private NADAvrState nadavrState;
+    private NADAvrState nadavrState = new NADAvrState(this);
     private final NADAvrStateDescriptionProvider stateDescriptionProvider;
     private NADAvrConnectorFactory connectorFactory = new NADAvrConnectorFactory();
-    private ScheduledFuture<?> retryJob;
+    private @Nullable ScheduledFuture<?> retryJob;
     // private CommandStates avrCommandStates = new CommandStates();
 
     public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider) {
@@ -214,7 +216,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
             return;
         }
 
-        nadavrState = new NADAvrState(this);
+        // nadavrState = new NADAvrState(this);
 
         NADCommand.initializeCommandList();
 
@@ -232,6 +234,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         }
         // Request Source names and populate source input channel with names
         querySourceNames();
+        // TODO figure this out!
         populateInputs();
 
         boolean thingReachable = true;
@@ -274,7 +277,9 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
 
         if (zoneCount > 1) {
+
             List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(ZONE2_CHANNEL_TYPES.entrySet());
+
             if (zoneCount > 2) {
                 // add channels for zone 3
                 channelsToAdd.addAll(ZONE3_CHANNEL_TYPES.entrySet());
@@ -346,11 +351,14 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     // TODO this is where we need to set the source input names determined by processInfo method
     private void populateInputs() {
         logger.debug("NADAvrHandler - populateInputs() started....");
+        logger.debug("----> sourceNameList length = {} and contents are {}", InputSourceList.size(),
+                InputSourceList.getSourceNameList());
         List<StateOption> options = new ArrayList<>();
 
-        for (int i = 1; i <= avrSourceName.size(); i++) {
-            String key = String.valueOf(i);
-            String name = avrSourceName.getAvrSourceName(key);
+        for (int i = 1; i <= InputSourceList.size(); i++) {
+            // String key = String.valueOf(i);
+            // String name = avrSourceName.getAvrSourceName(key);
+            String name = InputSourceList.getSourceName(i - 1);
             // options.add(new StateOption(String.valueOf(i), avrSourceName.getAvrSourceName(String.valueOf(i))));
             options.add(new StateOption(String.valueOf(i), name));
         }
@@ -398,7 +406,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     @Override
     public void dispose() {
         connector.dispose();
-        connector = null;
+        // connector = null;
         cancelRetry();
         super.dispose();
     }

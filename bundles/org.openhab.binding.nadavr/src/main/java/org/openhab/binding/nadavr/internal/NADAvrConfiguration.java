@@ -14,14 +14,14 @@ package org.openhab.binding.nadavr.internal;
 
 import java.math.BigDecimal;
 
-import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * The {@link NADAvrConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public class NADAvrConfiguration {
 
     /**
@@ -46,7 +46,7 @@ public class NADAvrConfiguration {
      */
     public boolean telnetEnabled = true;
 
-    private NADAvrConnector connector;
+    // private NADAvrConnector connector;
 
     private Integer zoneCount = 2;
 
@@ -80,13 +80,13 @@ public class NADAvrConfiguration {
         this.telnetEnabled = telnetEnabled;
     }
 
-    public NADAvrConnector getConnector() {
-        return connector;
-    }
-
-    public void setConnector(NADAvrConnector connector) {
-        this.connector = connector;
-    }
+    // public NADAvrConnector getConnector() {
+    // return connector;
+    // }
+    //
+    // public void setConnector(NADAvrConnector connector) {
+    // this.connector = connector;
+    // }
 
     public String getHostname() {
         return hostname;

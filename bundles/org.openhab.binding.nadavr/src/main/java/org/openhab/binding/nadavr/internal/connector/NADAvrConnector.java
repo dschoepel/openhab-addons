@@ -17,6 +17,8 @@ import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.NAD_QUE
 import java.math.BigDecimal;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.UnsupportedCommandTypeException;
@@ -38,7 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dave J Schoepel - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public abstract class NADAvrConnector {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrConnector.class);
@@ -48,8 +50,8 @@ public abstract class NADAvrConnector {
     private static final BigDecimal VOLUME_DB_MIN = new BigDecimal("-99");
     // private static final BigDecimal VOLUME_DB_MAX = new BigDecimal("19");
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
-    protected ScheduledExecutorService scheduler;
-    protected NADAvrState state;
+    protected @Nullable ScheduledExecutorService scheduler;
+    protected @Nullable NADAvrState state;
     protected NADAvrConfiguration config = new NADAvrConfiguration() {
     };;
 

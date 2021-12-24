@@ -14,6 +14,7 @@ package org.openhab.binding.nadavr.internal.factory;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
@@ -27,10 +28,10 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Dave J Schoepel - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public class NADAvrConnectorFactory {
 
-    private NADAvrStateDescriptionProvider stateDescriptionProvider;
+    private NADAvrStateDescriptionProvider stateDescriptionProvider = new NADAvrStateDescriptionProvider();
 
     /**
      *
@@ -44,6 +45,10 @@ public class NADAvrConnectorFactory {
     @Reference
     protected void setDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
         this.stateDescriptionProvider = provider;
+    }
+
+    public NADAvrStateDescriptionProvider getStateDescriptionProvider() {
+        return stateDescriptionProvider;
     }
 
     // protected void unsetDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {

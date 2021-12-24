@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
@@ -37,7 +39,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dave J Schoepel - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public class NADAvrTelnetClientThread extends Thread {
 
     private Logger logger = LoggerFactory.getLogger(NADAvrTelnetClientThread.class);
@@ -72,11 +74,11 @@ public class NADAvrTelnetClientThread extends Thread {
 
     private int retryCount = 1;
 
-    private Socket socket;
+    private @Nullable Socket socket = null;
 
-    private OutputStreamWriter out;
+    private @Nullable OutputStreamWriter outStream = null;
 
-    private BufferedReader in;
+    private @Nullable BufferedReader inStream = null;
 
     /**
      * @param config
@@ -101,7 +103,12 @@ public class NADAvrTelnetClientThread extends Thread {
             String value = "";
             do {
                 try {
-                    String line = in.readLine();
+                    String line = "";
+                    BufferedReader inStream = this.inStream;
+                    if (inStream != null) {
+                        line = inStream.readLine();
+                    }
+
                     // logger.debug("Received from {} : {}", config.getHostname(), line);
                     if (line == null) {
                         logger.debug("No more data read from client. Disconnecting..");
@@ -141,8 +148,11 @@ public class NADAvrTelnetClientThread extends Thread {
                     logger.trace("Socket timeout");
                     // Disconnects are not always detected unless you write to the socket.
                     try {
-                        out.write('\r');
-                        out.flush();
+                        OutputStreamWriter outStream = this.outStream;
+                        if (outStream != null) {
+                            outStream.write('\r');
+                            outStream.flush();
+                        }
                     } catch (IOException e2) {
                         logger.debug("Error writing to socket");
                         connected = false;
@@ -196,12 +206,15 @@ public class NADAvrTelnetClientThread extends Thread {
         if (connected) {
             try {
                 String data = NADProtocol.createNADCommand(msg);
+                OutputStreamWriter outStream = this.outStream;
                 if (logger.isTraceEnabled()) {
                     logger.trace("Sending {} length: {}", data, data.length());
                 }
                 logger.debug("Sending {} length: {}", data, data.length());
-                out.write(data);
-                out.flush();
+                if (outStream != null) {
+                    outStream.write(data);
+                    outStream.flush();
+                }
             } catch (IOException ioException) {
                 logger.warn("Error occurred when sending command: {}", ioException.getMessage());
 
@@ -210,17 +223,22 @@ public class NADAvrTelnetClientThread extends Thread {
                     disconnect();
                     sendCommand(msg, retry - 1);
                 } else {
-                    sendConnectionErrorEvent(ioException.getMessage());
+                    String ex = ioException.getMessage();
+                    if (ex != null) {
+                        sendConnectionErrorEvent(ex);
+                    }
                 }
             }
         }
     }
 
     public void sendCommand(String command) {
-        if (out != null) {
+        if (outStream != null) {
             try {
-                out.write('\r' + command + '\r'); // Precede and follow command with carriage return
-                out.flush();
+                outStream.write('\r' + command + '\r'); // Precede and follow command with carriage return
+                if (outStream != null) {
+                    outStream.flush();
+                }
             } catch (IOException e) {
                 logger.debug("Error sending command", e);
             }
@@ -236,7 +254,7 @@ public class NADAvrTelnetClientThread extends Thread {
     private void connectTelnetSocket() {
         disconnect();
         int delay = 0;
-
+        Socket socket = this.socket;
         while (!isInterrupted() && (socket == null || !socket.isConnected())) {
             try {
                 Thread.sleep(delay);
@@ -246,13 +264,11 @@ public class NADAvrTelnetClientThread extends Thread {
                 // extra newline char after each write which causes the connection to become
                 // unresponsive.
                 socket = new Socket();
-                socket.connect(new InetSocketAddress(config.getHostname(), config.getTelnetPort()), TIMEOUT);
+                socket.connect(new InetSocketAddress(config.ipAddress, config.getTelnetPort()), TIMEOUT);
                 socket.setKeepAlive(true);
                 socket.setSoTimeout(TIMEOUT);
-
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
-
+                inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                outStream = new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
                 connected = true;
                 logger.debug("Calling telnetClinetConnected(true)");
                 listener.telnetClientConnected(true);
@@ -273,6 +289,7 @@ public class NADAvrTelnetClientThread extends Thread {
     }
 
     private void disconnect() {
+        Socket socket = this.socket;
         if (socket != null) {
             logger.debug("Disconnecting socket");
             try {
@@ -281,8 +298,8 @@ public class NADAvrTelnetClientThread extends Thread {
                 logger.debug("Error while disconnecting telnet client", e);
             } finally {
                 socket = null;
-                out = null;
-                in = null;
+                outStream = null;
+                inStream = null;
                 listener.telnetClientConnected(false);
             }
         }
