@@ -167,7 +167,6 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
             logger.debug("This seems like a supported NAD A/V Receiver!");
             String serial = matcher.group(3).toLowerCase();
             ThingTypeUID thingTypeUID = findThingType(matcher.group(2));
-            // TODO remove serial number?
             return new ThingUID(thingTypeUID, serial);
         } else {
             logger.debug("This discovered device is not supported by the NAD binding: {}", service.getQualifiedName());

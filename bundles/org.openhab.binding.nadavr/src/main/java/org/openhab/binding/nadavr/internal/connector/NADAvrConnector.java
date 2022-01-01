@@ -107,6 +107,28 @@ public abstract class NADAvrConnector {
                 .operator(NADCommand.LISTENING_MODE_SET.getOperator().toString()).value(cmdValue).build());
     }
 
+    /**
+     * Sends Tuner Band (Set/Status) command
+     *
+     * @param command
+     * @param zone
+     * @throws UnsupportedCommandTypeException
+     */
+    public void sendTunerBandCommand(Command command, Prefix tuner) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command instanceof StringType) {
+            cmdValue = command.toString();
+        } else if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY; // "?"else {
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(tuner.toString())
+                .variable(NADCommand.TUNER_BAND_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_BAND_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
     public void sendSourceCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
         String cmdValue = "";
         if (command instanceof StringType) {
@@ -178,6 +200,83 @@ public abstract class NADAvrConnector {
                 .operator(NADCommand.VOLUME_FIXED_SET.getOperator().toString()).value(cmdValue).build());
     }
 
+    public void sendTunerFmFrequencyCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY;
+        } else if (command == IncreaseDecreaseType.INCREASE) {
+            cmdValue += "+";
+        } else if (command == IncreaseDecreaseType.DECREASE) {
+            cmdValue += "-";
+        } else if (command instanceof DecimalType) {
+            cmdValue = toDenonFloatValue(((DecimalType) command));
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NADCommand.TUNER_FM_FREQUENCY_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_FM_FREQUENCY_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
+    public void sendTunerAmFrequencyCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY;
+        } else if (command == IncreaseDecreaseType.INCREASE) {
+            cmdValue += "+";
+        } else if (command == IncreaseDecreaseType.DECREASE) {
+            cmdValue += "-";
+        } else if (command instanceof DecimalType) {
+            cmdValue = toDenonValue(((DecimalType) command));
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NADCommand.TUNER_AM_FREQUENCY_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_AM_FREQUENCY_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
+    public void sendTunerPresetCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY;
+        } else if (command == IncreaseDecreaseType.INCREASE) {
+            cmdValue += "+";
+        } else if (command == IncreaseDecreaseType.DECREASE) {
+            cmdValue += "-";
+        } else if (command instanceof DecimalType) {
+            cmdValue = toDenonValue(((DecimalType) command));
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NADCommand.TUNER_PRESET_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_PRESET_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
+    /**
+     * Sends Tuner (ON/OFF/Status) commands
+     *
+     * @param command TUNER_FM_MUTE_QUERY, TUNER_FM_MUTE_SET)
+     * @param zone (see Prefix eNum for command prefixes)
+     * @throws UnsupportedCommandTypeException
+     */
+    public void sendTunerFmMuteCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command == OnOffType.ON) {
+            cmdValue = "On";
+        } else if (command == OnOffType.OFF) {
+            cmdValue = "Off";
+        } else if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY; // "?"
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NADCommand.TUNER_FM_MUTE_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_FM_MUTE_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
     public void sendVolumeFixedDBCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
         Command dbCommand = command;
         if (dbCommand instanceof PercentType) {
@@ -206,6 +305,11 @@ public abstract class NADAvrConnector {
             throw new UnsupportedCommandTypeException();
         }
         sendVolumeCommand(dbCommand, zone);
+    }
+
+    protected String toDenonFloatValue(DecimalType number) {
+        String dbString = String.valueOf(number.floatValue());
+        return dbString;
     }
 
     protected String toDenonValue(DecimalType number) {

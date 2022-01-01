@@ -30,7 +30,6 @@ public interface NADAvrTelnetListener {
      * @param line the received line
      */
     void receivedLine(NADMessage line);
-    // void receivedLine(String line);
 
     /**
      * The telnet client has successfully connect to the receiver.

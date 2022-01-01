@@ -48,6 +48,7 @@ public class NADAvrConfiguration {
 
     // private NADAvrConnector connector;
 
+    // Default zone count
     private Integer zoneCount = 2;
 
     // Default maximum volume

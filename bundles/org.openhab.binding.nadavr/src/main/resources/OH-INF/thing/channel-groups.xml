@@ -5,6 +5,17 @@
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<!-- Channel Groups -->
+	<channel-group-type id="tunerControls">
+		<label>Tuner Controls</label>
+		<channels>
+			<channel id="band" typeId="band"/>
+			<channel id="amFrequency" typeId="amFrequency"/>
+			<channel id="fmFrequency" typeId="fmFrequency"/>
+			<channel id="fmMute" typeId="fmMute"/>
+			<channel id="preset" typeId="preset"/>
+			<channel id="presetDetail" typeId="presetDetail"/>
+		</channels>
+	</channel-group-type>
 
 	<channel-group-type id="zone1Controls">
 		<label>Zone 1 (Main Zone)</label>

@@ -10,6 +10,7 @@
 		<description>Ethernet enabled NAD AV Receiver</description>
 
 		<channel-groups>
+			<channel-group typeId="tunerControls" id="tuner"/>
 			<channel-group typeId="zone1Controls" id="zone1"/>
 			<channel-group typeId="zone2Controls" id="zone2"/>
 			<channel-group typeId="zone3Controls" id="zone3"/>

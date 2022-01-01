@@ -18,13 +18,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.nadavr.internal.InputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
+import org.openhab.binding.nadavr.internal.NADAvrInputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
@@ -46,11 +45,11 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrTelnetConnector.class);
 
-    private @Nullable NADAvrTelnetClientThread telnetClientThread;
+    NADAvrTelnetClientThread telnetClientThread = new NADAvrTelnetClientThread(config, this);
 
     protected boolean disposing = false;
 
-    private @Nullable Future<?> telnetStateRequest;
+    ScheduledExecutorService telnetStateRequest = Executors.newScheduledThreadPool(1);
 
     private ThingUID thingUID;
 
@@ -69,70 +68,115 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         this.thingUID = thingUID;
     }
 
-    // TODO modify this area for received line like statusUpdateReceived in NADHandler
     @Override
     public void receivedLine(NADMessage data) {
-        NADCommand receivedCommand = null;
         try {
-            receivedCommand = NADCommand.getCommandByVariableAndOperator(data.getVariable(), data.getOperator());
-        } catch (IllegalArgumentException ex) {
-            logger.debug("Received unknown status update from NAD Device @{}: data={}",
-                    config.hostname + ":" + config.ipAddress, data);
-            return;
-        }
-        logger.debug("Received line = {}", receivedCommand);
-        // TODO May want to validate command prefix before using it below...
-
-        String commandPrefix = data.getPrefix();
-
-        if (commandPrefix.contains(NAD_PREFIX_SOURCE) && data.getVariable().contains(NAD_VARIABLE_NAME)
-                && data.getOperator().equals(NAD_EQUALS_OPERATOR)) {
-            int index = (Integer.parseInt(commandPrefix.substring(6).stripTrailing()) - 1);
-            InputSourceList.updateSourceName(index, data.getValue());
-            populateInputs();
-        }
-        if (receivedCommand != null) {
-            switch (receivedCommand) {
-                case SOURCE_SET:
-                    if (InputSourceList.size() > 0) {
-                        int index = (Integer.parseInt(data.getValue()));
-                        String sourceName = InputSourceList.getSourceName(index - 1);
-                        state.setSourceName(data.getPrefix().toString(), sourceName);
-                    }
-                    break;
-                case POWER_SET:
-                    state.setPower(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
-                    break;
-                case VOLUME_CONTROL_SET:
-                    state.setVolumeControl(data.getPrefix(), data.getValue());
-                    break;
-                case VOLUME_FIXED_SET:
-                    BigDecimal volumeFixed = new BigDecimal(data.getValue());
-                    state.setVolumeFixed(data.getPrefix(), volumeFixed);
-                    break;
-                case VOLUME_SET:
-                    BigDecimal volume = new BigDecimal(data.getValue().toString());
-                    state.setVolume(data.getPrefix(), volume);
-                    break;
-                case MUTE_SET:
-                    state.setMute(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
-                    break;
-                case LISTENING_MODE_SET:
-                    state.setListeningMode(commandPrefix, data.getValue().toString());
-                    break;
-                default:
-                    break;
+            NADCommand receivedCommand = NADCommand.EMPTY_COMMAND;
+            try {
+                receivedCommand = NADCommand.getCommandByVariableAndOperator(data.getVariable(), data.getOperator());
+            } catch (IllegalArgumentException ex) {
+                logger.debug("Received unknown status update from NAD Device @{}: data={}",
+                        config.hostname + ":" + config.ipAddress, data);
+                return;
             }
+            logger.debug("Received line = {}", receivedCommand);
+
+            String commandPrefix = data.getPrefix();
+
+            if (commandPrefix.contains(NAD_PREFIX_SOURCE) && data.getVariable().contains(NAD_VARIABLE_NAME)
+                    && data.getOperator().equals(NAD_EQUALS_OPERATOR)) {
+                int index = (Integer.parseInt(commandPrefix.substring(6).stripTrailing()) - 1);
+                NADAvrInputSourceList.updateSourceName(index, data.getValue());
+                populateInputs();
+            }
+            if (receivedCommand != null) {
+                switch (receivedCommand) {
+                    case SOURCE_SET:
+                        if (NADAvrInputSourceList.size() > 0) {
+                            int index = (Integer.parseInt(data.getValue()));
+                            String sourceName = NADAvrInputSourceList.getSourceName(index - 1);
+                            if (state != null) {
+                                state.setSourceName(data.getPrefix().toString(), sourceName);
+                            }
+                        }
+                        break;
+                    case POWER_SET:
+                        if (state != null) {
+                            state.setPower(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
+                        }
+                        break;
+                    case VOLUME_CONTROL_SET:
+                        if (state != null) {
+                            state.setVolumeControl(data.getPrefix(), data.getValue());
+                        }
+                        break;
+                    case VOLUME_FIXED_SET:
+                        BigDecimal volumeFixed = new BigDecimal(data.getValue());
+                        if (state != null) {
+                            state.setVolumeFixed(data.getPrefix(), volumeFixed);
+                        }
+                        break;
+                    case VOLUME_SET:
+                        BigDecimal volume = new BigDecimal(data.getValue().toString());
+                        if (state != null) {
+                            state.setVolume(data.getPrefix(), volume);
+                        }
+                        break;
+                    case MUTE_SET:
+                        if (state != null) {
+                            state.setMute(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
+                        }
+                        break;
+                    case LISTENING_MODE_SET:
+                        if (state != null) {
+                            state.setListeningMode(commandPrefix, data.getValue().toString());
+                        }
+                        break;
+                    case TUNER_BAND_SET:
+                        if (state != null) {
+                            state.setTunerBand(commandPrefix, data.getValue().toString());
+                        }
+                        break;
+                    case TUNER_FM_FREQUENCY_SET:
+                        BigDecimal fmFrequency = new BigDecimal(data.getValue());
+                        if (state != null) {
+                            state.setTunerFMFrequency(commandPrefix, fmFrequency);
+                        }
+                        break;
+                    case TUNER_AM_FREQUENCY_SET:
+                        BigDecimal amFrequency = new BigDecimal(data.getValue());
+                        if (state != null) {
+                            state.setTunerAMFrequency(commandPrefix, amFrequency);
+                        }
+                        break;
+                    case TUNER_FM_MUTE_SET:
+                        if (state != null) {
+                            state.setTunerFMMute(commandPrefix, data.getValue().equalsIgnoreCase("On"));
+                        }
+                        break;
+                    case TUNER_PRESET_SET:
+                        BigDecimal preset = new BigDecimal(data.getValue());
+                        if (state != null) {
+                            state.setTunerPreset(commandPrefix, preset);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Exception in statusUpdateReceived for NAD device @{}. Cause: {}, data received: {}",
+                    config.hostname, ex.getMessage(), data);
         }
     }
 
     @Override
     public void telnetClientConnected(boolean connected) {
         if (!connected) {
-            if (!disposing) {
-                logger.debug("Telnet client disconnected.");
+            if (!disposing && state != null) {
                 state.connectionError("Error connecting to the telnet port.");
             }
+            logger.debug("Telnet client disconnected.");
         } else {
             refreshState();
         }
@@ -144,50 +188,51 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         telnetClientThread.setName("OH-binding-" + thingUID);
         telnetClientThread.start();
         logger.debug("NADAvrTelnetConnector - telnetClientThread started....");
-        // try { // allow connection to start up before sending/receiving status commands
-        // Thread.sleep(2000);
-        // } catch (InterruptedException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
     }
 
     @Override
     public void dispose() {
         logger.debug("disposing connector");
         disposing = true;
-
-        if (telnetStateRequest != null) {
-            telnetStateRequest.cancel(true);
-            telnetStateRequest = null;
-        }
-
-        if (telnetClientThread != null) {
-            telnetClientThread.interrupt();
-            // Invoke a shutdown after interrupting the thread to close the socket immediately,
-            // otherwise the client keeps running until a line was received from the telnet connection
-            telnetClientThread.shutdown();
-            telnetClientThread = null;
-        }
+        telnetStateRequest.shutdown();
+        telnetClientThread.interrupt();
+        telnetClientThread.shutdown();
     }
 
     private void refreshState() {
-        // Sends a series of state query commands over the telnet connection
+        // Sends a series of state query commands over the connection
         logger.debug("NADAvrTelnetConnector - refreshState() started....");
-        telnetStateRequest = scheduler.submit(() -> {
+        ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
+        s.submit(() -> {
+
             // Initialize message with default "Main.Power=?" command
             NADMessage queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Main.toString())
                     .variable(NADCommand.POWER_QUERY.getVariable().toString())
                     .operator(NADCommand.POWER_QUERY.getOperator().toString())
                     .value(NADCommand.POWER_QUERY.getValue().toString()).build();
 
-            // When adding new commands be sure to include in array to refresh states...
-            List<NADCommand> nadRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.POWER_QUERY,
+            // When adding new zone commands be sure to include in array to refresh states...
+            List<NADCommand> nadZoneRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.POWER_QUERY,
                     NADCommand.INPUT_SOURCE_QUERY, NADCommand.VOLUME_QUERY, NADCommand.LISTENING_MODE_QUERY,
                     NADCommand.MUTE_QUERY, NADCommand.VOLUME_CONTROL_QUERY, NADCommand.VOLUME_FIXED_QUERY));
 
+            // When adding new general commands be sure to include in array to refresh states...
+            List<NADCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.TUNER_BAND_QUERY,
+                    NADCommand.TUNER_AM_FREQUENCY_QUERY, NADCommand.TUNER_FM_FREQUENCY_QUERY,
+                    NADCommand.TUNER_FM_MUTE_QUERY, NADCommand.TUNER_PRESET_QUERY));
+
+            // Refresh general state information
+            for (NADCommand nadGeneralCmd : nadGeneralRefreshCmds) {
+                if (nadGeneralCmd.getOperator() == NAD_QUERY) {
+                    queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
+                            .variable(nadGeneralCmd.getVariable().toString())
+                            .operator(nadGeneralCmd.getOperator().toString()).value(nadGeneralCmd.getValue().toString())
+                            .build();
+                    internalSendCommand(queryCmd);
+                }
+            }
             // Refresh zone state information
-            for (NADCommand nadCmd : nadRefreshCmds) {
+            for (NADCommand nadCmd : nadZoneRefreshCmds) {
                 if (nadCmd.getOperator() == NAD_QUERY) {
                     logger.debug("------- >>> NADcmd = {}", nadCmd);
                     for (int zone = 1; zone <= config.getZoneCount(); zone++) {
@@ -216,7 +261,7 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
                                         .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
                                         .build();
                                 break;
-                            default:
+                            default: // General commands
                                 break;
                         }
                         internalSendCommand(queryCmd);
@@ -235,26 +280,23 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         });
     }
 
-    // TODO rewrite this to use the NAD protocol commands NADMessage
     @Override
     protected void internalSendCommand(NADMessage msg) {
         logger.debug("Sending command '{}'", msg);
-        if (msg == null || msg.toString().isBlank()) {
+        // if (msg == null || msg.toString().isBlank()) {
+        if (msg.toString().isBlank()) {
             logger.warn("Trying to send empty command");
             return;
         }
         telnetClientThread.sendCommand(msg);
     }
 
-    // TODO this is where we need to set the source input names determined by processInfo method
     private void populateInputs() {
         logger.debug("NADAvrHandler - populateInputs() started....");
         List<StateOption> options = new ArrayList<>();
         // Build list of source names to be used by Input Source channel (options)
-        for (int i = 1; i <= InputSourceList.size(); i++) {
-            // String key = String.valueOf(i);
-            // String name = avrSourceName.getAvrSourceName(key);
-            String name = InputSourceList.getSourceName(i - 1);
+        for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
+            String name = NADAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
         }
         logger.debug("Got Source Name input List from NAD Device {}", options);

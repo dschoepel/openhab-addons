@@ -74,11 +74,11 @@ public class NADAvrTelnetClientThread extends Thread {
 
     private int retryCount = 1;
 
-    private @Nullable Socket socket = null;
+    private @Nullable Socket socket;
 
-    private @Nullable OutputStreamWriter outStream = null;
+    private @Nullable OutputStreamWriter outStream;
 
-    private @Nullable BufferedReader inStream = null;
+    private @Nullable BufferedReader inStream;
 
     /**
      * @param config

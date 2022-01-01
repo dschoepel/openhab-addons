@@ -16,8 +16,13 @@ import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.nadavr.internal.xml.Preset;
+import org.openhab.binding.nadavr.internal.xml.TunerPresets;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
@@ -36,6 +41,15 @@ import org.slf4j.LoggerFactory;
 public class NADAvrState {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrState.class);
+    private TunerPresets tunerPresets = new TunerPresets();
+
+    // ----- General ------
+    private State tunerBand = StringType.EMPTY;
+    private State tunerFMFrequency = DecimalType.ZERO;
+    private State tunerAMFrequency = DecimalType.ZERO;
+    private State tunerFMMute = UnDefType.UNDEF;
+    private State tunerPreset = DecimalType.ZERO;
+    private State tunerPresetDetail = StringType.EMPTY;
 
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
@@ -97,6 +111,19 @@ public class NADAvrState {
      */
     public State getStateForChannelID(String channelID) {
         switch (channelID) {
+            /**
+             * General
+             */
+            case CHANNEL_TUNER_BAND:
+                return tunerBand;
+            case CHANNEL_TUNER_FM_FREQUENCY:
+                return tunerFMFrequency;
+            case CHANNEL_TUNER_AM_FREQUENCY:
+                return tunerAMFrequency;
+            case CHANNEL_TUNER_FM_MUTE:
+                return tunerFMMute;
+            case CHANNEL_TUNER_PRESET:
+                return tunerPreset;
             /**
              * Main zone
              */
@@ -220,6 +247,97 @@ public class NADAvrState {
                 if (!newVal.equals(this.listeningMode)) {
                     this.listeningMode = newVal;
                     handler.stateChanged(CHANNEL_MAIN_LISTENING_MODE, this.listeningMode);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerBand
+     */
+    public void setTunerBand(String prefix, String tunerBand) {
+        StringType newVal = StringType.valueOf(tunerBand);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerBand)) {
+                    this.tunerBand = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_BAND, this.tunerBand);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerFMMUte
+     */
+    public void setTunerFMMute(String prefix, boolean tunerFMMute) {
+        OnOffType newVal = tunerFMMute ? OnOffType.ON : OnOffType.OFF;
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerFMMute)) {
+                    this.tunerFMMute = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_FM_MUTE, this.tunerFMMute);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerFMFrequency
+     */
+    public void setTunerFMFrequency(String prefix, BigDecimal tunerFMFrequency) {
+        DecimalType newVal = new DecimalType(tunerFMFrequency);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerFMFrequency)) {
+                    this.tunerFMFrequency = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_FM_FREQUENCY, this.tunerFMFrequency);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerPreset
+     */
+    public void setTunerPreset(String prefix, BigDecimal tunerPreset) {
+        DecimalType newVal = new DecimalType(tunerPreset);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerPreset)) {
+                    this.tunerPreset = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_PRESET, this.tunerPreset);
+                    // TODO If user provided tuner preset detail file, get preset details...
+                    StringType newPresetDetailVal = getPresetDetail(newVal);
+                    if (!newPresetDetailVal.equals(this.tunerPresetDetail)) {
+                        this.tunerPresetDetail = newPresetDetailVal;
+                        handler.stateChanged(CHANNEL_TUNER_PRESET_DETAIL, newPresetDetailVal);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerAMFrequency
+     */
+    public void setTunerAMFrequency(String prefix, BigDecimal tunerAMFrequency) {
+        DecimalType newVal = new DecimalType(tunerAMFrequency);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerAMFrequency)) {
+                    this.tunerAMFrequency = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_AM_FREQUENCY, this.tunerAMFrequency);
                 }
                 break;
             default:
@@ -357,7 +475,7 @@ public class NADAvrState {
     }
 
     /**
-     * Sets fixed volume for Zone 2
+     * Sets fixed volume for Zones 2-4
      *
      * @param volume (Range limits are -95 to +16)
      */
@@ -438,10 +556,33 @@ public class NADAvrState {
      * @param volume
      * @return
      */
+    // TODO get this one to hit top and bottom range - stops short on each end.... -99 and 19
     private BigDecimal calculateVolumePercent(BigDecimal volume) {
         BigDecimal volumePct = volume.subtract(VOLUME_DB_MIN);
         BigDecimal volFactor = ONE_HUNDRED.divide(VOLUME_DB_RANGE, 8, RoundingMode.HALF_EVEN);
         BigDecimal volumePercent = volumePct.multiply(volFactor).divide(new BigDecimal(1), 0, RoundingMode.HALF_EVEN);
         return volumePercent;
+    }
+
+    /**
+     * @param presetKey represents preset number used to located detail in array...
+     * @return presetDetail string containing tuner Band Frequency and User defined name to be associated with the
+     *         preset.
+     */
+    private StringType getPresetDetail(DecimalType presetKey) {
+        String fileName = "/E:/OpenHav3.2-NAD/openhab-main/git/openhab-addons/bundles/org.openhab.binding.nadavr/doc/Preset_Names.xml";
+        List<Preset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
+        Map<DecimalType, Preset> presetMap = new HashMap<DecimalType, Preset>();
+        for (Preset pm : tunerPresetDetails) {
+            DecimalType key = new DecimalType(pm.getID());
+            presetMap.put(key, pm);
+        }
+        StringType presetDetail = StringType.valueOf(NOT_SET);
+        if (presetMap.containsKey(presetKey)) {
+            Preset pFromMap = presetMap.getOrDefault(presetKey, new Preset(presetKey.toString(), NOT_SET, "", ""));
+            String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
+            presetDetail = StringType.valueOf(fromMap);
+        }
+        return presetDetail;
     }
 }

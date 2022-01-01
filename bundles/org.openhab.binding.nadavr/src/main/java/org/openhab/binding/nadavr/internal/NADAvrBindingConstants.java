@@ -55,13 +55,12 @@ public class NADAvrBindingConstants {
 
     // List of all Channel ids
 
-    // List of all Channel ids
-    // public static final String CHANNEL_MAIN_POWER = "general#power";
-    // public static final String CHANNEL_SURROUND_PROGRAM = "general#surroundProgram";
-    // public static final String CHANNEL_COMMAND = "general#command";
-    // public static final String CHANNEL_NOW_PLAYING_ARTIST = "general#artist";
-    // public static final String CHANNEL_NOW_PLAYING_ALBUM = "general#album";
-    // public static final String CHANNEL_NOW_PLAYING_TRACK = "general#track";
+    public static final String CHANNEL_TUNER_BAND = "tuner#band";
+    public static final String CHANNEL_TUNER_PRESET = "tuner#preset";
+    public static final String CHANNEL_TUNER_PRESET_DETAIL = "tuner#presetDetail";
+    public static final String CHANNEL_TUNER_AM_FREQUENCY = "tuner#amFrequency";
+    public static final String CHANNEL_TUNER_FM_FREQUENCY = "tuner#fmFrequency";
+    public static final String CHANNEL_TUNER_FM_MUTE = "tuner#fmMute";
 
     public static final String CHANNEL_MAIN_POWER = "zone1#power";
     public static final String CHANNEL_MAIN_LISTENING_MODE = "zone1#listeningMode";
@@ -69,7 +68,6 @@ public class NADAvrBindingConstants {
     public static final String CHANNEL_MAIN_VOLUME_DB = "zone1#volumeDB";
     public static final String CHANNEL_MAIN_MUTE = "zone1#mute";
     public static final String CHANNEL_MAIN_SOURCE = "zone1#source";
-    // public static final String CHANNEL_MAIN_SOURCE_NAME = "zone1#sourceName";
 
     public static final String CHANNEL_ZONE2_POWER = "zone2#power";
     public static final String CHANNEL_ZONE2_VOLUME = "zone2#volume";
@@ -173,8 +171,7 @@ public class NADAvrBindingConstants {
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE4_VOLUME_CONTROL, "String");
     }
 
-    // Offset in dB from the actual dB value to the volume as presented by the AVR (0 == -80 dB)
-    public static final BigDecimal DB_OFFSET = new BigDecimal("118");
+    // Used to calculate Volume percentage from dB (range is -99 to 19)
     public static final BigDecimal VOLUME_DB_MIN = new BigDecimal("-99");
     public static final BigDecimal VOLUME_DB_RANGE = new BigDecimal("118");
     public static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
@@ -182,6 +179,8 @@ public class NADAvrBindingConstants {
     // NAD protocol command elements
     public static final String NAD_PREFIX_SOURCE = "Source";
     public static final String NAD_VARIABLE_NAME = "Name";
+    public static final String TUNER = "Tuner";
+    public static final String NOT_SET = "Not Set";
     public static final String NAD_EQUALS_OPERATOR = "=";
     public static final String NAD_QUERY = "?";
     public static final String ZONE1 = "Main";

@@ -22,11 +22,10 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.nadavr.internal.InputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
+import org.openhab.binding.nadavr.internal.NADAvrInputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
@@ -63,16 +62,13 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     private static final int RETRY_TIME_SECONDS = 30;
 
     private NADAvrConfiguration config = new NADAvrConfiguration() {
-    };;
+    };
     private NADAvrConnector connector;
-
-    // private SourceName avrSourceName = new SourceName();
 
     private NADAvrState nadavrState = new NADAvrState(this);
     private final NADAvrStateDescriptionProvider stateDescriptionProvider;
     private NADAvrConnectorFactory connectorFactory = new NADAvrConnectorFactory();
     private @Nullable ScheduledFuture<?> retryJob;
-    // private CommandStates avrCommandStates = new CommandStates();
 
     public NADAvrHandler(Thing thing, NADAvrStateDescriptionProvider stateDescriptionProvider,
             NADAvrConnector connector) {
@@ -89,6 +85,24 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         logger.debug("handleCommand testing command = {}", command.toString());
         try {
             switch (channelUID.getId()) {
+                /**
+                 * General settings
+                 */
+                case CHANNEL_TUNER_BAND:
+                    connector.sendTunerBandCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_AM_FREQUENCY:
+                    connector.sendTunerAmFrequencyCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_FM_FREQUENCY:
+                    connector.sendTunerFmFrequencyCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_FM_MUTE:
+                    connector.sendTunerFmMuteCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_PRESET:
+                    connector.sendTunerPresetCommand(command, Prefix.Tuner);
+                    break;
                 /**
                  * Main zone
                  */
@@ -238,7 +252,6 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         }
         // Request Source names and populate source input channel with names
         querySourceNames();
-        // TODO figure this out!
         populateInputs();
 
         boolean thingReachable = true;
@@ -268,7 +281,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         logger.debug("Configuring zone channels");
         Integer zoneCount = config.getZoneCount();
 
-        ArrayList<@NonNull Channel> channels = new ArrayList<>(this.getThing().getChannels());
+        ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
 
         boolean channelsUpdated = false;
 
@@ -279,8 +292,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
 
         if (zoneCount > 1) {
-            List<@NonNull Entry<@NonNull String, @NonNull ChannelTypeUID>> channelsToAdd = new ArrayList<>(
-                    ZONE2_CHANNEL_TYPES.entrySet());
+            List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(ZONE2_CHANNEL_TYPES.entrySet());
 
             if (zoneCount > 2) {
                 // add channels for zone 3
@@ -350,22 +362,17 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         }
     }
 
-    // TODO this is where we need to set the source input names determined by processInfo method
     private void populateInputs() {
         logger.debug("NADAvrHandler - populateInputs() started....");
-        logger.debug("----> sourceNameList length = {} and contents are {}", InputSourceList.size(),
-                InputSourceList.getSourceNameList());
+        logger.debug("----> sourceNameList length = {} and contents are {}", NADAvrInputSourceList.size(),
+                NADAvrInputSourceList.getSourceNameList());
         List<StateOption> options = new ArrayList<>();
 
-        for (int i = 1; i <= InputSourceList.size(); i++) {
-            // String key = String.valueOf(i);
-            // String name = avrSourceName.getAvrSourceName(key);
-            String name = InputSourceList.getSourceName(i - 1);
-            // options.add(new StateOption(String.valueOf(i), avrSourceName.getAvrSourceName(String.valueOf(i))));
+        for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
+            String name = NADAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
         }
         logger.debug("Got Source Name input List from NAD Device {}", options);
-        // TODO only update zones that are active?..
 
         for (int i = 1; i <= config.getZoneCount(); i++) {
             switch (i) {
