@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -96,6 +96,11 @@ public class HDPowerViewWebTargets {
 
         public String getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("?%s=%s", key, value);
         }
     }
 
@@ -247,7 +252,11 @@ public class HDPowerViewWebTargets {
     private synchronized String invoke(HttpMethod method, String url, @Nullable Query query,
             @Nullable String jsonCommand) throws HubMaintenanceException, HubProcessingException {
         if (logger.isTraceEnabled()) {
-            logger.trace("API command {} {}", method, url);
+            if (query != null) {
+                logger.trace("API command {} {}{}", method, url, query);
+            } else {
+                logger.trace("API command {} {}", method, url);
+            }
             if (jsonCommand != null) {
                 logger.trace("JSON command = {}", jsonCommand);
             }
