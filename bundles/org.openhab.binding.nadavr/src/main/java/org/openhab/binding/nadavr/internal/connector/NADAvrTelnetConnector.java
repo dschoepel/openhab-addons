@@ -29,9 +29,8 @@ import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
 import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
-import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.types.StateOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,24 +44,39 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrTelnetConnector.class);
 
-    NADAvrTelnetClientThread telnetClientThread = new NADAvrTelnetClientThread(config, this);
+    private NADAvrFMRdsTextStream rdsText = new NADAvrFMRdsTextStream(this);
 
+    NADAvrTelnetClientThread telnetClientThread = new NADAvrTelnetClientThread(config, this);
+    NADAvrConnector connector = (this);
     protected boolean disposing = false;
 
     ScheduledExecutorService telnetStateRequest = Executors.newScheduledThreadPool(1);
+    ScheduledExecutorService rdsTextRequest = Executors.newScheduledThreadPool(1);
 
     private ThingUID thingUID;
 
-    private NADAvrStateDescriptionProvider stateDescriptionProvider;
+    NADAvrStateDescriptionProvider stateDescriptionProvider;
 
     /**
      *
      */
+    // public NADAvrTelnetConnector(NADAvrConfiguration config, NADAvrState state,
+    // NADAvrStateDescriptionProvider stateDescriptionprovider, ScheduledExecutorService scheduler,
+    // ThingUID thingUID) {
+    // this.config = config;
+    // this.scheduler = scheduler;
+    // this.state = state;
+    // this.stateDescriptionProvider = stateDescriptionprovider;
+    // this.thingUID = thingUID;
+    // }
+
+    /**
+    *
+    */
     public NADAvrTelnetConnector(NADAvrConfiguration config, NADAvrState state,
-            NADAvrStateDescriptionProvider stateDescriptionprovider, ScheduledExecutorService scheduler,
-            ThingUID thingUID) {
+            NADAvrStateDescriptionProvider stateDescriptionprovider, ThingUID thingUID) {
         this.config = config;
-        this.scheduler = scheduler;
+        // this.scheduler = scheduler;
         this.state = state;
         this.stateDescriptionProvider = stateDescriptionprovider;
         this.thingUID = thingUID;
@@ -80,85 +94,95 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
                 return;
             }
             logger.debug("Received line = {}", receivedCommand);
-
             String commandPrefix = data.getPrefix();
 
             if (commandPrefix.contains(NAD_PREFIX_SOURCE) && data.getVariable().contains(NAD_VARIABLE_NAME)
                     && data.getOperator().equals(NAD_EQUALS_OPERATOR)) {
                 int index = (Integer.parseInt(commandPrefix.substring(6).stripTrailing()) - 1);
                 NADAvrInputSourceList.updateSourceName(index, data.getValue());
-                populateInputs();
+
+                logger.debug("NADAvrInputSourceList updated with new name at index - {}, value = {}", index,
+                        data.getValue());
+                // if (!populateInput.isRunning()) {
+                // populateInput.start();
+                // } else {
+                // logger.debug("TelnetConnector - populateInput is running.....");
+                // }
+                // populateInputs();
             }
             if (receivedCommand != null) {
+
                 switch (receivedCommand) {
                     case SOURCE_SET:
                         if (NADAvrInputSourceList.size() > 0) {
+                            String sourceName = "";
                             int index = (Integer.parseInt(data.getValue()));
-                            String sourceName = NADAvrInputSourceList.getSourceName(index - 1);
-                            if (state != null) {
-                                state.setSourceName(data.getPrefix().toString(), sourceName);
+                            if (index >= 11 && !commandPrefix.equals(ZONE1)) { // Zones2-3 include Local source
+                                sourceName = LOCAL;
+                            } else {
+                                sourceName = NADAvrInputSourceList.getSourceName(index - 1);
                             }
+                            state.setSourceName(data.getPrefix().toString(), sourceName);
                         }
                         break;
                     case POWER_SET:
-                        if (state != null) {
-                            state.setPower(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
-                        }
+                        state.setPower(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
                         break;
                     case VOLUME_CONTROL_SET:
-                        if (state != null) {
-                            state.setVolumeControl(data.getPrefix(), data.getValue());
-                        }
+                        state.setVolumeControl(data.getPrefix(), data.getValue());
                         break;
                     case VOLUME_FIXED_SET:
                         BigDecimal volumeFixed = new BigDecimal(data.getValue());
-                        if (state != null) {
-                            state.setVolumeFixed(data.getPrefix(), volumeFixed);
-                        }
+                        state.setVolumeFixed(data.getPrefix(), volumeFixed);
                         break;
                     case VOLUME_SET:
                         BigDecimal volume = new BigDecimal(data.getValue().toString());
-                        if (state != null) {
-                            state.setVolume(data.getPrefix(), volume);
-                        }
+                        state.setVolume(data.getPrefix(), volume);
                         break;
                     case MUTE_SET:
-                        if (state != null) {
-                            state.setMute(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
-                        }
+                        state.setMute(data.getPrefix(), data.getValue().equalsIgnoreCase("On"));
                         break;
                     case LISTENING_MODE_SET:
-                        if (state != null) {
-                            state.setListeningMode(commandPrefix, data.getValue().toString());
-                        }
+                        state.setListeningMode(commandPrefix, data.getValue().toString());
                         break;
                     case TUNER_BAND_SET:
-                        if (state != null) {
-                            state.setTunerBand(commandPrefix, data.getValue().toString());
+                        state.setTunerBand(commandPrefix, data.getValue().toString());
+                        String band = data.getValue();
+                        switch (band) {
+                            case "FM":
+                                if (isTunerActive()) {
+                                    logger.debug("Is the Tuner Active? Anser: {}", isTunerActive());
+                                } else {
+                                    logger.debug("Is the Tuner Active? Anser: {}", isTunerActive());
+                                }
+                                if (!rdsText.isStarted()) {
+                                    rdsText.start();
+                                } else {
+                                    rdsText.resume();
+                                }
+                                break;
+                            default:
+                                rdsText.pause();
+                                break;
                         }
                         break;
                     case TUNER_FM_FREQUENCY_SET:
                         BigDecimal fmFrequency = new BigDecimal(data.getValue());
-                        if (state != null) {
-                            state.setTunerFMFrequency(commandPrefix, fmFrequency);
-                        }
+                        state.setTunerFMFrequency(commandPrefix, fmFrequency);
                         break;
                     case TUNER_AM_FREQUENCY_SET:
                         BigDecimal amFrequency = new BigDecimal(data.getValue());
-                        if (state != null) {
-                            state.setTunerAMFrequency(commandPrefix, amFrequency);
-                        }
+                        state.setTunerAMFrequency(commandPrefix, amFrequency);
                         break;
                     case TUNER_FM_MUTE_SET:
-                        if (state != null) {
-                            state.setTunerFMMute(commandPrefix, data.getValue().equalsIgnoreCase("On"));
-                        }
+                        state.setTunerFMMute(commandPrefix, data.getValue().equalsIgnoreCase("On"));
                         break;
                     case TUNER_PRESET_SET:
                         BigDecimal preset = new BigDecimal(data.getValue());
-                        if (state != null) {
-                            state.setTunerPreset(commandPrefix, preset);
-                        }
+                        state.setTunerPreset(commandPrefix, preset);
+                        break;
+                    case TUNER_FM_RDS_TEXT_SET:
+                        state.setTunerFMRdsText(commandPrefix, data.getValue().toString());
                         break;
                     default:
                         break;
@@ -173,7 +197,7 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
     @Override
     public void telnetClientConnected(boolean connected) {
         if (!connected) {
-            if (!disposing && state != null) {
+            if (!disposing) {
                 state.connectionError("Error connecting to the telnet port.");
             }
             logger.debug("Telnet client disconnected.");
@@ -188,6 +212,9 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         telnetClientThread.setName("OH-binding-" + thingUID);
         telnetClientThread.start();
         logger.debug("NADAvrTelnetConnector - telnetClientThread started....");
+        if (!rdsText.isStarted()) {
+            rdsText.start();
+        }
     }
 
     @Override
@@ -197,13 +224,14 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         telnetStateRequest.shutdown();
         telnetClientThread.interrupt();
         telnetClientThread.shutdown();
+        rdsText.stop();
     }
 
     private void refreshState() {
         // Sends a series of state query commands over the connection
         logger.debug("NADAvrTelnetConnector - refreshState() started....");
-        ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
-        s.submit(() -> {
+        ScheduledExecutorService refresh = Executors.newSingleThreadScheduledExecutor();
+        refresh.submit(() -> {
 
             // Initialize message with default "Main.Power=?" command
             NADMessage queryCmd = new NADMessage.MessageBuilder().prefix(Prefix.Main.toString())
@@ -219,7 +247,7 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
             // When adding new general commands be sure to include in array to refresh states...
             List<NADCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NADCommand.TUNER_BAND_QUERY,
                     NADCommand.TUNER_AM_FREQUENCY_QUERY, NADCommand.TUNER_FM_FREQUENCY_QUERY,
-                    NADCommand.TUNER_FM_MUTE_QUERY, NADCommand.TUNER_PRESET_QUERY));
+                    NADCommand.TUNER_FM_MUTE_QUERY, NADCommand.TUNER_FM_RDS_TEXT_QUERY, NADCommand.TUNER_PRESET_QUERY));
 
             // Refresh general state information
             for (NADCommand nadGeneralCmd : nadGeneralRefreshCmds) {
@@ -291,33 +319,24 @@ public class NADAvrTelnetConnector extends NADAvrConnector implements NADAvrTeln
         telnetClientThread.sendCommand(msg);
     }
 
-    private void populateInputs() {
-        logger.debug("NADAvrHandler - populateInputs() started....");
-        List<StateOption> options = new ArrayList<>();
-        // Build list of source names to be used by Input Source channel (options)
-        for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
-            String name = NADAvrInputSourceList.getSourceName(i - 1);
-            options.add(new StateOption(String.valueOf(i), name));
+    public boolean isTunerActive() {
+        boolean tunerIsActive = false;
+        boolean mainPowerOn = false;
+        boolean zone2PowerOn = false;
+        boolean zone3PowerOn = false;
+        boolean zone4PowerOn = false;
+        mainPowerOn = state.getStateForChannelID(CHANNEL_MAIN_POWER).equals(OnOffType.ON);
+        zone2PowerOn = state.getStateForChannelID(CHANNEL_ZONE2_POWER).equals(OnOffType.ON);
+        zone3PowerOn = state.getStateForChannelID(CHANNEL_ZONE3_POWER).equals(OnOffType.ON);
+        zone4PowerOn = state.getStateForChannelID(CHANNEL_ZONE4_POWER).equals(OnOffType.ON);
+        if (mainPowerOn || zone2PowerOn || zone3PowerOn || zone4PowerOn) {
+            logger.debug("Zones powered on - main {}, Z2 {}, Z3 {}, Z4 {}", mainPowerOn, zone2PowerOn, zone3PowerOn,
+                    zone4PowerOn);
+            // TODO now check to see if a source is set to the tuner
+        } else {
+            logger.debug("Zones powered on - main {}, Z2 {}, Z3 {}, Z4 {}", mainPowerOn, zone2PowerOn, zone3PowerOn,
+                    zone4PowerOn);
         }
-        logger.debug("Got Source Name input List from NAD Device {}", options);
-
-        for (int i = 1; i <= config.getZoneCount(); i++) {
-            switch (i) {
-                case 1:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_MAIN_SOURCE), options);
-                    break;
-                case 2:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE2_SOURCE), options);
-                    break;
-                case 3:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE3_SOURCE), options);
-                    break;
-                case 4:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE4_SOURCE), options);
-                    break;
-                default:
-                    break;
-            }
-        }
+        return tunerIsActive;
     }
 }

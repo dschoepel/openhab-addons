@@ -51,8 +51,11 @@ public class NADAvrTelnetClientThread extends Thread {
      * Group 3 = operator,
      * Group 4 = value
      */
+    // private static final Pattern NAD_FULL_MESSAGE_PATTERN = Pattern
+    // .compile("^(.[^.]+)\\.(.*[^=\\?\\-\\+])([=\\?\\+\\-])(.*)$", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern NAD_FULL_MESSAGE_PATTERN = Pattern
-            .compile("^(.[^.]+)\\.(.*[^=\\?\\-\\+])([=\\?\\+\\-])(.*)$", Pattern.CASE_INSENSITIVE);
+            .compile("^(.[^.]+)\\.(.*[^=\\?\\-\\+])([=\\?])(.*)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * REGEX to validate message that is a query

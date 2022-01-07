@@ -14,6 +14,7 @@
 			<channel id="fmMute" typeId="fmMute"/>
 			<channel id="preset" typeId="preset"/>
 			<channel id="presetDetail" typeId="presetDetail"/>
+			<channel id="fmRdsText" typeId="fmRdsText"/>
 		</channels>
 	</channel-group-type>
 

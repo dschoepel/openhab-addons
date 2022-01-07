@@ -20,6 +20,12 @@
 			<advanced>true</advanced>
 		</parameter-group>
 
+		<parameter-group name="presets">
+			<label>Tuner Preset Details</label>
+			<description>Settings for the Tuner preset details for the NAD Device</description>
+			<advanced>true</advanced>
+		</parameter-group>
+
 		<parameter name="hostname" type="text" required="true" groupName="connectionSettings">
 			<context>network-address</context>
 			<label>Hostname</label>
@@ -32,13 +38,6 @@
 				number of zones for this device.</description>
 			<default>2</default>
 		</parameter>
-
-		<parameter name="telnetEnabled" type="boolean" required="true" groupName="connectionSettings">
-			<label>Use Telnet Port</label>
-			<description>By using telnet the AVR updates are received immediately. Also, some devices only support telnet.
-			</description>
-			<default>true</default>
-		</parameter>
 		<parameter name="ipAddress" type="text" required="true" groupName="connectionSettings">
 			<context>network-address</context>
 			<label>IP Address</label>
@@ -48,6 +47,20 @@
 			<default>23</default>
 			<label>Port</label>
 			<description>Telnet port used for AVR communication. Normally shouldn't be changed.</description>
+		</parameter>
+		<parameter name="enablePresetNames" type="boolean" required="false" groupName="presets">
+			<label>Enable Preset Detail</label>
+			<description>User defined tuner preset details are provided in an external file. (Follow instructions in the binding
+				description for creating this file.)
+			</description>
+			<default>false</default>
+			<advanced>true</advanced>
+		</parameter>
+		<parameter name="presetNamesFilePath" type="text" required="false" groupName="presets">
+			<label>Preset Names File</label>
+			<description>File Name containing preset name details including path e.g. /etc/openhab/scripts/Preset_Names.xml</description>
+			<default></default>
+			<advanced>true</advanced>
 		</parameter>
 	</config-description>
 

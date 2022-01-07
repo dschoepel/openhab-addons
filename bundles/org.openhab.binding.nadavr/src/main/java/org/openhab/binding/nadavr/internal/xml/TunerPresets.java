@@ -49,11 +49,19 @@ public class TunerPresets {
         return preset;
     }
 
+    protected boolean validFileFormat = false;
+
     public void setPreset(List<Preset> preset) {
         this.preset = preset;
     }
 
+    public boolean presetFileIsValid(String fileName) {
+        parsePresets(fileName);
+        return validFileFormat;
+    }
+
     public List<Preset> parsePresets(String fileName) {
+        validFileFormat = true;
         List<Preset> presetList = new ArrayList<>();
         Preset preset = new Preset("", "", "", "");
         XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
@@ -108,18 +116,21 @@ public class TunerPresets {
                             logger.debug("Added Preset {} detail: Band = \"{}\", Frequency = \"{}\", Name = \"{}\"",
                                     preset.getID(), preset.getBand(), preset.getFrequency(), preset.getName());
                         } else {
-                            logger.debug(
+                            logger.warn(
                                     "Skipped preset {} details: Band = \"{}\", Frequency = \"{}\", Name = \"{}\" Check for missing details in definition file {}!",
                                     preset.getID(), preset.getBand(), preset.getFrequency(), preset.getName(),
                                     fileName);
+                            validFileFormat = false;
                         }
                     }
                 }
             }
         } catch (FileNotFoundException ex) {
             logger.error("XML Preset_Names Detail File was not found!  Error: {}", ex.getMessage());
+            validFileFormat = false;
         } catch (XMLStreamException ex) {
             logger.error("Parsing File: {} found an error!  Error: {}", fileName, ex.getMessage());
+            validFileFormat = false;
         }
         return presetList;
     }

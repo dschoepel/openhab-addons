@@ -40,11 +40,16 @@ public class NADAvrConfiguration {
     public int telnetPort = 23;
 
     /**
-     * Telnet is enabled vs serial
+     * Enable user defined external tuner preset name detail file
      *
-     * @return telnetEnabled
+     * @return enable Preset Names
      */
-    public boolean telnetEnabled = true;
+    public boolean enablePresetNames = false;
+
+    /**
+     * Path including file name to user defined tuner preset name details file
+     */
+    public String presetNamesFilePath = "";
 
     // private NADAvrConnector connector;
 
@@ -73,12 +78,12 @@ public class NADAvrConfiguration {
         this.zoneCount = zoneCount;
     }
 
-    public boolean isTelnet() {
-        return telnetEnabled;
+    public boolean arePresetNamesEnabled() {
+        return enablePresetNames;
     }
 
-    public void setTelnet(boolean telnetEnabled) {
-        this.telnetEnabled = telnetEnabled;
+    public void setenablePresetNames(boolean enablePresetNames) {
+        this.enablePresetNames = enablePresetNames;
     }
 
     // public NADAvrConnector getConnector() {
@@ -113,9 +118,18 @@ public class NADAvrConfiguration {
         this.telnetPort = telnetPort;
     }
 
+    public String getPresetNamesFilePath() {
+        return presetNamesFilePath;
+    }
+
+    public void setPresetNamesFilePath(String presetNamesFilePath) {
+        this.presetNamesFilePath = presetNamesFilePath;
+    }
+
     @Override
     public String toString() {
         return "NADAvrConfiguration [hostname=" + hostname + ", ipAddress=" + ipAddress + ", telnetPort=" + telnetPort
-                + ", telnetEnabled=" + telnetEnabled + ", zoneCount=" + zoneCount + "]";
+                + ", enablePresetNames=" + enablePresetNames + ", presetNamesFilePath=" + presetNamesFilePath
+                + ", zoneCount=" + zoneCount + ", mainVolumeMax=" + mainVolumeMax + "]";
     }
 }

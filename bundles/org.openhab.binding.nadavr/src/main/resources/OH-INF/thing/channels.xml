@@ -147,4 +147,10 @@
 		<description>Tuner preset details (requires user defined file to supply details)</description>
 	</channel-type>
 
+	<channel-type id="fmRdsText">
+		<item-type>String</item-type>
+		<label>FM RDS Text</label>
+		<description>Tuner FM Radio Data System Radio text readout</description>
+	</channel-type>
+
 </thing:thing-descriptions>

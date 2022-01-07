@@ -12,8 +12,6 @@
  */
 package org.openhab.binding.nadavr.internal.factory;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
@@ -36,10 +34,15 @@ public class NADAvrConnectorFactory {
     /**
      *
      */
+    // public NADAvrConnector getConnector(NADAvrConfiguration config, NADAvrState state,
+    // NADAvrStateDescriptionProvider stateDescriptionProvider, ScheduledExecutorService scheduler,
+    // ThingUID thingUID) {
+    // return new NADAvrTelnetConnector(config, state, stateDescriptionProvider, scheduler, thingUID);
+    // }
+
     public NADAvrConnector getConnector(NADAvrConfiguration config, NADAvrState state,
-            NADAvrStateDescriptionProvider stateDescriptionProvider, ScheduledExecutorService scheduler,
-            ThingUID thingUID) {
-        return new NADAvrTelnetConnector(config, state, stateDescriptionProvider, scheduler, thingUID);
+            NADAvrStateDescriptionProvider stateDescriptionProvider, ThingUID thingUID) {
+        return new NADAvrTelnetConnector(config, state, stateDescriptionProvider, thingUID);
     }
 
     @Reference

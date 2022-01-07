@@ -15,12 +15,11 @@ package org.openhab.binding.nadavr.internal.connector;
 import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.NAD_QUERY;
 
 import java.math.BigDecimal;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrState;
+import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.UnsupportedCommandTypeException;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
@@ -32,6 +31,7 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
+import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +45,20 @@ public abstract class NADAvrConnector {
 
     private final Logger logger = LoggerFactory.getLogger(NADAvrConnector.class);
 
-    // private static final BigDecimal ONESTEP = new BigDecimal("1.0");
+    private NADAvrStateChangedListener stateChangedListener = new NADAvrStateChangedListener() {
+        @Override
+        public void stateChanged(String channelID, State state) {
+        }
+
+        @Override
+        public void connectionError(String errorMessage) {
+        }
+    };
+
     private static final BigDecimal VOLUME_RANGE = new BigDecimal("118");
     private static final BigDecimal VOLUME_DB_MIN = new BigDecimal("-99");
-    // private static final BigDecimal VOLUME_DB_MAX = new BigDecimal("19");
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
-    protected @Nullable ScheduledExecutorService scheduler;
-    protected @Nullable NADAvrState state;
+    protected NADAvrState state = new NADAvrState(stateChangedListener);
     protected NADAvrConfiguration config = new NADAvrConfiguration() {
     };;
 
@@ -277,6 +284,25 @@ public abstract class NADAvrConnector {
                 .operator(NADCommand.TUNER_FM_MUTE_SET.getOperator().toString()).value(cmdValue).build());
     }
 
+    /**
+     * Sends TunerFM RDS Text Query command
+     *
+     * @param command TUNER_FM_RDS_TEXT_QUERY)
+     * @param zone (see Prefix eNum for command prefixes)
+     * @throws UnsupportedCommandTypeException
+     */
+    public void sendTunerFmRdsTextCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = "?"; // Only option is to query this setting
+        } else {
+            throw new UnsupportedCommandTypeException();
+        }
+        internalSendCommand(new NADMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NADCommand.TUNER_FM_RDS_TEXT_SET.getVariable().toString())
+                .operator(NADCommand.TUNER_FM_RDS_TEXT_SET.getOperator().toString()).value(cmdValue).build());
+    }
+
     public void sendVolumeFixedDBCommand(Command command, Prefix zone) throws UnsupportedCommandTypeException {
         Command dbCommand = command;
         if (dbCommand instanceof PercentType) {
@@ -336,5 +362,9 @@ public abstract class NADAvrConnector {
         internalSendCommand(
                 new NADMessage.MessageBuilder().prefix(prefix).variable(deviceCommand.getVariable().toString())
                         .operator(deviceCommand.getOperator().toString()).value(deviceCommand.getValue()).build());
+    }
+
+    public String getConnectionName() {
+        return config.ipAddress + ":" + config.telnetPort;
     }
 }

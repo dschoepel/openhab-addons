@@ -50,6 +50,7 @@ public class NADAvrState {
     private State tunerFMMute = UnDefType.UNDEF;
     private State tunerPreset = DecimalType.ZERO;
     private State tunerPresetDetail = StringType.EMPTY;
+    private State tunerFMRdsText = StringType.EMPTY;
 
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
@@ -264,6 +265,25 @@ public class NADAvrState {
                 if (!newVal.equals(this.tunerBand)) {
                     this.tunerBand = newVal;
                     handler.stateChanged(CHANNEL_TUNER_BAND, this.tunerBand);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param tunerFMRdsText
+     */
+    public void setTunerFMRdsText(String prefix, String tunerFMRdsText) {
+        StringType newVal = StringType.valueOf(tunerFMRdsText);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerFMRdsText)) {
+                    this.tunerFMRdsText = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_FM_RDS_TEXT, this.tunerFMRdsText);
+                } else if (this.tunerFMRdsText.equals(StringType.EMPTY)) {
+                    handler.stateChanged(CHANNEL_TUNER_FM_RDS_TEXT, StringType.valueOf(""));
                 }
                 break;
             default:

@@ -14,6 +14,7 @@ package org.openhab.binding.nadavr.internal.handler;
 
 import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NADAvrInputSourceList;
+import org.openhab.binding.nadavr.internal.NADAvrPopulateInputs;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
@@ -35,6 +37,7 @@ import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
 import org.openhab.binding.nadavr.internal.factory.NADAvrConnectorFactory;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
+import org.openhab.binding.nadavr.internal.xml.TunerPresets;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -64,9 +67,12 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
     private NADAvrConfiguration config = new NADAvrConfiguration() {
     };
     private NADAvrConnector connector;
+    private NADAvrStateDescriptionProvider stateDescriptionProvider;
+
+    private TunerPresets tunerPresets = new TunerPresets();
 
     private NADAvrState nadavrState = new NADAvrState(this);
-    private final NADAvrStateDescriptionProvider stateDescriptionProvider;
+
     private NADAvrConnectorFactory connectorFactory = new NADAvrConnectorFactory();
     private @Nullable ScheduledFuture<?> retryJob;
 
@@ -82,7 +88,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         // if (connector == null) {
         // return;
         // }
-        logger.debug("handleCommand testing command = {}", command.toString());
+        logger.debug("handleCommand testing command = {} and not string {}", command.toString(), command);
         try {
             switch (channelUID.getId()) {
                 /**
@@ -102,6 +108,9 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
                     break;
                 case CHANNEL_TUNER_PRESET:
                     connector.sendTunerPresetCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_FM_RDS_TEXT:
+                    connector.sendTunerFmRdsTextCommand(command, Prefix.Tuner);
                     break;
                 /**
                  * Main zone
@@ -213,6 +222,11 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         }
     }
 
+    /**
+     * Validate configuration settings before bringing NAD Avr Thing online
+     *
+     * @return true indicating all checks passed or false there are errors to be addressed
+     */
     public boolean checkConfiguration() {
         // Check that zone count is within the supported range 1 - max zones for this model
         int maxZones = getMaxZonesForModel(thing.getThingTypeUID().getId());
@@ -220,6 +234,30 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "This binding supports 1 to " + maxZones + " zones. Please update the zone count.");
             return false;
+        }
+
+        // Check for tuner preset details file being enabled
+        if (config.arePresetNamesEnabled()) {
+            if (config.getPresetNamesFilePath().isBlank()) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The tuner presets file name '" + config.getPresetNamesFilePath()
+                                + "' is blank!  Please update name that inlcudes a valid path and file name...");
+                return false;
+            }
+            String presetFileName = config.getPresetNamesFilePath();
+            File tempFile = new File(presetFileName);
+            boolean exists = tempFile.exists();
+            if (!exists) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The tuner presets file name '" + config.getPresetNamesFilePath()
+                                + "' was not found!  Please update name that inlcudes a valid path and file name...");
+                return false;
+            } else if (!tunerPresets.presetFileIsValid(presetFileName)) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The tuner presets file is not formated correctly! Please check the OPENHAB log for details and correct errors in '"
+                                + config.getPresetNamesFilePath() + "'");
+                return false;
+            }
         }
         return true;
     }
@@ -252,7 +290,12 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         }
         // Request Source names and populate source input channel with names
         querySourceNames();
-        populateInputs();
+        // populateInputs();
+        NADAvrPopulateInputs populateInput = new NADAvrPopulateInputs(thing.getUID(), config, connector,
+                stateDescriptionProvider, true);
+        if (!populateInput.isRunning()) {
+            populateInput.start();
+        }
 
         boolean thingReachable = true;
         if (thingReachable) {
@@ -264,7 +307,9 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
 
     private void createConnection() {
         connector.dispose();
-        connector = connectorFactory.getConnector(config, nadavrState, stateDescriptionProvider, scheduler,
+        // connector = connectorFactory.getConnector(config, nadavrState, stateDescriptionProvider, scheduler,
+        // this.getThing().getUID());
+        connector = connectorFactory.getConnector(config, nadavrState, stateDescriptionProvider,
                 this.getThing().getUID());
         connector.connect();
         logger.debug("NADAvrHandler - createConnection() connector.connect executed ");
@@ -312,6 +357,7 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
             channelsToAdd.removeIf(c -> currentChannels.contains(c.getKey()));
 
             // add the channels that were not yet added
+
             if (!channelsToAdd.isEmpty()) {
                 for (Entry<String, ChannelTypeUID> entry : channelsToAdd) {
                     String itemType = CHANNEL_ITEM_TYPES.get(entry.getKey());
@@ -367,11 +413,15 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         logger.debug("----> sourceNameList length = {} and contents are {}", NADAvrInputSourceList.size(),
                 NADAvrInputSourceList.getSourceNameList());
         List<StateOption> options = new ArrayList<>();
+        List<StateOption> optionsZ2to4 = new ArrayList<>();
 
         for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
             String name = NADAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
+            optionsZ2to4.add(new StateOption(String.valueOf(i), name));
         }
+        logger.debug("Value of i = {}", optionsZ2to4.size());
+        optionsZ2to4.add(new StateOption(String.valueOf(options.size() + 1), LOCAL));
         logger.debug("Got Source Name input List from NAD Device {}", options);
 
         for (int i = 1; i <= config.getZoneCount(); i++) {
@@ -383,17 +433,17 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
                     break;
                 case 2:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE2_SOURCE),
-                            options);
+                            optionsZ2to4);
                     connector.sendCommand(Prefix.Zone2.toString(), NADCommand.INPUT_SOURCE_QUERY);
                     break;
                 case 3:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE3_SOURCE),
-                            options);
+                            optionsZ2to4);
                     connector.sendCommand(Prefix.Zone3.toString(), NADCommand.INPUT_SOURCE_QUERY);
                     break;
                 case 4:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE4_SOURCE),
-                            options);
+                            optionsZ2to4);
                     connector.sendCommand(Prefix.Zone4.toString(), NADCommand.INPUT_SOURCE_QUERY);
                     break;
                 default:
