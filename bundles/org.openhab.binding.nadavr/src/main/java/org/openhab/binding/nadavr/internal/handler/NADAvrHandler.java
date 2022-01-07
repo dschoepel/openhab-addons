@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NADAvrConfiguration;
-import org.openhab.binding.nadavr.internal.NADAvrInputSourceList;
 import org.openhab.binding.nadavr.internal.NADAvrPopulateInputs;
 import org.openhab.binding.nadavr.internal.NADAvrState;
 import org.openhab.binding.nadavr.internal.NADAvrStateChangedListener;
@@ -48,7 +47,6 @@ import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
-import org.openhab.core.types.StateOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -405,50 +403,6 @@ public class NADAvrHandler extends BaseThingHandler implements NADAvrStateChange
         for (int input = 1; input <= 10; input++) {
             String prefix = "Source" + input;
             connector.sendCommand(prefix, NADCommand.SOURCE_NAME_QUERY);
-        }
-    }
-
-    private void populateInputs() {
-        logger.debug("NADAvrHandler - populateInputs() started....");
-        logger.debug("----> sourceNameList length = {} and contents are {}", NADAvrInputSourceList.size(),
-                NADAvrInputSourceList.getSourceNameList());
-        List<StateOption> options = new ArrayList<>();
-        List<StateOption> optionsZ2to4 = new ArrayList<>();
-
-        for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
-            String name = NADAvrInputSourceList.getSourceName(i - 1);
-            options.add(new StateOption(String.valueOf(i), name));
-            optionsZ2to4.add(new StateOption(String.valueOf(i), name));
-        }
-        logger.debug("Value of i = {}", optionsZ2to4.size());
-        optionsZ2to4.add(new StateOption(String.valueOf(options.size() + 1), LOCAL));
-        logger.debug("Got Source Name input List from NAD Device {}", options);
-
-        for (int i = 1; i <= config.getZoneCount(); i++) {
-            switch (i) {
-                case 1:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_MAIN_SOURCE),
-                            options);
-                    connector.sendCommand(Prefix.Main.toString(), NADCommand.INPUT_SOURCE_QUERY);
-                    break;
-                case 2:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE2_SOURCE),
-                            optionsZ2to4);
-                    connector.sendCommand(Prefix.Zone2.toString(), NADCommand.INPUT_SOURCE_QUERY);
-                    break;
-                case 3:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE3_SOURCE),
-                            optionsZ2to4);
-                    connector.sendCommand(Prefix.Zone3.toString(), NADCommand.INPUT_SOURCE_QUERY);
-                    break;
-                case 4:
-                    stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE4_SOURCE),
-                            optionsZ2to4);
-                    connector.sendCommand(Prefix.Zone4.toString(), NADCommand.INPUT_SOURCE_QUERY);
-                    break;
-                default:
-                    break;
-            }
         }
     }
 
