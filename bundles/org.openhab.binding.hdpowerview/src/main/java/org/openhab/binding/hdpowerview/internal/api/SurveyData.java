@@ -10,24 +10,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hdpowerview.internal.api.requests;
+package org.openhab.binding.hdpowerview.internal.api;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+
+import com.google.gson.annotations.SerializedName;
 
 /**
- * The motion "stop" directive for a shade
+ * Survey data of a single Shade, as returned by an HD PowerView hub
  *
- * @author Andrew Fiddian-Green - Initial contribution
+ * @author Jacob Laursen - Initial contribution
  */
 @NonNullByDefault
-class ShadeIdStop {
+public class SurveyData {
+    @SerializedName("neighbor_id")
+    public int neighborId;
+    public int rssi;
 
-    int id;
-    public @Nullable String motion;
-
-    public ShadeIdStop(int id) {
-        this.id = id;
-        this.motion = "stop";
+    @Override
+    public String toString() {
+        return String.format("{neighbor id:%d, rssi:%d}", neighborId, rssi);
     }
 }

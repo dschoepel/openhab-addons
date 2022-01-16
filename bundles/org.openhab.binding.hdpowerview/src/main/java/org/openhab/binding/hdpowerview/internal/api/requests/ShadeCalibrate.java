@@ -10,21 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hdpowerview.internal;
+package org.openhab.binding.hdpowerview.internal.api.requests;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link HubProcessingException} is a custom exception for the HD PowerView hub
+ * A request to calibrate a shade
  *
- * @author Andrew Fiddian-Green - Initial contribution
+ * @author Jacob Laursen - Initial contribution
  */
 @NonNullByDefault
-public class HubProcessingException extends Exception {
+public class ShadeCalibrate {
 
-    private static final long serialVersionUID = 4307088023775166450L;
+    public ShadeMotion shade;
 
-    public HubProcessingException(String message) {
-        super(message);
+    public ShadeCalibrate() {
+        this.shade = new ShadeMotion(ShadeMotion.Type.CALIBRATE);
     }
 }
