@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.state;
 
-import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
+import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +21,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
-import org.openhab.binding.nadavr.internal.nadcp.NADCommand;
-import org.openhab.binding.nadavr.internal.nadcp.NADCommand.Prefix;
+import org.openhab.binding.nadavr.internal.NadAvrConfiguration;
+import org.openhab.binding.nadavr.internal.connector.NadConnection;
+import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
+import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.types.StateOption;
@@ -31,38 +32,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NADAvrPopulateInputs.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrPopulateInputs.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADAvrPopulateInputs {
-    private final Logger logger = LoggerFactory.getLogger(NADAvrPopulateInputs.class);
-    private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+public class NadAvrPopulateInputs {
+    private final Logger logger = LoggerFactory.getLogger(NadAvrPopulateInputs.class);
+    private ScheduledExecutorService piExecutor = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean sendSourceQuery = false;
     private volatile boolean isRunning = false;
     ThingUID thingUID;
-    NADAvrConfiguration config;
-    NADAvrStateDescriptionProvider stateDescriptionProvider;
-    NADAvrConnector connector;
+    NadAvrConfiguration config;
+    NadAvrStateDescriptionProvider stateDescriptionProvider;
+    NadConnection connection;
 
-    public NADAvrPopulateInputs(ThingUID thingUID, NADAvrConfiguration config, NADAvrConnector connector,
-            NADAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery) {
+    public NadAvrPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadConnection connection,
+            NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery) {
         this.thingUID = thingUID;
         this.config = config;
-        this.connector = connector;
+        this.connection = connection;
         this.stateDescriptionProvider = stateDescriptionProvider;
         this.sendSourceQuery = sendSourceQuery;
     }
 
     private void populateInputs() {
-        logger.debug("NADAvrPopulateInputs - populateInputs() started with sourceQuery = {} ....", sendSourceQuery);
+        logger.debug("NadAvrPopulateInputs - populateInputs() started with sourceQuery = {} ....", sendSourceQuery);
         isRunning = true;
         List<StateOption> options = new ArrayList<>();
         List<StateOption> optionsZ2to4 = new ArrayList<>();
         // Build list of source names to be used by Input Source channel (options)
-        for (int i = 1; i <= NADAvrInputSourceList.size(); i++) {
-            String name = NADAvrInputSourceList.getSourceName(i - 1);
+        for (int i = 1; i <= NadAvrInputSourceList.size(); i++) {
+            String name = NadAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
             optionsZ2to4.add(new StateOption(String.valueOf(i), name));
         }
@@ -76,28 +77,28 @@ public class NADAvrPopulateInputs {
                 case 1:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_MAIN_SOURCE), options);
                     if (sendSourceQuery) {
-                        connector.sendCommand(Prefix.Main.toString(), NADCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(Prefix.Main.toString(), NadCommand.INPUT_SOURCE_QUERY);
                     }
                     break;
                 case 2:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE2_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connector.sendCommand(Prefix.Zone2.toString(), NADCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(Prefix.Zone2.toString(), NadCommand.INPUT_SOURCE_QUERY);
                     }
                     break;
                 case 3:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE3_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connector.sendCommand(Prefix.Zone3.toString(), NADCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(Prefix.Zone3.toString(), NadCommand.INPUT_SOURCE_QUERY);
                     }
                     break;
                 case 4:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE4_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connector.sendCommand(Prefix.Zone4.toString(), NADCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(Prefix.Zone4.toString(), NadCommand.INPUT_SOURCE_QUERY);
                     }
                     break;
                 default:
@@ -105,12 +106,13 @@ public class NADAvrPopulateInputs {
             }
         }
 
-        logger.debug("NADAvrPopulateInputs - populateInputs() finished....");
+        logger.debug("NadAvrPopulateInputs - populateInputs() finished....");
     }
 
     Runnable scheduler = new Runnable() {
         @Override
         public void run() {
+            Thread.currentThread().setName(thingUID.getAsString() + "-PopulateInputs");
             populateInputs();
             if (sendSourceQuery) {
                 sendSourceQuery = false;
@@ -127,9 +129,14 @@ public class NADAvrPopulateInputs {
         }
     };
 
-    public void start() {
+    public void startPi() {
         logger.debug("PopulateInputs started...");
-        executor.schedule(scheduler, 0, TimeUnit.SECONDS);
+        piExecutor.schedule(scheduler, 0, TimeUnit.SECONDS);
+    }
+
+    public void stopPi() {
+        logger.debug("PopulateInputs stopped...");
+        piExecutor.shutdown();
     }
 
     public boolean isRunning() {

@@ -15,13 +15,13 @@ package org.openhab.binding.nadavr.internal.xml;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link Preset.java} class contains fields mapping for xml Preset Name Details.
+ * The {@link NadPreset.java} class contains fields mapping for xml NadPreset Name Details.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 
 @NonNullByDefault
-public class Preset {
+public class NadPreset {
 
     protected String id = "";
 
@@ -31,7 +31,7 @@ public class Preset {
 
     protected String name = "";
 
-    public Preset(String id, String band, String frequency, String name) {
+    public NadPreset(String id, String band, String frequency, String name) {
         super();
         this.id = id;
         this.band = band;

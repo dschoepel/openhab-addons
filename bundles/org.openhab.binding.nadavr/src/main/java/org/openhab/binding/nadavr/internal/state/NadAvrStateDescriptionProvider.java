@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.state;
 
 import java.util.List;
 import java.util.Locale;
@@ -35,9 +35,9 @@ import org.osgi.service.component.annotations.Deactivate;
  * @author Dave J Schoepel - Initial contribution
  *         Adapted from Onkyo binding
  */
-@Component(service = { DynamicStateDescriptionProvider.class, NADAvrStateDescriptionProvider.class })
+@Component(service = { DynamicStateDescriptionProvider.class, NadAvrStateDescriptionProvider.class })
 @NonNullByDefault
-public class NADAvrStateDescriptionProvider implements DynamicStateDescriptionProvider {
+public class NadAvrStateDescriptionProvider implements DynamicStateDescriptionProvider {
     private final Map<ChannelUID, List<StateOption>> channelOptionsMap = new ConcurrentHashMap<>();
 
     public void setStateOptions(ChannelUID channelUID, List<StateOption> options) {

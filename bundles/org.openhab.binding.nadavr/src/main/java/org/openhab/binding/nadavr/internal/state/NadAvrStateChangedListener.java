@@ -10,18 +10,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.state;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 
 /**
- * The {@link NADAvrStateChangedListener.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrStateChangedListener.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public interface NADAvrStateChangedListener {
+public interface NadAvrStateChangedListener {
     /**
      * Update was received.
      *

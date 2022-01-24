@@ -17,12 +17,12 @@ import java.math.BigDecimal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link NADAvrConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADAvrConfiguration {
+public class NadAvrConfiguration {
 
     /**
      * The host name of the NAD A/V Receiver
@@ -42,7 +42,7 @@ public class NADAvrConfiguration {
     /**
      * Enable user defined external tuner preset name detail file
      *
-     * @return enable Preset Names
+     * @return enable NadPreset Names
      */
     public boolean enablePresetNames = false;
 
@@ -128,7 +128,7 @@ public class NADAvrConfiguration {
 
     @Override
     public String toString() {
-        return "NADAvrConfiguration [hostname=" + hostname + ", ipAddress=" + ipAddress + ", telnetPort=" + telnetPort
+        return "NadAvrConfiguration [hostname=" + hostname + ", ipAddress=" + ipAddress + ", telnetPort=" + telnetPort
                 + ", enablePresetNames=" + enablePresetNames + ", presetNamesFilePath=" + presetNamesFilePath
                 + ", zoneCount=" + zoneCount + ", mainVolumeMax=" + mainVolumeMax + "]";
     }

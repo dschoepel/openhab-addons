@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.nadavr.internal.discovery;
 
-import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
+import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.*;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import javax.jmdns.ServiceInfo;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.nadavr.internal.NADModel;
+import org.openhab.binding.nadavr.internal.NadModel;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(service = MDNSDiscoveryParticipant.class)
-public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
+public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
-    private Logger logger = LoggerFactory.getLogger(NADAvrDiscoveryParticipant.class);
+    private Logger logger = LoggerFactory.getLogger(NadAvrDiscoveryParticipant.class);
 
     // Service type for LAN enabled NAD receivers
     private static final String TELNET_SERVICE_TYPE = "_telnet._tcp.local.";
@@ -71,7 +71,7 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
     private static final Pattern NAD_AVR_HOSTNAME_PATTERN = Pattern.compile("^([a-zA-Z0-9-]+)\\.local\\.$");
 
-    public NADAvrDiscoveryParticipant() {
+    public NadAvrDiscoveryParticipant() {
         this.isAutoDiscoveryEnabled = true;
         this.supportedThingTypes = SUPPORTED_THING_TYPE_UIDS;
     }
@@ -199,15 +199,15 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
     private boolean isSupportedDeviceModel(final @Nullable String deviceModel) {
         boolean isSupported = false;
         if (deviceModel != null && !deviceModel.isBlank()) {
-            // List<NADModel> models = Arrays.asList(NADModel.values());
-            List<NADModel> models = new ArrayList<NADModel>(EnumSet.allOf(NADModel.class));
-            ListIterator<NADModel> modelIterator = models.listIterator();
+            // List<NadModel> models = Arrays.asList(NadModel.values());
+            List<NadModel> models = new ArrayList<NadModel>(EnumSet.allOf(NadModel.class));
+            ListIterator<NadModel> modelIterator = models.listIterator();
             while (modelIterator.hasNext() && !isSupported) {
                 isSupported = deviceModel.equalsIgnoreCase(modelIterator.toString());
             }
         }
         return isSupported;
-        // return deviceModel != null && !deviceModel.isBlank() && Arrays.stream(NADModel.values())
+        // return deviceModel != null && !deviceModel.isBlank() && Arrays.stream(NadModel.values())
         // .anyMatch(model -> StringUtils.startsWithIgnoreCase(deviceModel, model.getId()));
     }
 
@@ -217,7 +217,7 @@ public class NADAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
      */
     private int getMaxZonesForModel(String model) {
         int maxZones = 2;
-        for (NADModel supportedModel : NADModel.values()) {
+        for (NadModel supportedModel : NadModel.values()) {
             if (supportedModel.getId().equals(model)) {
                 maxZones = supportedModel.getMaxZones();
             }

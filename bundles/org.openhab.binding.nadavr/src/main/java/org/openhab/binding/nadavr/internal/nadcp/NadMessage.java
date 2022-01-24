@@ -15,18 +15,18 @@ package org.openhab.binding.nadavr.internal.nadcp;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * This {@link NADMessage} class handles NAD Protocol Messages.
+ * This {@link NadMessage} class handles NAD Protocol Messages.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADMessage {
+public class NadMessage {
     private String prefix = "";
     private String variable = "";
     private String operator = "";
     private String value = "";
 
-    private NADMessage(MessageBuilder messageBuilder) {
+    private NadMessage(MessageBuilder messageBuilder) {
         this.prefix = messageBuilder.prefix;
         this.variable = messageBuilder.variable;
         this.operator = messageBuilder.operator;
@@ -67,7 +67,7 @@ public class NADMessage {
 
     @Override
     public String toString() {
-        return "NADMessage [prefix=" + prefix + ", variable=" + variable + ", operator=" + operator + ", value=" + value
+        return "NadMessage [prefix=" + prefix + ", variable=" + variable + ", operator=" + operator + ", value=" + value
                 + "]";
     }
 
@@ -97,8 +97,8 @@ public class NADMessage {
             return this;
         }
 
-        public NADMessage build() {
-            return new NADMessage(this);
+        public NadMessage build() {
+            return new NadMessage(this);
         }
     }
 }

@@ -10,25 +10,33 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.nadcp;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link UnsupportedCommandTypeException.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadcpException} handles exceptions for NAD command protocol errors.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class UnsupportedCommandTypeException extends Exception {
+public class NadcpException extends Exception {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -419559332711791571L;
 
-    public UnsupportedCommandTypeException() {
+    public NadcpException() {
         super();
     }
 
-    public UnsupportedCommandTypeException(String message) {
+    public NadcpException(String message) {
         super(message);
+    }
+
+    public NadcpException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NadcpException(Throwable cause) {
+        super(cause);
     }
 }

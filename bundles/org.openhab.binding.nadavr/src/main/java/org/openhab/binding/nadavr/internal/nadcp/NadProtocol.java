@@ -12,20 +12,25 @@
  */
 package org.openhab.binding.nadavr.internal.nadcp;
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NADProtocol} class to handle the NAD TCP/IP-RS232 protocol specifications.
+ * The {@link NadProtocol.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
+
 @NonNullByDefault
-public class NADProtocol {
+public class NadProtocol {
 
     /**
      * REGEX to validate message and group components of the message
@@ -44,17 +49,19 @@ public class NADProtocol {
      */
     private static final Pattern NAD_PREFIX_QUERY_PATTERN = Pattern.compile("^(.[^.]+)(\\?)", Pattern.CASE_INSENSITIVE);
 
+    private static final int LINE_FEED = 10;
+
     /**
      * Builds command in a NAD Protocol format (prefix . variable operator value).
      *
      * @param msg
      *
-     * @return String holding the full NAD Command
+     * @return String holding the fully formated Command to send to the NAD Device
      */
-    public static String createNADCommand(NADMessage msg) {
+    public static String createNADCommand(NadMessage msg) {
         String data = msg.getPrefix() + "." + msg.getVariable() + msg.getOperator() + msg.getValue();
         StringBuilder sb = new StringBuilder();
-        // sb.append("\r"); // Precede with carriage return to ensure clear queue.
+        // Precede with carriage return to ensure clear queue.
         sb.append("\r");
         sb.append(data);
         sb.append("\r");
@@ -68,17 +75,34 @@ public class NADProtocol {
      *
      * @throws IOException
      * @throws InterruptedException
-     * @throws NADcpException
+     * @throws NadcpException
      */
-    public static NADMessage getNextMessage(BufferedReader stream)
-            throws IOException, InterruptedException, NADcpException {
+    public static NadMessage getNextMessage(DataInputStream stream)
+            throws IOException, InterruptedException, NadcpException {
+        Logger logger = LoggerFactory.getLogger(NadProtocol.class);
         // Initialize protocol place holders
         String prefix = "";
         String variable = "";
         String operator = "";
         String value = "";
         try {
-            String line = stream.readLine();
+            String line = "";
+            StringBuilder sb = new StringBuilder();
+            byte character;
+            boolean eol = false;
+            while (!eol) {
+                character = stream.readByte();
+                int intCharacter = Integer.valueOf(character);
+                if (Integer.valueOf(character) != LINE_FEED) {
+                    sb.append(Character.toString((char) intCharacter));
+                } else {
+                    eol = true;
+                }
+            }
+
+            line = sb.toString();
+            logger.info("getNextMessage received line = {}", line);
+
             // verify that the line is valid - longer than 0, contains dot ".", contains operator
             Matcher match = NAD_FULL_MESSAGE_PATTERN.matcher(line);
             if (match.matches()) {
@@ -86,23 +110,27 @@ public class NADProtocol {
                 variable = match.group(2); // get variable - Group 2: between first dot and operator
                 operator = match.group(3); // Get operator - Group 3: '=, ?, + or -'
                 value = match.group(4).stripTrailing(); // Get value - Group 4: everything after the operator
-                return new NADMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator).value(value)
+                return new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator).value(value)
                         .build();
             } else {
                 Matcher matchPrefix = NAD_PREFIX_QUERY_PATTERN.matcher(line);
                 if (matchPrefix.matches()) {
                     prefix = matchPrefix.group(1);
                     operator = matchPrefix.group(2);
-                    return new NADMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator)
+                    return new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator)
                             .value(value).build();
                 } else {
-                    throw new NADcpException(
+                    throw new NadcpException(
                             "Skipping NAD response message, it is not in a valid message format (<prefix> . <variable> <operator> <value>): "
                                     + line);
                 }
             }
+        } catch (SocketTimeoutException ste) {
+            throw ste;
+        } catch (SocketException se) {
+            throw se;
         } catch (IOException e) {
-            throw new NADcpException(
+            throw new NadcpException(
                     "Fatal error occurred when parsing NAD control protocol response message, cause=" + e.getCause());
         }
     }

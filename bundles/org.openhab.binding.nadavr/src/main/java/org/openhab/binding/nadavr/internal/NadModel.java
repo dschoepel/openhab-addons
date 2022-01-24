@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public enum NADModel {
+public enum NadModel {
 
     // Please also remember to add supported models to the README.md
     // T187, T777, T787, T778, T753
@@ -35,7 +35,7 @@ public enum NADModel {
     private final String id;
     private final int maxZones;
 
-    private NADModel(String id, int maxZones) {
+    private NadModel(String id, int maxZones) {
         this.id = id;
         this.maxZones = maxZones;
     }

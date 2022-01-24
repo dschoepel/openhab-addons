@@ -10,19 +10,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.state;
 
-import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.*;
+import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.nadavr.internal.xml.Preset;
-import org.openhab.binding.nadavr.internal.xml.TunerPresets;
+import org.openhab.binding.nadavr.internal.xml.NadPreset;
+import org.openhab.binding.nadavr.internal.xml.NadTunerPresets;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
@@ -33,15 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NADAvrState.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrState.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADAvrState {
+public class NadAvrState {
 
-    private final Logger logger = LoggerFactory.getLogger(NADAvrState.class);
-    private TunerPresets tunerPresets = new TunerPresets();
+    private final Logger logger = LoggerFactory.getLogger(NadAvrState.class);
+    private NadTunerPresets tunerPresets = new NadTunerPresets();
 
     // ----- General ------
     private State tunerBand = StringType.EMPTY;
@@ -57,45 +57,45 @@ public class NADAvrState {
     private State listeningMode = StringType.EMPTY;
     private State mute = UnDefType.UNDEF;
     private State mainVolume = DecimalType.ZERO;
-    private State mainVolumeDB = DecimalType.ZERO;
+    private State mainVolumeDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State mainSource = StringType.EMPTY;
 
     // ----- Zone2 ------
     private State zone2Power = UnDefType.UNDEF;
     private State zone2Volume = DecimalType.ZERO;
-    private State zone2VolumeDB = DecimalType.ZERO;
+    private State zone2VolumeDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone2Mute = UnDefType.UNDEF;
     private State zone2Source = StringType.EMPTY;
     private State zone2VolumeFixed = DecimalType.ZERO;
-    private State zone2VolumeFixedDB = DecimalType.ZERO;
+    private State zone2VolumeFixedDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone2VolumeControl = StringType.EMPTY;
 
     // ----- Zone3 ------
     private State zone3Power = UnDefType.UNDEF;
     private State zone3Volume = DecimalType.ZERO;
-    private State zone3VolumeDB = DecimalType.ZERO;
+    private State zone3VolumeDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone3Mute = UnDefType.UNDEF;
     private State zone3Source = StringType.EMPTY;
     private State zone3VolumeFixed = DecimalType.ZERO;
-    private State zone3VolumeFixedDB = DecimalType.ZERO;
+    private State zone3VolumeFixedDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone3VolumeControl = StringType.EMPTY;
 
     // ----- Zone4 ------
     private State zone4Power = UnDefType.UNDEF;
     private State zone4Volume = DecimalType.ZERO;
-    private State zone4VolumeDB = DecimalType.ZERO;
+    private State zone4VolumeDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone4Mute = UnDefType.UNDEF;
     private State zone4Source = StringType.EMPTY;
     private State zone4VolumeFixed = StringType.EMPTY;
-    private State zone4VolumeFixedDB = DecimalType.ZERO;
+    private State zone4VolumeFixedDB = new DecimalType(VOLUME_TO_INITIALIZE_STATE);
     private State zone4VolumeControl = StringType.EMPTY;
 
-    private NADAvrStateChangedListener handler;
+    private NadAvrStateChangedListener handler;
 
     /**
      *
      */
-    public NADAvrState(NADAvrStateChangedListener handler) {
+    public NadAvrState(NadAvrStateChangedListener handler) {
         this.handler = handler;
     }
 
@@ -328,19 +328,18 @@ public class NADAvrState {
     /**
      * @param tunerPreset
      */
-    public void setTunerPreset(String prefix, BigDecimal tunerPreset) {
+    public void setTunerPreset(String prefix, BigDecimal tunerPreset, String fileName) {
         DecimalType newVal = new DecimalType(tunerPreset);
+        StringType newPresetDetailVal = getPresetDetail(newVal, fileName);
         switch (prefix) {
             case TUNER:
                 if (!newVal.equals(this.tunerPreset)) {
                     this.tunerPreset = newVal;
                     handler.stateChanged(CHANNEL_TUNER_PRESET, this.tunerPreset);
-                    // TODO If user provided tuner preset detail file, get preset details...
-                    StringType newPresetDetailVal = getPresetDetail(newVal);
-                    if (!newPresetDetailVal.equals(this.tunerPresetDetail)) {
-                        this.tunerPresetDetail = newPresetDetailVal;
-                        handler.stateChanged(CHANNEL_TUNER_PRESET_DETAIL, newPresetDetailVal);
-                    }
+                }
+                if (!newPresetDetailVal.equals(this.tunerPresetDetail)) {
+                    this.tunerPresetDetail = newPresetDetailVal;
+                    handler.stateChanged(CHANNEL_TUNER_PRESET_DETAIL, newPresetDetailVal);
                 }
                 break;
             default:
@@ -579,7 +578,7 @@ public class NADAvrState {
     // TODO get this one to hit top and bottom range - stops short on each end.... -99 and 19
     private BigDecimal calculateVolumePercent(BigDecimal volume) {
         BigDecimal volumePct = volume.subtract(VOLUME_DB_MIN);
-        BigDecimal volFactor = ONE_HUNDRED.divide(VOLUME_DB_RANGE, 8, RoundingMode.HALF_EVEN);
+        BigDecimal volFactor = ONE_HUNDRED.divide(VOLUME_DB_RANGE, 8, RoundingMode.HALF_UP);
         BigDecimal volumePercent = volumePct.multiply(volFactor).divide(new BigDecimal(1), 0, RoundingMode.HALF_EVEN);
         return volumePercent;
     }
@@ -589,17 +588,17 @@ public class NADAvrState {
      * @return presetDetail string containing tuner Band Frequency and User defined name to be associated with the
      *         preset.
      */
-    private StringType getPresetDetail(DecimalType presetKey) {
-        String fileName = "/E:/OpenHav3.2-NAD/openhab-main/git/openhab-addons/bundles/org.openhab.binding.nadavr/doc/Preset_Names.xml";
-        List<Preset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
-        Map<DecimalType, Preset> presetMap = new HashMap<DecimalType, Preset>();
-        for (Preset pm : tunerPresetDetails) {
+    private StringType getPresetDetail(DecimalType presetKey, String fileName) {
+        List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
+        Map<DecimalType, NadPreset> presetMap = new ConcurrentHashMap<DecimalType, NadPreset>();
+        for (NadPreset pm : tunerPresetDetails) {
             DecimalType key = new DecimalType(pm.getID());
             presetMap.put(key, pm);
         }
         StringType presetDetail = StringType.valueOf(NOT_SET);
         if (presetMap.containsKey(presetKey)) {
-            Preset pFromMap = presetMap.getOrDefault(presetKey, new Preset(presetKey.toString(), NOT_SET, "", ""));
+            NadPreset pFromMap = presetMap.getOrDefault(presetKey,
+                    new NadPreset(presetKey.toString(), NOT_SET, "", ""));
             String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
             presetDetail = StringType.valueOf(fromMap);
         }

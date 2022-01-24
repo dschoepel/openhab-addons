@@ -13,28 +13,30 @@
 package org.openhab.binding.nadavr.internal.connector;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nadavr.internal.nadcp.NadMessage;
 
 /**
- * The {@link NADAvrTelnetListener} Listener interface used to notify the {@link NADAvrConnector} about received
- * messages.
+ * The {@link NadEventListener.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public interface NADAvrTelnetListener {
+public interface NadEventListener {
 
     /**
      * The telnet client has received a line.
      *
-     * @param line the received line
+     * @param ip the Ethernet address of the NAD device
+     * @param msg the received message
      */
-    void receivedLine(NADMessage line);
+    void receivedMessage(String ip, NadMessage msg);
 
     /**
      * The telnet client has successfully connect to the receiver.
      *
-     * @param connected whether or not the connection was successful
+     * @param ip the Ethernet address of the NAD device
+     * @param errorMsg reson for the error
      */
-    void telnetClientConnected(boolean connected);
+    void connectionError(String ip, @Nullable String errorMsg);
 }

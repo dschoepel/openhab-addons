@@ -15,28 +15,20 @@ package org.openhab.binding.nadavr.internal.nadcp;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link NADcpException} handles exceptions for NAD command protocol errors.
+ * The {@link NadUnsupportedCommandTypeException.java} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADcpException extends Exception {
+public class NadUnsupportedCommandTypeException extends Exception {
 
-    private static final long serialVersionUID = -419559332711791571L;
+    private static final long serialVersionUID = 1L;
 
-    public NADcpException() {
+    public NadUnsupportedCommandTypeException() {
         super();
     }
 
-    public NADcpException(String message) {
+    public NadUnsupportedCommandTypeException(String message) {
         super(message);
-    }
-
-    public NADcpException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public NADcpException(Throwable cause) {
-        super(cause);
     }
 }

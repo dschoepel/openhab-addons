@@ -10,22 +10,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nadavr.internal;
+package org.openhab.binding.nadavr.internal.state;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.nadavr.internal.nadcp.NADCommand.DefaultSourceNames;
+import org.openhab.binding.nadavr.internal.nadcp.NadCommand.DefaultSourceNames;
 
 /**
- * The {@link NADAvrInputSourceList.java} class for An Array that is used to store input source names.
+ * The {@link NadAvrInputSourceList.java} class for An Array that is used to store input source names.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADAvrInputSourceList {
+public class NadAvrInputSourceList {
 
     public static String[] sourceNameList = sourceNames();
 
@@ -47,7 +47,7 @@ public class NADAvrInputSourceList {
     }
 
     public static void setSourceNameList(String[] sourceNameList) {
-        NADAvrInputSourceList.sourceNameList = sourceNameList;
+        NadAvrInputSourceList.sourceNameList = sourceNameList;
     }
 
     public static int size() {

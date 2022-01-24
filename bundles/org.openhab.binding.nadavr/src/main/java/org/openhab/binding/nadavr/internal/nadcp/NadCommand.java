@@ -18,12 +18,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * The {@link NADCommand} represents NAD AVR Ethernet/RS232 Protocol Commands
+ * The {@link NadCommand} represents NAD AVR Ethernet/RS232 Protocol Commands
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public enum NADCommand {
+public enum NadCommand {
     /**
      * Format for a command is Prefix, dot(.), Variable, Operator(+,- =, =), Value. For example 'Power' is prefixed by
      * Main,
@@ -44,8 +44,8 @@ public enum NADCommand {
     TUNER_AM_FREQUENCY_SET("", "AM.Frequency", "=", "%d"),
     TUNER_BAND_QUERY("", "Band", "?", ""),
     TUNER_BAND_SET("", "Band", "=", "%s"),
-    TUNER_PRESET_QUERY("", "Preset", "?", ""),
-    TUNER_PRESET_SET("", "Preset", "=", "%s"),
+    TUNER_PRESET_QUERY("", "NadPreset", "?", ""),
+    TUNER_PRESET_SET("", "NadPreset", "=", "%s"),
     TUNER_FM_RDS_TEXT_QUERY("", "FM.RDSText", "?", ""),
     TUNER_FM_RDS_TEXT_SET("", "FM.RDSText", "=", "%s"),
     LISTENING_MODE_SET("", "ListeningMode", "=", ""),
@@ -151,14 +151,14 @@ public enum NADCommand {
 
     }
 
-    private static HashMap<String, NADCommand> commandList = new HashMap<String, NADCommand>();
+    private static HashMap<String, NadCommand> commandList = new HashMap<String, NadCommand>();
 
     private String prefix;
     private String variable;
     private String operator;
     private String value;
 
-    private NADCommand(String prefix, String variable, String operator, String value) {
+    private NadCommand(String prefix, String variable, String operator, String value) {
         this.prefix = prefix;
         this.variable = variable;
         this.operator = operator;
@@ -193,23 +193,23 @@ public enum NADCommand {
         return value;
     }
 
-    public static NADCommand getCommandForPrefix(Prefix prefix, NADCommand baseCommand)
+    public static NadCommand getCommandForPrefix(Prefix prefix, NadCommand baseCommand)
             throws IllegalArgumentException {
-        return NADCommand.valueOf(prefix.toString() + "." + baseCommand);
+        return NadCommand.valueOf(prefix.toString() + "." + baseCommand);
     }
 
     public static void initializeCommandList() {
-        for (NADCommand command : values()) {
+        for (NadCommand command : values()) {
             String key = command.getVariable() + command.getOperator();
             commandList.put(key, command);
         }
     }
 
-    public static @Nullable NADCommand getCommandByVariableAndOperator(String variable, String operator)
+    public static @Nullable NadCommand getCommandByVariableAndOperator(String variable, String operator)
             throws IllegalArgumentException {
         String key = variable + operator;
         if (commandList.containsKey(key)) {
-            NADCommand candidate = commandList.get(key);
+            NadCommand candidate = commandList.get(key);
             return candidate;
         }
 

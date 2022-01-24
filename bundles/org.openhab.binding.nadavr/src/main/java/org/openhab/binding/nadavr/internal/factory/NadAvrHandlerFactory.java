@@ -12,14 +12,12 @@
  */
 package org.openhab.binding.nadavr.internal.factory;
 
-import static org.openhab.binding.nadavr.internal.NADAvrBindingConstants.SUPPORTED_THING_TYPE_UIDS;
+import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.SUPPORTED_THING_TYPE_UIDS;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.nadavr.internal.NADAvrStateDescriptionProvider;
-import org.openhab.binding.nadavr.internal.connector.NADAvrConnector;
-import org.openhab.binding.nadavr.internal.handler.NADAvrHandler;
-import org.openhab.binding.nadavr.internal.nadcp.NADMessage;
+import org.openhab.binding.nadavr.internal.handler.NadHandler;
+import org.openhab.binding.nadavr.internal.state.NadAvrStateDescriptionProvider;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
@@ -31,31 +29,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NADAvrHandlerFactory} is responsible for creating things and thing
+ * The {@link NadAvrHandlerFactory} is responsible for creating things and thing
  * handlers.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.nadavr", service = ThingHandlerFactory.class)
-public class NADAvrHandlerFactory extends BaseThingHandlerFactory {
+public class NadAvrHandlerFactory extends BaseThingHandlerFactory {
 
-    private final Logger logger = LoggerFactory.getLogger(NADAvrHandlerFactory.class);
-    private NADAvrStateDescriptionProvider stateDescriptionProvider = new NADAvrStateDescriptionProvider();
-    private NADAvrConnector connector = new NADAvrConnector() {
-
-        @Override
-        public void connect() {
-        }
-
-        @Override
-        public void dispose() {
-        }
-
-        @Override
-        protected void internalSendCommand(NADMessage msg) {
-        }
-    };
+    private final Logger logger = LoggerFactory.getLogger(NadAvrHandlerFactory.class);
+    private NadAvrStateDescriptionProvider stateDescriptionProvider = new NadAvrStateDescriptionProvider();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -72,19 +56,13 @@ public class NADAvrHandlerFactory extends BaseThingHandlerFactory {
         logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
                 SUPPORTED_THING_TYPE_UIDS);
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
-            return new NADAvrHandler(thing, stateDescriptionProvider, connector);
-            // return new NADHandler(thing, stateDescriptionProvider);
+            return new NadHandler(thing, stateDescriptionProvider);
         }
-
         return null;
     }
 
     @Reference
-    protected void setDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
+    protected void setDynamicStateDescriptionProvider(NadAvrStateDescriptionProvider provider) {
         this.stateDescriptionProvider = provider;
     }
-
-    // protected void unsetDynamicStateDescriptionProvider(NADAvrStateDescriptionProvider provider) {
-    // this.stateDescriptionProvider = null;
-    // }
 }

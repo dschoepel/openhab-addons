@@ -22,17 +22,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
- * The {@link NADAvrBindingConstants} class defines common constants, which are
+ * The {@link NadAvrBindingConstants} class defines common constants, which are
  * used across the whole binding.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NADAvrBindingConstants {
+public class NadAvrBindingConstants {
 
     private static final String BINDING_ID = "nadavr";
 
@@ -42,7 +43,7 @@ public class NADAvrBindingConstants {
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPE_UIDS = Stream
             .concat(Stream.of(THING_TYPE_NADAVR, THING_TYPE_NAD_UNSUPPORTED),
-                    Arrays.stream(NADModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
+                    Arrays.stream(NadModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
             .collect(Collectors.toSet());
 
     // List of thing Parameter names
@@ -101,8 +102,8 @@ public class NADAvrBindingConstants {
     // Map of Zone2 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE2_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
+        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_POWER, new ChannelTypeUID(BINDING_ID, "power"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
-        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_POWER, new ChannelTypeUID(BINDING_ID, "zonePower"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
@@ -114,20 +115,21 @@ public class NADAvrBindingConstants {
     // Map of Zone3 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE3_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_POWER, new ChannelTypeUID(BINDING_ID, "power"));
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_POWER, new ChannelTypeUID(BINDING_ID, "zonePower"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED_DB, new ChannelTypeUID(BINDING_ID, "volumeFixedDB"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED, new ChannelTypeUID(BINDING_ID, "volumeFixed"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_CONTROL, new ChannelTypeUID(BINDING_ID, "volumeControl"));
+
     }
 
     // Map of Zone4 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE4_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_POWER, new ChannelTypeUID(BINDING_ID, "zonePower"));
+        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_POWER, new ChannelTypeUID(BINDING_ID, "power"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
@@ -155,10 +157,10 @@ public class NADAvrBindingConstants {
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE2_VOLUME_CONTROL, "String");
 
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_POWER, "Switch");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_SOURCE, "String");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_VOLUME, "Dimmer");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_VOLUME_DB, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_MUTE, "Switch");
-        CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_SOURCE, "String");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED_DB, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED, "Dimmer");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE3_VOLUME_CONTROL, "String");
@@ -177,11 +179,13 @@ public class NADAvrBindingConstants {
     public static final BigDecimal VOLUME_DB_MIN = new BigDecimal("-99");
     public static final BigDecimal VOLUME_DB_RANGE = new BigDecimal("118");
     public static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
+    public static final BigDecimal VOLUME_TO_INITIALIZE_STATE = new BigDecimal("-9999");
 
     // NAD protocol command elements
     public static final String NAD_PREFIX_SOURCE = "Source";
     public static final String NAD_VARIABLE_NAME = "Name";
     public static final String TUNER = "Tuner";
+    public static final StringType FM = StringType.valueOf("FM");
     public static final String NOT_SET = "Not Set";
     public static final String NAD_EQUALS_OPERATOR = "=";
     public static final String NAD_QUERY = "?";
@@ -190,4 +194,7 @@ public class NADAvrBindingConstants {
     public static final String ZONE3 = "Zone3";
     public static final String ZONE4 = "Zone4";
     public static final String LOCAL = "Local";
+    public static final String NAD_ON = "On";
+    public static final String NAD_OFF = "Off";
+    public static final String NAD_PRESET = "NadPreset";
 }
