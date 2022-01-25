@@ -196,5 +196,5 @@ public class NadAvrBindingConstants {
     public static final String LOCAL = "Local";
     public static final String NAD_ON = "On";
     public static final String NAD_OFF = "Off";
-    public static final String NAD_PRESET = "NadPreset";
+    public static final String NAD_PRESET = "Preset";
 }
