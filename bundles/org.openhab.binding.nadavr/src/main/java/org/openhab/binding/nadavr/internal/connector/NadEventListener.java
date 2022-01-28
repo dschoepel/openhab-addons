@@ -25,18 +25,16 @@ import org.openhab.binding.nadavr.internal.nadcp.NadMessage;
 public interface NadEventListener {
 
     /**
-     * The telnet client has received a line.
+     * The {@link NadIpConnector} client has received a line from the NAD Device.
      *
-     * @param ip the Ethernet address of the NAD device
-     * @param msg the received message
+     * @param msg Is as state message received from the NAD device in format described in NadProtocol
      */
-    void receivedMessage(String ip, NadMessage msg);
+    void receivedMessage(NadMessage msg);
 
     /**
-     * The telnet client has successfully connect to the receiver.
+     * The {@link NadIpConnector} client has problems connecting to the NAD Device.
      *
-     * @param ip the Ethernet address of the NAD device
-     * @param errorMsg reson for the error
+     * @param errorMsg Reason for the communication/connection error
      */
-    void connectionError(String ip, @Nullable String errorMsg);
+    void connectionError(@Nullable String errorMsg);
 }

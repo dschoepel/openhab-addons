@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
 import org.openhab.binding.nadavr.internal.nadcp.NadMessage;
@@ -29,32 +30,34 @@ import org.slf4j.LoggerFactory;
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NadAvrFMRdsTextStream {
+public class NadFMRdsTextStream {
 
-    Logger logger = LoggerFactory.getLogger(NadAvrFMRdsTextStream.class);
+    Logger logger = LoggerFactory.getLogger(NadFMRdsTextStream.class);
     private ScheduledExecutorService rdsExecutor = Executors.newSingleThreadScheduledExecutor();
     private String threadHostName = "";
     private volatile boolean isRdsPaused;
     private volatile boolean isRdsStarted;
-    NadConnection connection;
+    NadIpConnector connection;
 
     /**
      * Constructor for FM RDS Text Stream thread
      *
      * @param connection to NAD Device to retrieve the text stream from the tuner
      */
-    public NadAvrFMRdsTextStream(NadConnection connection) {
+    public NadFMRdsTextStream(NadIpConnector connection) {
         this.connection = connection;
     }
 
     /**
      * Method to send an FM RDS Text Stream query to the NAD Device whose reply will return the
-     * current text stream data. This response will be received by the {@link NadAvrHandler} and
+     * current text stream data. This response will be received by the NadAvrHandler and
      * used to update the channel.
+     *
+     * @throws NadException
      */
-    public void getRdsStream() {
+    public void getRdsStream() throws NadException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getRdsStream is using connector at {}", connection.getConnectionName());
+            logger.debug("getRdsStream is using connector at {}", connection.msgReaderThreadName);
         }
         connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
                 .variable(NadCommand.TUNER_FM_RDS_TEXT_QUERY.getVariable().toString())
@@ -70,7 +73,13 @@ public class NadAvrFMRdsTextStream {
         public void run() {
             Thread.currentThread().setName(threadHostName + "-RdsTextStream");
             if (!isRdsPaused) {
-                getRdsStream();
+                try {
+                    getRdsStream();
+                } catch (NadException e) {
+                    logger.error(
+                            "Error sending FM RDS text query to the NAD device @{}, check for connection issues.  Error: {}",
+                            connection.getConnectionName(), e.getLocalizedMessage());
+                }
             }
         }
     };

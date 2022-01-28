@@ -16,7 +16,7 @@ import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.SUPPORT
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.nadavr.internal.handler.NadHandler;
+import org.openhab.binding.nadavr.internal.handler.NadAvrHandler;
 import org.openhab.binding.nadavr.internal.state.NadAvrStateDescriptionProvider;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -56,7 +56,7 @@ public class NadAvrHandlerFactory extends BaseThingHandlerFactory {
         logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
                 SUPPORTED_THING_TYPE_UIDS);
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
-            return new NadHandler(thing, stateDescriptionProvider);
+            return new NadAvrHandler(thing, stateDescriptionProvider);
         }
         return null;
     }

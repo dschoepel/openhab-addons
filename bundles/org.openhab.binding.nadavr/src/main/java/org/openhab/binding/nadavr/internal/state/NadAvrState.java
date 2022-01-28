@@ -575,7 +575,6 @@ public class NadAvrState {
      * @param volume
      * @return
      */
-    // TODO get this one to hit top and bottom range - stops short on each end.... -99 and 19
     private BigDecimal calculateVolumePercent(BigDecimal volume) {
         BigDecimal volumePct = volume.subtract(VOLUME_DB_MIN);
         BigDecimal volFactor = ONE_HUNDRED.divide(VOLUME_DB_RANGE, 8, RoundingMode.HALF_UP);

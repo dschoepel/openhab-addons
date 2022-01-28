@@ -28,36 +28,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadAvrTunerMonitor} class Monitors for active tuner and turns on RDS stream if FM band is set.
+ * The {@link NadTunerMonitor} class Monitors for active tuner and turns on RDS stream if FM band is set.
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NadAvrTunerMonitor {
+public class NadTunerMonitor {
 
-    Logger logger = LoggerFactory.getLogger(NadAvrTunerMonitor.class);
+    Logger logger = LoggerFactory.getLogger(NadTunerMonitor.class);
     private ScheduledExecutorService tmExecutor = Executors.newSingleThreadScheduledExecutor();
-    private String threadHostName = "";
+    private String threadNamePrefix = "";
     private volatile boolean isTmPaused;
     private volatile boolean isTmStarted;
     private volatile boolean tunerIsActive;
     private volatile boolean tunerBandIsFM;
     private NadAvrConfiguration config;
-    private NadAvrFMRdsTextStream rdsText;
+    private NadFMRdsTextStream rdsText;
     private NadAvrState nadavrState;
 
     /**
-     * The constructor for {@link NadAvrTunerMonitor}
+     * The constructor for {@link NadTunerMonitor}
      *
      * @param connector to the NAD AVR Thing
      * @param config details for the NAD AVR thing
      */
 
-    public NadAvrTunerMonitor(NadConnection connection, NadAvrConfiguration config, NadAvrState nadavrState) {
+    public NadTunerMonitor(NadIpConnector connection, NadAvrConfiguration config, NadAvrState nadavrState,
+            String threadNamePrefix) {
         // this.connection = connection;
         this.config = config;
         this.nadavrState = nadavrState;
-        this.rdsText = new NadAvrFMRdsTextStream(connection);
+        this.rdsText = new NadFMRdsTextStream(connection);
+        this.threadNamePrefix = threadNamePrefix;
     }
 
     /**
@@ -68,7 +70,7 @@ public class NadAvrTunerMonitor {
     Runnable tunerMonitorThread = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(threadHostName + "-TunerMonitor");
+            Thread.currentThread().setName(threadNamePrefix + "-TunerMonitor");
             tunerBandIsFM = FM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -164,7 +166,7 @@ public class NadAvrTunerMonitor {
         if (tunerIsActive && tunerBandIsFM) {
             logger.debug("isRdsStarted = {}", rdsText.isRdsStarted());
             if (!rdsText.isRdsStarted()) {
-                rdsText.start(threadHostName);
+                rdsText.start(threadNamePrefix);
             } else {
                 if (rdsText.isRdsPaused()) {
                     rdsText.resumeRds();
@@ -183,7 +185,6 @@ public class NadAvrTunerMonitor {
      */
     public void startTm() {
         if (!isTmStarted) { // If the monitor is not running, schedule it and mark it as started.
-            threadHostName = config.getHostname();
             tmExecutor.scheduleWithFixedDelay(tunerMonitorThread, getTmInitialDelay(), getTmPeriodDelay(),
                     getTimeUnits());
             isTmStarted = true;

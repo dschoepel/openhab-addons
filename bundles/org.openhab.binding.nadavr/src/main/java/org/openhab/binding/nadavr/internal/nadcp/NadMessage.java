@@ -15,7 +15,14 @@ package org.openhab.binding.nadavr.internal.nadcp;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * This {@link NadMessage} class handles NAD Protocol Messages.
+ * This {@link NadMessage} class defines an NAD Protocol Message. The
+ * NAD Protocol format has four components (prefix . variable operator value). For example:
+ *
+ * <ul>
+ * <li>Main.Power=On</li>
+ * <li>Zone2.VolumeControl=Variable</li>
+ * <li>Tuner.FM.Frequency=105.7</li>
+ * </ul>
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -71,6 +78,18 @@ public class NadMessage {
                 + "]";
     }
 
+    /**
+     * This {@link MessageBuilder} sub-class builds an NAD Protocol Message. The
+     * NAD Protocol format has four components (prefix . variable operator value). For example:
+     *
+     * <ul>
+     * <li>Main.Power=On</li>
+     * <li>Zone2.VolumeControl=Variable</li>
+     * <li>Tuner.FM.Frequency=105.7</li>
+     * </ul>
+     *
+     * @author Dave J Schoepel - Initial contribution
+     */
     public static class MessageBuilder {
         private String prefix = "";
         private String variable = "";

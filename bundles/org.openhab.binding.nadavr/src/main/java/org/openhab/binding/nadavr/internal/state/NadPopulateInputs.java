@@ -22,9 +22,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.NadAvrConfiguration;
-import org.openhab.binding.nadavr.internal.connector.NadConnection;
+import org.openhab.binding.nadavr.internal.NadException;
+import org.openhab.binding.nadavr.internal.connector.NadIpConnector;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
+import org.openhab.binding.nadavr.internal.nadcp.NadMessage;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.types.StateOption;
@@ -37,17 +39,17 @@ import org.slf4j.LoggerFactory;
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class NadAvrPopulateInputs {
-    private final Logger logger = LoggerFactory.getLogger(NadAvrPopulateInputs.class);
+public class NadPopulateInputs {
+    private final Logger logger = LoggerFactory.getLogger(NadPopulateInputs.class);
     private ScheduledExecutorService piExecutor = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean sendSourceQuery = false;
     private volatile boolean isRunning = false;
     ThingUID thingUID;
     NadAvrConfiguration config;
     NadAvrStateDescriptionProvider stateDescriptionProvider;
-    NadConnection connection;
+    NadIpConnector connection;
 
-    public NadAvrPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadConnection connection,
+    public NadPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadIpConnector connection,
             NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery) {
         this.thingUID = thingUID;
         this.config = config;
@@ -56,7 +58,7 @@ public class NadAvrPopulateInputs {
         this.sendSourceQuery = sendSourceQuery;
     }
 
-    private void populateInputs() {
+    private void populateInputs() throws NadException {
         logger.debug("NadAvrPopulateInputs - populateInputs() started with sourceQuery = {} ....", sendSourceQuery);
         isRunning = true;
         List<StateOption> options = new ArrayList<>();
@@ -72,33 +74,43 @@ public class NadAvrPopulateInputs {
         logger.debug("Got Source Name input List from NAD Device {}", options);
         logger.debug("Got Source Name input List from NAD Device {}", optionsZ2to4);
 
+        NadCommand srcQuery = NadCommand.INPUT_SOURCE_QUERY;
+
         for (int i = 1; i <= config.getZoneCount(); i++) {
             switch (i) {
                 case 1:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_MAIN_SOURCE), options);
                     if (sendSourceQuery) {
-                        connection.sendCommand(Prefix.Main.toString(), NadCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
+                                .variable(srcQuery.getVariable().toString()).operator(srcQuery.getOperator().toString())
+                                .value(srcQuery.getValue()).build());
                     }
                     break;
                 case 2:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE2_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connection.sendCommand(Prefix.Zone2.toString(), NadCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Zone2.toString())
+                                .variable(srcQuery.getVariable().toString()).operator(srcQuery.getOperator().toString())
+                                .value(srcQuery.getValue()).build());
                     }
                     break;
                 case 3:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE3_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connection.sendCommand(Prefix.Zone3.toString(), NadCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Zone3.toString())
+                                .variable(srcQuery.getVariable().toString()).operator(srcQuery.getOperator().toString())
+                                .value(srcQuery.getValue()).build());
                     }
                     break;
                 case 4:
                     stateDescriptionProvider.setStateOptions(new ChannelUID(thingUID, CHANNEL_ZONE4_SOURCE),
                             optionsZ2to4);
                     if (sendSourceQuery) {
-                        connection.sendCommand(Prefix.Zone4.toString(), NadCommand.INPUT_SOURCE_QUERY);
+                        connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Zone4.toString())
+                                .variable(srcQuery.getVariable().toString()).operator(srcQuery.getOperator().toString())
+                                .value(srcQuery.getValue()).build());
                     }
                     break;
                 default:
@@ -112,8 +124,14 @@ public class NadAvrPopulateInputs {
     Runnable scheduler = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(thingUID.getAsString() + "-PopulateInputs");
-            populateInputs();
+            Thread.currentThread().setName("OH-binding-" + thingUID.getAsString() + "-PopulateInputs");
+            try {
+                populateInputs();
+            } catch (NadException e) {
+                logger.error(
+                        "Error requesting input source name information from the NAD device @{}, check for connection issues.  Error: {}",
+                        connection.getConnectionName(), e.getLocalizedMessage());
+            }
             if (sendSourceQuery) {
                 sendSourceQuery = false;
                 try {
@@ -122,7 +140,13 @@ public class NadAvrPopulateInputs {
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
-                populateInputs();
+                try {
+                    populateInputs();
+                } catch (NadException e) {
+                    logger.error(
+                            "Error requesting input source name information from the NAD device @{}, check for connection issues.  Error: {}",
+                            connection.getConnectionName(), e.getLocalizedMessage());
+                }
             }
             isRunning = false;
             return;
@@ -131,7 +155,7 @@ public class NadAvrPopulateInputs {
 
     public void startPi() {
         logger.debug("PopulateInputs started...");
-        piExecutor.schedule(scheduler, 0, TimeUnit.SECONDS);
+        piExecutor.schedule(scheduler, 3, TimeUnit.SECONDS);
     }
 
     public void stopPi() {

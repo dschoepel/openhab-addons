@@ -12,19 +12,25 @@
  */
 package org.openhab.binding.nadavr.internal.nadcp;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.nadavr.internal.NadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadProtocol.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadProtocol} class validates State status messages received from the NAD device
+ * and creates commands to be sent to the NAD device to change Channel States. Commands are in the
+ * NAD Protocol format (prefix . variable operator value). For example:
+ *
+ * <ul>
+ * <li>Main.Power=On</li>
+ * <li>Zone2.VolumeControl=Variable</li>
+ * <li>Tuner.FM.Frequency=105.7</li>
+ * </ul>
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -49,8 +55,6 @@ public class NadProtocol {
      */
     private static final Pattern NAD_PREFIX_QUERY_PATTERN = Pattern.compile("^(.[^.]+)(\\?)", Pattern.CASE_INSENSITIVE);
 
-    private static final int LINE_FEED = 10;
-
     /**
      * Builds command in a NAD Protocol format (prefix . variable operator value).
      *
@@ -69,69 +73,53 @@ public class NadProtocol {
     }
 
     /**
-     * Method to read NAD Message from input stream.
+     * Validate the content of a received message from the NAD Device
      *
-     * @return message
+     * @param receivedMessage the byte stream containing the State status message
      *
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws NadcpException
+     * @throws NadException - If the message has unexpected content
      */
-    public static NadMessage getNextMessage(DataInputStream stream)
-            throws IOException, InterruptedException, NadcpException {
+    public static NadMessage validateResponse(byte[] receivedMessage) throws NadException {
         Logger logger = LoggerFactory.getLogger(NadProtocol.class);
-        // Initialize protocol place holders
         String prefix = "";
         String variable = "";
         String operator = "";
         String value = "";
-        try {
-            String line = "";
-            StringBuilder sb = new StringBuilder();
-            byte character;
-            boolean eol = false;
-            while (!eol) {
-                character = stream.readByte();
-                int intCharacter = Integer.valueOf(character);
-                if (Integer.valueOf(character) != LINE_FEED) {
-                    sb.append(Character.toString((char) intCharacter));
-                } else {
-                    eol = true;
-                }
-            }
+        String message = "";
+        if (receivedMessage.length >= 1) {
+            message = new String(receivedMessage, 0, receivedMessage.length - 1, StandardCharsets.US_ASCII);
+        } else {
+            throw new NadException("Error: The received message lenght {" + receivedMessage.length + "} is too short!");
+        }
 
-            line = sb.toString();
-            logger.info("getNextMessage received line = {}", line);
-
-            // verify that the line is valid - longer than 0, contains dot ".", contains operator
-            Matcher match = NAD_FULL_MESSAGE_PATTERN.matcher(line);
-            if (match.matches()) {
-                prefix = match.group(1); // get prefix - Group 1: anything before first dot
-                variable = match.group(2); // get variable - Group 2: between first dot and operator
-                operator = match.group(3); // Get operator - Group 3: '=, ?, + or -'
-                value = match.group(4).stripTrailing(); // Get value - Group 4: everything after the operator
+        logger.debug("Message Recieved: chars *{}*", message);
+        message = message.trim();
+        if (message.isEmpty()) {
+            return new NadMessage.MessageBuilder().prefix(NadCommand.EMPTY_COMMAND.getPrefix())
+                    .variable(NadCommand.EMPTY_COMMAND.getVariable()).operator(NadCommand.EMPTY_COMMAND.getOperator())
+                    .value(NadCommand.EMPTY_COMMAND.getValue()).build();
+        }
+        // verify that the message is valid - longer than 0, contains dot ".", contains operator
+        Matcher match = NAD_FULL_MESSAGE_PATTERN.matcher(message);
+        if (match.matches()) {
+            prefix = match.group(1); // get prefix - Group 1: anything before first dot
+            variable = match.group(2); // get variable - Group 2: between first dot and operator
+            operator = match.group(3); // Get operator - Group 3: '=, ?, + or -'
+            value = match.group(4).stripTrailing(); // Get value - Group 4: everything after the operator
+            return new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator).value(value)
+                    .build();
+        } else {
+            Matcher matchPrefix = NAD_PREFIX_QUERY_PATTERN.matcher(message);
+            if (matchPrefix.matches()) {
+                prefix = matchPrefix.group(1);
+                operator = matchPrefix.group(2);
                 return new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator).value(value)
                         .build();
             } else {
-                Matcher matchPrefix = NAD_PREFIX_QUERY_PATTERN.matcher(line);
-                if (matchPrefix.matches()) {
-                    prefix = matchPrefix.group(1);
-                    operator = matchPrefix.group(2);
-                    return new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator)
-                            .value(value).build();
-                } else {
-                    throw new NadcpException(
-                            "Skipping NAD response message, it is not in a valid message format (<prefix> . <variable> <operator> <value>): "
-                                    + line);
-                }
+                throw new NadException(
+                        "Skipping NAD response message, it is not in a valid message format (<prefix> . <variable> <operator> <value>): "
+                                + message);
             }
-        } catch (SocketTimeoutException ste) {
-            throw ste;
-        } catch (SocketException se) {
-            throw se;
-        } catch (IOException e) {
-            throw new NadcpException(
-                    "Fatal error occurred when parsing NAD control protocol response message, cause=" + e.getCause());
         }
     }
 }
