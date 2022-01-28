@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The {@link NadTunerPresets.java} class is used to retrieve user defined tuner preset details from an xml file named
- * in
- * the configuration.
+ * in the configuration.
  *
  * @author Dave J Schoepel - Initial contribution
  */
