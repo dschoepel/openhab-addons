@@ -13,8 +13,8 @@
 package org.openhab.binding.nadavr.internal.connector;
 
 import java.io.InterruptedIOException;
+import java.util.Arrays;
 
-import org.bouncycastle.util.Arrays;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.slf4j.Logger;
