@@ -15,6 +15,10 @@
 			<channel id="preset" typeId="preset"/>
 			<channel id="presetDetail" typeId="presetDetail"/>
 			<channel id="fmRdsText" typeId="fmRdsText"/>
+			<channel id="xmChannel" typeId="xmChannel"/>
+			<channel id="xmChannelName" typeId="xmChannelName"/>
+			<channel id="xmSongName" typeId="xmSongName"/>
+			<channel id="xmSongTitle" typeId="xmSongTitle"/>
 		</channels>
 	</channel-group-type>
 

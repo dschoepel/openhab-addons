@@ -42,7 +42,10 @@ import org.openhab.binding.nadavr.internal.state.NadAvrState;
 import org.openhab.binding.nadavr.internal.state.NadAvrStateChangedListener;
 import org.openhab.binding.nadavr.internal.state.NadAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.state.NadPopulateInputs;
+import org.openhab.binding.nadavr.internal.state.NadTunerPresetNameList;
 import org.openhab.binding.nadavr.internal.xml.NadTunerPresets;
+import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -53,6 +56,7 @@ import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
+import org.openhab.core.types.StateOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +79,8 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private NadAvrStateDescriptionProvider stateDescriptionProvider;
 
     private NadIpConnector connector = new NadIpConnector("127.0.0.1", 23, "OH-Binding-nadavr");
-    private NadPopulateInputs populateInput = new NadPopulateInputs(thing.getUID(), config, connector,
-            stateDescriptionProvider, true);
+    private NadPopulateInputs populateInputs = new NadPopulateInputs(thing.getUID(), config, connector,
+            stateDescriptionProvider, true, 10);
     private NadAvrState nadavrState = new NadAvrState(this);
     private NadTunerMonitor tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, "OH-Binding-nadavr");
 
@@ -109,6 +113,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         /* Set up number of zones specified for this thing in the configuration */
         configureZoneChannels(config);
 
+        /* Set the Tuner Preset option values, if active, update with the user provided preset descriptions */
+        populateTunerPresets();
+
         /* Initialize IP connector for the NAD device */
         String threadNamePrefix = "OH-Binding-" + getThing().getUID().getAsString();
         connector = new NadIpConnector(config.ipAddress, config.telnetPort, threadNamePrefix + "-Connection");
@@ -118,9 +125,11 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         scheduleConnectionJob();
 
         // Start thread to populate names for the Source Input numbers
-        if (!populateInput.isRunning()) {
-            populateInput = new NadPopulateInputs(thing.getUID(), config, connector, stateDescriptionProvider, true);
-            populateInput.startPi();
+        if (!populateInputs.isRunning()) {
+            int numberOfInputSources = getNumberOfInputSources(thing.getThingTypeUID().getId());
+            populateInputs = new NadPopulateInputs(thing.getUID(), config, connector, stateDescriptionProvider, true,
+                    numberOfInputSources);
+            populateInputs.startPi();
             logger.info("NadHandler - Populate Inputs Started ....");
         }
         // Start thread to capture state of the tuner input and capture RDS Stream if band is FM
@@ -141,7 +150,8 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             logger.debug("Disposing handler for thing {}", getThing().getUID());
         }
         closeConnection();
-        populateInput.stopPi();
+        cancelConnectionJob();
+        populateInputs.stopPi();
         tunerMonitor.stopTm();
         super.dispose();
     }
@@ -198,6 +208,24 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             }
         }
         return maxZones;
+    }
+
+    /**
+     * Retrieve the number of input sources for a given NAD Model, NADPopulateInputs uses
+     * this number to update the input source channels for the NAD device zones
+     *
+     * @param model NAD Model name to lookup the number of input sources
+     * @return numberOfInputSources available on the given NAD Model
+     */
+    public int getNumberOfInputSources(String model) {
+        /* Default number of input sources */
+        int numberOfInputSources = 8;
+        for (NadModel supportedModel : NadModel.values()) {
+            if (supportedModel.getId().equals(model)) {
+                numberOfInputSources = supportedModel.getNumberOfInputSources();
+            }
+        }
+        return numberOfInputSources;
     }
 
     private void configureZoneChannels(NadAvrConfiguration config) {
@@ -343,7 +371,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * Close the connection with the Rotel device
+     * Close the connection with the NAD device
      */
     private synchronized void closeConnection() {
         connector.close();
@@ -375,6 +403,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     break;
                 case CHANNEL_TUNER_FM_RDS_TEXT:
                     connector.sendTunerFmRdsTextCommand(command, Prefix.Tuner);
+                    break;
+                case CHANNEL_TUNER_XM_CHANNEL:
+                    connector.sendTunerXMChannelCommand(command, Prefix.Tuner);
                     break;
                 /**
                  * Main zone
@@ -569,6 +600,19 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     case TUNER_FM_RDS_TEXT_SET:
                         nadavrState.setTunerFMRdsText(commandPrefix, msg.getValue().toString());
                         break;
+                    case TUNER_XM_CHANNEL_SET:
+                        BigDecimal xmChannel = new BigDecimal(msg.getValue());
+                        nadavrState.setTunerXMChannel(commandPrefix, xmChannel);
+                        break;
+                    case TUNER_XM_CHANNEL_NAME_SET:
+                        nadavrState.setTunerXMChannelName(commandPrefix, msg.getValue().toString());
+                        break;
+                    case TUNER_XM_CHANNEL_SONG_NAME_SET:
+                        nadavrState.setTunerXMSongName(commandPrefix, msg.getValue().toString());
+                        break;
+                    case TUNER_XM_CHANNEL_SONG_TITLE_SET:
+                        nadavrState.setTunerXMSongTitle(commandPrefix, msg.getValue().toString());
+                        break;
                     default:
                         break;
                 }
@@ -609,10 +653,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     }
                 }
                 // When adding new general commands be sure to include in array to refresh states...
-                List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(
-                        Arrays.asList(NadCommand.TUNER_BAND_QUERY, NadCommand.TUNER_AM_FREQUENCY_QUERY,
-                                NadCommand.TUNER_FM_FREQUENCY_QUERY, NadCommand.TUNER_FM_MUTE_QUERY,
-                                NadCommand.TUNER_FM_RDS_TEXT_QUERY, NadCommand.TUNER_PRESET_QUERY));
+                List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_BAND_QUERY,
+                        NadCommand.TUNER_AM_FREQUENCY_QUERY, NadCommand.TUNER_FM_FREQUENCY_QUERY,
+                        NadCommand.TUNER_FM_MUTE_QUERY, NadCommand.TUNER_FM_RDS_TEXT_QUERY,
+                        NadCommand.TUNER_PRESET_QUERY, NadCommand.TUNER_XM_CHANNEL_QUERY));
 
                 // Refresh general state information
                 for (NadCommand nadGeneralCmd : nadGeneralRefreshCmds) {
@@ -694,12 +738,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
     @Override
     public void stateChanged(String channelID, State state) {
-        // Don't flood the log with thing 'updated: ONLINE' each time a single channel changed
-        // TODO do we need this?
-        // if (this.getThing().getStatus() != ThingStatus.ONLINE) {
-        // updateStatus(ThingStatus.ONLINE);
-        // }
-        // Only update channels if they are linked to an item
+        /* Only update channels if they are linked to an item */
         if (isLinked(channelID)) {
             updateState(channelID, state);
         }
@@ -721,5 +760,36 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private NadMessage buidMsgFromCommand(NadCommand command) {
         return new NadMessage.MessageBuilder().prefix(command.getPrefix()).variable(command.getVariable())
                 .operator(command.getOperator()).value(command.getValue()).build();
+    }
+
+    private void populateTunerPresets() {
+        List<StateOption> options = new ArrayList<>();
+        if (config.arePresetNamesEnabled()) {
+            /* Build list of preset names to be used by Tuner Preset channel */
+            for (int i = 1; i <= NadTunerPresetNameList.size(); i++) {
+                /* Build key used for preset name to be located in the preset names file */
+                DecimalType key = new DecimalType(i);
+                /* Retrieve the default name for the preset preset names list array (index starts at zero) */
+                String name = NadTunerPresetNameList.getTunerPreseteName(i - 1);
+                /* Get the preset name from the user provided file. If value returned is "Not Set" use default. */
+                StringType presetName = nadavrState.getPresetDetail(key, config.getPresetNamesFilePath());
+                if (!StringType.valueOf(NOT_SET).equals(presetName)) {
+                    name = presetName.toString();
+                }
+                /* Build options for the Tuner Preset channel */
+                options.add(new StateOption(String.valueOf(i), name));
+            }
+        } else {
+            /* Return presets to default if there is no user provided preset names file */
+            for (int i = 1; i <= NadTunerPresetNameList.size(); i++) {
+                /* Retrieve the default name for the preset preset names list array (index starts at zero) */
+                String name = NadTunerPresetNameList.getTunerPreseteName(i - 1);
+                /* Build options for the Tuner Preset channel */
+                options.add(new StateOption(String.valueOf(i), name));
+            }
+        }
+        /* Update the tuner preset channel options with preset descriptions */
+        stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_PRESET),
+                options);
     }
 }

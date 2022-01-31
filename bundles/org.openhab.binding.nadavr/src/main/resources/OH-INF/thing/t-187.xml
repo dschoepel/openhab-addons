@@ -7,7 +7,7 @@
 	<!-- Generic OnkyoAVR Thing Type -->
 	<thing-type id="T187">
 		<label>NAD T-187 Surround Sound Preamplifier</label>
-		<description>Ethernet enabled NAD AV Receiver</description>
+		<description>Ethernet enabled NAD Surround Sound Preamp Processor</description>
 
 		<channel-groups>
 			<channel-group typeId="zone1Controls" id="zone1"/>

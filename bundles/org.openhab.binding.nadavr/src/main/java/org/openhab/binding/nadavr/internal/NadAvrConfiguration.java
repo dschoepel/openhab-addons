@@ -51,10 +51,8 @@ public class NadAvrConfiguration {
      */
     public String presetNamesFilePath = "";
 
-    // private NADAvrConnector connector;
-
     // Default zone count
-    private Integer zoneCount = 2;
+    private Integer zoneCount = 4;
 
     // Default maximum volume
     public static final BigDecimal MAX_VOLUME = new BigDecimal("19");

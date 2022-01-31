@@ -51,6 +51,10 @@ public class NadAvrState {
     private State tunerPreset = DecimalType.ZERO;
     private State tunerPresetDetail = StringType.EMPTY;
     private State tunerFMRdsText = StringType.EMPTY;
+    private State tunerXMChannel = DecimalType.ZERO;
+    private State tunerXMChannelName = StringType.EMPTY;
+    private State tunerXMSongName = StringType.EMPTY;
+    private State tunerXMSongTitle = StringType.EMPTY;
 
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
@@ -125,6 +129,14 @@ public class NadAvrState {
                 return tunerFMMute;
             case CHANNEL_TUNER_PRESET:
                 return tunerPreset;
+            case CHANNEL_TUNER_XM_CHANNEL:
+                return tunerXMChannel;
+            case CHANNEL_TUNER_XM_CHANNEL_NAME:
+                return tunerXMChannelName;
+            case CHANNEL_TUNER_XM_SONG_NAME:
+                return tunerXMSongName;
+            case CHANNEL_TUNER_XM_SONG_TITLE:
+                return tunerXMSongTitle;
             /**
              * Main zone
              */
@@ -348,6 +360,7 @@ public class NadAvrState {
     }
 
     /**
+     * @param prefix
      * @param tunerAMFrequency
      */
     public void setTunerAMFrequency(String prefix, BigDecimal tunerAMFrequency) {
@@ -361,6 +374,66 @@ public class NadAvrState {
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerXMChannel
+     */
+    public void setTunerXMChannel(String prefix, BigDecimal tunerXMChannel) {
+        DecimalType newVal = new DecimalType(tunerXMChannel);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerXMChannel)) {
+                    this.tunerXMChannel = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_XM_CHANNEL, this.tunerXMChannel);
+                }
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerXMChannelName
+     */
+    public void setTunerXMChannelName(String prefix, String tunerXMChannelName) {
+        StringType newVal = new StringType(tunerXMChannelName);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerXMChannelName)) {
+                    this.tunerXMChannelName = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_XM_CHANNEL_NAME, this.tunerXMChannelName);
+                }
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerXMSongName
+     */
+    public void setTunerXMSongName(String prefix, String tunerXMSongName) {
+        StringType newVal = new StringType(tunerXMSongName);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerXMSongName)) {
+                    this.tunerXMSongName = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_XM_SONG_NAME, this.tunerXMSongName);
+                }
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerXMSongTitle
+     */
+    public void setTunerXMSongTitle(String prefix, String tunerXMSongTitle) {
+        StringType newVal = new StringType(tunerXMSongTitle);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerXMSongTitle)) {
+                    this.tunerXMSongTitle = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_XM_SONG_TITLE, this.tunerXMSongTitle);
+                }
         }
     }
 
@@ -587,7 +660,7 @@ public class NadAvrState {
      * @return presetDetail string containing tuner Band Frequency and User defined name to be associated with the
      *         preset.
      */
-    private StringType getPresetDetail(DecimalType presetKey, String fileName) {
+    public StringType getPresetDetail(DecimalType presetKey, String fileName) {
         List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
         Map<DecimalType, NadPreset> presetMap = new ConcurrentHashMap<DecimalType, NadPreset>();
         for (NadPreset pm : tunerPresetDetails) {

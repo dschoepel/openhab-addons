@@ -22,22 +22,28 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public enum NadModel {
 
-    // Please also remember to add supported models to the README.md
-    // T187, T777, T787, T778, T753
-    // Format is model name, max number of zones for that specific model
+    /**
+     * Please also remember to add supported models to the README.md
+     * T187, T765, T777, T787, T778, T753
+     * Format is model name, max number of zones for that specific model, source inputs
+     */
 
-    T_187("T187", 4),
-    T_777("T777", 4),
-    T_778("T778", 2),
-    T_787("T787", 4),
-    T_758("T758", 2);
+    T_187("T187", 4, 10),
+    T_758("T758", 2, 8),
+    T_765("T765", 4, 10),
+    T_777("T777", 4, 10),
+    T_778("T778", 2, 8),
+    T_785("T785", 4, 10),
+    T_787("T787", 4, 10);
 
     private final String id;
     private final int maxZones;
+    private final int numberOfInputSources;
 
-    private NadModel(String id, int maxZones) {
+    private NadModel(String id, int maxZones, int numberOfInputSources) {
         this.id = id;
         this.maxZones = maxZones;
+        this.numberOfInputSources = numberOfInputSources;
     }
 
     public String getId() {
@@ -46,5 +52,9 @@ public enum NadModel {
 
     public int getMaxZones() {
         return maxZones;
+    }
+
+    public int getNumberOfInputSources() {
+        return numberOfInputSources;
     }
 }

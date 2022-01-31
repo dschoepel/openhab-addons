@@ -4,9 +4,9 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="T787">
-		<label>NAD T-765 Surround Sound Receiver</label>
-		<description>Ethernet enabled NAD AV Receiver</description>
+	<thing-type id="T785">
+		<label>NAD T-785 Surround Sound Receiver</label>
+		<description>Serial RS-232 NAD Surround Sound Receiver (requires IP to Serial converter)</description>
 
 		<channel-groups>
 			<channel-group typeId="tunerControls" id="tuner"/>

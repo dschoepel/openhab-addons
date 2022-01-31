@@ -30,7 +30,7 @@ public class NadMsgReaderThread extends Thread {
 
     private final Logger logger = LoggerFactory.getLogger(NadMsgReaderThread.class);
 
-    private static final int READ_BUFFER_SIZE = 16;
+    private static final int READ_BUFFER_SIZE = 32;
 
     private NadConnector connector;
 
@@ -42,7 +42,7 @@ public class NadMsgReaderThread extends Thread {
     @Override
     public void run() {
         logger.debug("Data listener started...");
-        final int size = 64;
+        final int size = 128;
         byte[] readDataBuffer = new byte[READ_BUFFER_SIZE];
         byte[] dataBuffer = new byte[size];
         int index = 0;

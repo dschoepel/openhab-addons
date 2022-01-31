@@ -520,6 +520,30 @@ public abstract class NadConnector {
         }
     }
 
+    public void sendTunerXMChannelCommand(Command command, Prefix zone)
+            throws NadUnsupportedCommandTypeException, NadException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = NAD_QUERY;
+        } else if (command == IncreaseDecreaseType.INCREASE) {
+            cmdValue += "+";
+        } else if (command == IncreaseDecreaseType.DECREASE) {
+            cmdValue += "-";
+        } else if (command instanceof DecimalType) {
+            cmdValue = toNadValue(((DecimalType) command));
+        } else {
+            throw new NadUnsupportedCommandTypeException();
+        }
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NadCommand.TUNER_XM_CHANNEL_SET.getVariable().toString())
+                .operator(NadCommand.TUNER_XM_CHANNEL_SET.getOperator().toString()).value(cmdValue).build();
+        try {
+            sendCommand(msg);
+        } catch (NadException e) {
+            throw new NadException("Send command \"" + msg.toString() + "\" failed", e);
+        }
+    }
+
     /**
      * Sends Tuner (ON/OFF/Status) commands
      *

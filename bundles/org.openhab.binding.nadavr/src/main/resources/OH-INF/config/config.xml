@@ -36,7 +36,7 @@
 			<label>Zone Count of the Receiver</label>
 			<description>Number of zones (including main zone), values 1-4 are supported. Check Thing Properties to see maximum
 				number of zones for this device.</description>
-			<default>2</default>
+	 		<default>2</default>  
 		</parameter>
 		<parameter name="ipAddress" type="text" required="true" groupName="connectionSettings">
 			<context>network-address</context>

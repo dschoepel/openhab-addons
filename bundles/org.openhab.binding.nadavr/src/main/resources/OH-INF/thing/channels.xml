@@ -57,7 +57,7 @@
 		<label>Volume</label>
 		<description>Set the volume level of this zone</description>
 		<category>SoundVolume</category>
-		<state min="1" max="100" step="1" pattern="%d'%'"/>
+		<state min="1" max="100" step="1" pattern="%d'%'" />
 	</channel-type>
 
 	<channel-type id="volumeDB">
@@ -65,7 +65,7 @@
 		<label>Volume (dB)</label>
 		<description>Set the volume level (dB).</description>
 		<category>SoundVolume</category>
-		<state min="-99" max="19" step="1" pattern="%d"/>
+		<state min="-99" max="19" step="1" pattern="%d" />
 
 	</channel-type>
 
@@ -80,7 +80,7 @@
 		<label>Fixed Volume (dB)</label>
 		<description>Set the fixed volume level (dB).</description>
 		<category>SoundVolume</category>
-		<state min="-99" max="19" step="1" pattern="%d"/>
+		<state min="-99" max="19" step="1" pattern="%d" />
 	</channel-type>
 
 	<channel-type id="volumeFixed">
@@ -88,7 +88,7 @@
 		<label>Fixed Volume</label>
 		<description>Set the fixed volume level of this zone (%)</description>
 		<category>SoundVolume</category>
-		<state min="1" max="100" step="1" pattern="%d'%'"/>
+		<state min="1" max="100" step="1" pattern="%d'%'" />
 	</channel-type>
 
 	<channel-type id="volumeControl">
@@ -110,10 +110,10 @@
 		<description>Set tuner band</description>
 		<state>
 			<options>
-				<option value="FM"/>
-				<option value="AM"/>
-				<option value="DAB"/>
-				<option value="XM"/>
+				<option value="FM" />
+				<option value="AM" />
+				<option value="DAB" />
+				<option value="XM" />
 			</options>
 		</state>
 	</channel-type>
@@ -122,14 +122,14 @@
 		<item-type>Number</item-type>
 		<label>AM Frequency</label>
 		<description>Tuner AM Frequency setting (e.g 1050)</description>
-		<state min="540" max="1700" step="10" pattern="%d kHz"/>
+		<state min="540" max="1700" step="10" pattern="%d kHz" />
 	</channel-type>
 
 	<channel-type id="fmFrequency">
 		<item-type>Number</item-type>
 		<label>FM Frequency</label>
 		<description>Tuner FM Frequency setting (e.g 105.70)</description>
-		<state min="88.1" max="108.1" step=".2" pattern="%.1f MHz"/>
+		<state min="88.1" max="108.1" step=".2" pattern="%.1f MHz" />
 	</channel-type>
 
 	<channel-type id="fmMute">
@@ -139,10 +139,54 @@
 	</channel-type>
 
 	<channel-type id="preset">
-		<item-type>Number</item-type>
+		<item-type>String</item-type>
 		<label>Tuner Preset</label>
-		<description>Recall a tuner preset number (1-40)</description>
-		<state min="1" max="40" step="1" pattern="%d"/>
+		<description>Recall a tuner preset</description>
+		<state>
+			<options>
+				<option value="1">P01</option>
+				<option value="2">P02</option>
+				<option value="3">P03</option>
+				<option value="4">P04</option>
+				<option value="5">P05</option>
+				<option value="6">P06</option>
+				<option value="7">P07</option>
+				<option value="8">P08</option>
+				<option value="9">P09</option>
+				<option value="10">P10</option>
+				<option value="11">P11</option>
+				<option value="12">P12</option>
+				<option value="13">P13</option>
+				<option value="14">P14</option>
+				<option value="15">P15</option>
+				<option value="16">P16</option>
+				<option value="17">P17</option>
+				<option value="18">P18</option>
+				<option value="19">P19</option>
+				<option value="20">P20</option>
+				<option value="21">P21</option>
+				<option value="22">P22</option>
+				<option value="23">P23</option>
+				<option value="24">P24</option>
+				<option value="25">P25</option>
+				<option value="26">P26</option>
+				<option value="27">P27</option>
+				<option value="28">P28</option>
+				<option value="29">P29</option>
+				<option value="30">P30</option>
+				<option value="31">P31</option>
+				<option value="32">P32</option>
+				<option value="33">P33</option>
+				<option value="34">P34</option>
+				<option value="35">P35</option>
+				<option value="36">P36</option>
+				<option value="37">P37</option>
+				<option value="38">P38</option>
+				<option value="39">P39</option>
+				<option value="40">P40</option>
+			</options>
+		</state>
+
 	</channel-type>
 
 	<channel-type id="presetDetail">
@@ -156,5 +200,30 @@
 		<label>FM RDS Text</label>
 		<description>Tuner FM Radio Data System Radio text readout</description>
 	</channel-type>
+
+	<channel-type id="xmChannel" advanced="true">
+		<item-type>Number</item-type>
+		<label>XM Channel</label>
+		<description>XM Channel number 0-255</description>
+		<state min="0" max="255" step="1" pattern="%d" />
+	</channel-type>
+	
+	<channel-type id="xmChannelName" advanced="true">
+        <item-type>String</item-type>
+        <label>XM Channel Name</label>
+        <description>XM Channel Name assigned to channel </description>
+    </channel-type>
+    
+    <channel-type id="xmSongName" advanced="true">
+        <item-type>String</item-type>
+        <label>XM Song Name</label>
+        <description>XM Song Name currently playing</description>
+    </channel-type>
+    
+    <channel-type id="xmSongTitle" advanced="true">
+        <item-type>String</item-type>
+        <label>XM Song Title</label>
+        <description>XM Song Title currently playing</description>
+    </channel-type>
 
 </thing:thing-descriptions>

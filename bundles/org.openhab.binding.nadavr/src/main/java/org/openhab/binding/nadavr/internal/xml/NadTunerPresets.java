@@ -113,8 +113,9 @@ public class NadTunerPresets {
                         if (!NOT_SET.equals(preset.getBand()) && !NOT_SET.equals(preset.getFrequency())
                                 && !NOT_SET.equals(preset.getName())) {
                             presetList.add(preset);
-                            logger.debug("Added NadPreset {} detail: Band = \"{}\", Frequency = \"{}\", Name = \"{}\"",
-                                    preset.getID(), preset.getBand(), preset.getFrequency(), preset.getName());
+                            // logger.debug("Added NadPreset {} detail: Band = \"{}\", Frequency = \"{}\", Name =
+                            // \"{}\"",
+                            // preset.getID(), preset.getBand(), preset.getFrequency(), preset.getName());
                         } else {
                             logger.warn(
                                     "Skipped preset {} details: Band = \"{}\", Frequency = \"{}\", Name = \"{}\" Check for missing details in definition file {}!",

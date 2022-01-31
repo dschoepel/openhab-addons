@@ -44,27 +44,31 @@ public class NadPopulateInputs {
     private ScheduledExecutorService piExecutor = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean sendSourceQuery = false;
     private volatile boolean isRunning = false;
+    private int numberOfInputSources = 5;
     ThingUID thingUID;
     NadAvrConfiguration config;
     NadAvrStateDescriptionProvider stateDescriptionProvider;
     NadIpConnector connection;
 
     public NadPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadIpConnector connection,
-            NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery) {
+            NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery,
+            int numberOfInputSources) {
         this.thingUID = thingUID;
         this.config = config;
         this.connection = connection;
         this.stateDescriptionProvider = stateDescriptionProvider;
         this.sendSourceQuery = sendSourceQuery;
+        this.numberOfInputSources = numberOfInputSources;
     }
 
+    // TODO modify to support NADModel.getNumberOfInputSources
     private void populateInputs() throws NadException {
-        logger.debug("NadAvrPopulateInputs - populateInputs() started with sourceQuery = {} ....", sendSourceQuery);
         isRunning = true;
         List<StateOption> options = new ArrayList<>();
         List<StateOption> optionsZ2to4 = new ArrayList<>();
+        logger.debug("Number of input sources = {}", numberOfInputSources);
         // Build list of source names to be used by Input Source channel (options)
-        for (int i = 1; i <= NadAvrInputSourceList.size(); i++) {
+        for (int i = 1; i <= numberOfInputSources; i++) {
             String name = NadAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
             optionsZ2to4.add(new StateOption(String.valueOf(i), name));
