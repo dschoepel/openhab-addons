@@ -16,7 +16,7 @@ _DAB Tuner functionality has been included in the binding, but has not been test
 
 | Thing  | Thing type   | description                  |
 |----------|--------|-----------------------------------|
-| ![T-187](doc\NAD-T-187.png) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  |
+| ![T-187](doc\NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  |
 
 _Please describe the different supported things / devices within this section._
 _Which different types are supported, which models were tested etc.?_
