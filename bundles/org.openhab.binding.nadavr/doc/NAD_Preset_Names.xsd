@@ -26,7 +26,7 @@
               <xs:element name="name">
                 <xs:simpleType>
                   <xs:restriction base="xs:string">
-                    <xs:maxLength value="12" />
+                    <xs:maxLength value="20" />
                     <xs:minLength value="1"/>
                   </xs:restriction>
                 </xs:simpleType>

@@ -2,7 +2,7 @@
 
 ![NAD Electronics](doc/NAD_logo_red.png)
 
-This binding integrates NAD Surround Sound Receivers/Amplifiers via Telnet using: <ul><li>an IP Ethernet connection on devices that have an Ethernet(LAN) port</li><li>or serial RS-232 interface using an IP to Serial converter (for example USR IOT's [USR-TCP232-302](https://www.pusr.com/products/1-port-rs232-to-ethernet-converters-usr-tcp232-302.html), Global Cache's [WF2SL](https://www.globalcache.com/products/itach/wf2slspecs/), [IT2SL](https://www.globalcache.com/products/itach/ip2slspecs/), etc)</li></ul>
+This binding integrates NAD Surround Sound Receivers/Amplifiers via **Telnet** using: <ul><li>an IP Ethernet connection on devices that have an Ethernet(LAN) port</li><li>or serial RS-232 interface using an IP to Serial converter (for example USR IOT's [USR-TCP232-302](https://www.pusr.com/products/1-port-rs232-to-ethernet-converters-usr-tcp232-302.html), Global Cache's [WF2SL](https://www.globalcache.com/products/itach/wf2slspecs/), [IT2SL](https://www.globalcache.com/products/itach/ip2slspecs/), etc)</li></ul>
 
 Integration details can be found in the NAD Electronics command protocol documentation  here: [Protocol Integration Documentation](https://nadelectronics.com/software/#Protocol)
 
@@ -24,7 +24,11 @@ _DAB Tuner functionality has been included in the binding, but has not been test
 
 ## Discovery
 
-The binding will auto-discover "support-things" that are IP connected to the same network as the Open-Hab server.  
+The binding will auto-discover "support-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
+
+Auto discovered things will list the device details in the thing configuration "properties" section in the OpenHab UI.
+<ul><li>Serial number (used to create unique thing UID)</li><li>The maximunm number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
+
 
 ## Binding Configuration
 
@@ -44,6 +48,26 @@ _Note that it is planned to generate some part of this based on the information 
 _If your binding does not offer any generic configurations, you can remove this section completely._
 
 ## Thing Configuration
+
+The NAD AVR thing has the following configuration parameters:
+
+| Parameter | Parameter Id | Req/Opt | Description | Default |  Type | Accepted Values |
+| :--       | :--          | :-:               | :--         | :-:     | :-: | :--             |
+| Zone Count of the Receiver | zoneCount | Required | User can configured number of zones to be configured | 2 | Integer | 1 - maxZones listed in Thing properties |  
+| Host Name | hostname     | Required          | Host name assigned to device on the local network | | String | Host name or IPv4 address |
+| IP Address | ipAddress   | Required          | The IPv4 address assigned the the NAD Receiver | | String | Any valid IPv4 address |
+| Port      | telnetPort   | Required           | The network port for Telnet connection | 23 | Integer | Any valid TCP port number |
+| Enable Preset Detail | enablePresetNames | Optional | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
+| Preset Names File | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
+
+Since the NAD control protocol does not provide a means to retrieve the descriptive information for tuner presets, this binding provides the option to let the user create a file that can be used to give more meaning to the tuner preset channel.
+
+**Note:** _If the NAD device does not have a tuner, then tuner preset name information will be ignored._
+
+#####Preset Names XML file Example 
+[Preset_Names.xml](doc/Preset_Names.xml) 
+[NAD_Preset_NAMES.xsd](doc/NAD_Preset_Names.xsd)
+
 
 _Describe what is needed to manually configure a thing, either through the UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
 
