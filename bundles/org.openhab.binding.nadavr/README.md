@@ -6,7 +6,7 @@ This binding integrates NAD Surround Sound Receivers/Amplifiers via **Telnet** u
 
 Integration details can be found in the NAD Electronics command protocol documentation  here: [Protocol Integration Documentation](https://nadelectronics.com/software/#Protocol)
 
-The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver</li> <li>serial RS232 port via an IP to Serial converter (USR-TCP232-302)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
+The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver</li> <li>&#10060;serial RS232 port via an IP to Serial converter (USR-TCP232-302)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
 
 _DAB Tuner functionality has been included in the binding, but has not been tested._
 

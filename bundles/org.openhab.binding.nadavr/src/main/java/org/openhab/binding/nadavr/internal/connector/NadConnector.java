@@ -505,8 +505,8 @@ public abstract class NadConnector {
             cmdValue += "+";
         } else if (command == IncreaseDecreaseType.DECREASE) {
             cmdValue += "-";
-        } else if (command instanceof DecimalType) {
-            cmdValue = toNadValue(((DecimalType) command));
+        } else if (command instanceof StringType) {
+            cmdValue = command.toString();
         } else {
             throw new NadUnsupportedCommandTypeException();
         }

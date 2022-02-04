@@ -42,8 +42,10 @@ public class NadTunerMonitor {
     private volatile boolean isTmStarted;
     private volatile boolean tunerIsActive;
     private volatile boolean tunerBandIsFM;
+    private volatile boolean tunerBandIsXM;
     private NadAvrConfiguration config;
     private NadFMRdsTextStream rdsText;
+    private NadXmRefreshChannelInfo xmInfo;
     private NadAvrState nadavrState;
 
     /**
@@ -59,6 +61,7 @@ public class NadTunerMonitor {
         this.config = config;
         this.nadavrState = nadavrState;
         this.rdsText = new NadFMRdsTextStream(connection);
+        this.xmInfo = new NadXmRefreshChannelInfo(connection);
         this.threadNamePrefix = threadNamePrefix;
     }
 
@@ -72,27 +75,31 @@ public class NadTunerMonitor {
         public void run() {
             Thread.currentThread().setName(threadNamePrefix + "-TunerMonitor");
             tunerBandIsFM = FM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
+            tunerBandIsXM = XM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             if (logger.isDebugEnabled()) {
                 logger.debug(
-                        "Start setTunerStatus: tunerIsActive = {}, tunerBandIsFM = {}, isTmStarted = {}, isTmPaused = {}, isRdsStarted = {}, isRdsPaused = {}",
-                        tunerIsActive, tunerBandIsFM, isTmStarted, isTmPaused, rdsText.isRdsStarted(),
-                        rdsText.isRdsPaused());
+                        "Start setTunerStatus: tunerIsActive = {}, tunerBandIsFM = {}, tunerBandIsXM = {}, isTmStarted = {}, isTmPaused = {}, isRdsStarted = {}, isRdsPaused = {}, isXMStarted = {}, isXmPaused = {}",
+                        tunerIsActive, tunerBandIsFM, tunerBandIsXM, isTmStarted, isTmPaused, rdsText.isRdsStarted(),
+                        rdsText.isRdsPaused(), xmInfo.isXmStarted(), xmInfo.isXmPaused());
             }
-            if (tunerBandIsFM) {
+            if (tunerBandIsFM || tunerBandIsXM) {
                 if (!isTmPaused) {
                     setTunerStatus();
                 } else {
                     resumeTm();
                     setTunerStatus();
                 } // end if !isTmPaused
-            } else { // tunerBand is not FM pause Monitor and RDS threads
+            } else { // tunerBand is not FM or XM pause Monitor and RDS threads
                 if (!isTmPaused) {
                     if (rdsText.isRdsStarted() & !rdsText.isRdsPaused()) {
                         rdsText.pauseRds();
                     }
+                    if (xmInfo.isXmStarted() & !xmInfo.isXmPaused()) {
+                        xmInfo.pauseXmRefreshChannleInfo();
+                    }
                     pauseTm();
                 } // end if !isTmPaused
-            } // end if tunerBandIsFM
+            } // end if tunerBandIsFM or tunerBandIsXM
 
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -177,6 +184,22 @@ public class NadTunerMonitor {
                 rdsText.pauseRds();
             }
         }
+
+        // If the tuner is active and the band is set to XM, then start/resume the NadXmRefreshChannelInfo thread.
+        if (tunerIsActive && tunerBandIsXM) {
+            logger.debug("isXmStarted = {}", xmInfo.isXmStarted());
+            if (!xmInfo.isXmStarted()) {
+                xmInfo.start(threadNamePrefix);
+            } else {
+                if (xmInfo.isXmPaused()) {
+                    xmInfo.resumeXmRefreshChannelInfo();
+                }
+            }
+        } else { // If the tuner is not active make sure the XM Channel Refresh Info thread is paused.
+            if (xmInfo.isXmStarted() && !xmInfo.isXmPaused()) {
+                xmInfo.pauseXmRefreshChannleInfo();
+            }
+        }
     }
 
     /**
@@ -218,6 +241,8 @@ public class NadTunerMonitor {
         logger.debug("TunerMonitor is stopped!");
         rdsText.stopRds();
         logger.debug("RdsTextStream is stopping");
+        xmInfo.stopXmRefreshChannelInfo();
+        logger.debug("XmRefreshChannelInfo is stopping");
     }
 
     /**

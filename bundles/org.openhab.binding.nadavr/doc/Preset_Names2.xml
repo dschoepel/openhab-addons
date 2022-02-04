@@ -27,9 +27,4 @@
         <frequency>25</frequency>
         <name>Classic Rewind</name>
     </preset>
-    <preset id="06">
-        <band>XM</band>
-        <frequency>74</frequency>
-        <name>BB Kings Bluesville</name>
-    </preset>
 </tunerPresets>

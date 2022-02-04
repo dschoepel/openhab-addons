@@ -17,7 +17,7 @@
 			<channel id="fmRdsText" typeId="fmRdsText"/>
 			<channel id="xmChannel" typeId="xmChannel"/>
 			<channel id="xmChannelName" typeId="xmChannelName"/>
-			<channel id="xmSongName" typeId="xmSongName"/>
+			<channel id="xmName" typeId="xmName"/>
 			<channel id="xmSongTitle" typeId="xmSongTitle"/>
 		</channels>
 	</channel-group-type>

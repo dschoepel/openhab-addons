@@ -48,12 +48,12 @@ public class NadAvrState {
     private State tunerFMFrequency = DecimalType.ZERO;
     private State tunerAMFrequency = DecimalType.ZERO;
     private State tunerFMMute = UnDefType.UNDEF;
-    private State tunerPreset = DecimalType.ZERO;
-    private State tunerPresetDetail = StringType.EMPTY;
+    private State tunerPreset = StringType.EMPTY;
+    private State tunerPresetDetail = UnDefType.UNDEF;
     private State tunerFMRdsText = StringType.EMPTY;
     private State tunerXMChannel = DecimalType.ZERO;
     private State tunerXMChannelName = StringType.EMPTY;
-    private State tunerXMSongName = StringType.EMPTY;
+    private State tunerXMName = StringType.EMPTY;
     private State tunerXMSongTitle = StringType.EMPTY;
 
     // ----- Main ------
@@ -133,8 +133,8 @@ public class NadAvrState {
                 return tunerXMChannel;
             case CHANNEL_TUNER_XM_CHANNEL_NAME:
                 return tunerXMChannelName;
-            case CHANNEL_TUNER_XM_SONG_NAME:
-                return tunerXMSongName;
+            case CHANNEL_TUNER_XM_NAME:
+                return tunerXMName;
             case CHANNEL_TUNER_XM_SONG_TITLE:
                 return tunerXMSongTitle;
             /**
@@ -340,8 +340,8 @@ public class NadAvrState {
     /**
      * @param tunerPreset
      */
-    public void setTunerPreset(String prefix, BigDecimal tunerPreset, String fileName) {
-        DecimalType newVal = new DecimalType(tunerPreset);
+    public void setTunerPreset(String prefix, String tunerPreset, String fileName) {
+        StringType newVal = new StringType(tunerPreset);
         StringType newPresetDetailVal = getPresetDetail(newVal, fileName);
         switch (prefix) {
             case TUNER:
@@ -349,8 +349,13 @@ public class NadAvrState {
                     this.tunerPreset = newVal;
                     handler.stateChanged(CHANNEL_TUNER_PRESET, this.tunerPreset);
                 }
-                if (!newPresetDetailVal.equals(this.tunerPresetDetail)) {
-                    this.tunerPresetDetail = newPresetDetailVal;
+                if (!fileName.isBlank()) {
+                    if (!newPresetDetailVal.equals(this.tunerPresetDetail)) {
+                        this.tunerPresetDetail = newPresetDetailVal;
+                        handler.stateChanged(CHANNEL_TUNER_PRESET_DETAIL, newPresetDetailVal);
+                    }
+                } else {
+                    newPresetDetailVal = StringType.valueOf(UnDefType.UNDEF.toString());
                     handler.stateChanged(CHANNEL_TUNER_PRESET_DETAIL, newPresetDetailVal);
                 }
                 break;
@@ -411,13 +416,16 @@ public class NadAvrState {
      * @param prefix
      * @param tunerXMSongName
      */
-    public void setTunerXMSongName(String prefix, String tunerXMSongName) {
-        StringType newVal = new StringType(tunerXMSongName);
+    public void setTunerXMName(String prefix, String tunerXMName) {
+        StringType newVal = new StringType(tunerXMName);
+        if (tunerXMName.isBlank()) {
+            newVal = StringType.valueOf("  ");
+        }
         switch (prefix) {
             case TUNER:
-                if (!newVal.equals(this.tunerXMSongName)) {
-                    this.tunerXMSongName = newVal;
-                    handler.stateChanged(CHANNEL_TUNER_XM_SONG_NAME, this.tunerXMSongName);
+                if (!newVal.equals(this.tunerXMName)) {
+                    this.tunerXMName = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_XM_NAME, this.tunerXMName);
                 }
         }
     }
@@ -660,17 +668,24 @@ public class NadAvrState {
      * @return presetDetail string containing tuner Band Frequency and User defined name to be associated with the
      *         preset.
      */
-    public StringType getPresetDetail(DecimalType presetKey, String fileName) {
+    public StringType getPresetDetail(StringType presetKey, String fileName) {
+        // TODO if filename is empty don't parse it....
         List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
-        Map<DecimalType, NadPreset> presetMap = new ConcurrentHashMap<DecimalType, NadPreset>();
+        Map<StringType, NadPreset> presetMap = new ConcurrentHashMap<StringType, NadPreset>();
         for (NadPreset pm : tunerPresetDetails) {
-            DecimalType key = new DecimalType(pm.getID());
+            StringType key = new StringType(pm.getID());
             presetMap.put(key, pm);
         }
-        StringType presetDetail = StringType.valueOf(NOT_SET);
-        if (presetMap.containsKey(presetKey)) {
-            NadPreset pFromMap = presetMap.getOrDefault(presetKey,
-                    new NadPreset(presetKey.toString(), NOT_SET, "", ""));
+        StringType presetDetail = new StringType(UnDefType.UNDEF.toString());
+        String temp = presetKey.toString();
+        StringType key = new StringType(temp);
+        if (temp.length() < 2) {
+            temp = "0" + temp;
+            key = new StringType(temp);
+        }
+        if (presetMap.containsKey(key)) {
+            NadPreset pFromMap = presetMap.getOrDefault(key,
+                    new NadPreset(key.toString(), UnDefType.UNDEF.toString(), "", ""));
             String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
             presetDetail = StringType.valueOf(fromMap);
         }

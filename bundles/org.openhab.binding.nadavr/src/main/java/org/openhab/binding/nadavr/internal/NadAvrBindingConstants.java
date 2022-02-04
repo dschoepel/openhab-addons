@@ -66,7 +66,7 @@ public class NadAvrBindingConstants {
     public static final String CHANNEL_TUNER_FM_RDS_TEXT = "tuner#fmRdsText";
     public static final String CHANNEL_TUNER_XM_CHANNEL = "tuner#xmChannel";
     public static final String CHANNEL_TUNER_XM_CHANNEL_NAME = "tuner#xmChannelName";
-    public static final String CHANNEL_TUNER_XM_SONG_NAME = "tuner#xmSongName";
+    public static final String CHANNEL_TUNER_XM_NAME = "tuner#xmName";
     public static final String CHANNEL_TUNER_XM_SONG_TITLE = "tuner#xmSongTitle";
 
     public static final String CHANNEL_MAIN_POWER = "zone1#power";
@@ -190,6 +190,7 @@ public class NadAvrBindingConstants {
     public static final String NAD_VARIABLE_NAME = "Name";
     public static final String TUNER = "Tuner";
     public static final StringType FM = StringType.valueOf("FM");
+    public static final StringType XM = StringType.valueOf("XM");
     public static final String NOT_SET = "Not Set";
     public static final String NAD_EQUALS_OPERATOR = "=";
     public static final String NAD_QUERY = "?";

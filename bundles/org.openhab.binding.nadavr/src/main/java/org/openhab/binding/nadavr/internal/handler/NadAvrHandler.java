@@ -44,7 +44,6 @@ import org.openhab.binding.nadavr.internal.state.NadAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.state.NadPopulateInputs;
 import org.openhab.binding.nadavr.internal.state.NadTunerPresetNameList;
 import org.openhab.binding.nadavr.internal.xml.NadTunerPresets;
-import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -57,6 +56,7 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.openhab.core.types.StateOption;
+import org.openhab.core.types.UnDefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -593,9 +593,11 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         nadavrState.setTunerFMMute(commandPrefix, NAD_ON.equalsIgnoreCase(msg.getValue()));
                         break;
                     case TUNER_PRESET_SET:
-                        BigDecimal preset = new BigDecimal(msg.getValue());
-                        String fileName = config.getPresetNamesFilePath();
-                        nadavrState.setTunerPreset(commandPrefix, preset, fileName);
+                        String fileName = "";
+                        if (config.enablePresetNames) {
+                            fileName = config.getPresetNamesFilePath();
+                        }
+                        nadavrState.setTunerPreset(commandPrefix, msg.getValue().toString(), fileName);
                         break;
                     case TUNER_FM_RDS_TEXT_SET:
                         nadavrState.setTunerFMRdsText(commandPrefix, msg.getValue().toString());
@@ -607,10 +609,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     case TUNER_XM_CHANNEL_NAME_SET:
                         nadavrState.setTunerXMChannelName(commandPrefix, msg.getValue().toString());
                         break;
-                    case TUNER_XM_CHANNEL_SONG_NAME_SET:
-                        nadavrState.setTunerXMSongName(commandPrefix, msg.getValue().toString());
+                    case TUNER_XM_NAME_SET:
+                        nadavrState.setTunerXMName(commandPrefix, msg.getValue().toString());
                         break;
-                    case TUNER_XM_CHANNEL_SONG_TITLE_SET:
+                    case TUNER_XM_SONG_TITLE_SET:
                         nadavrState.setTunerXMSongTitle(commandPrefix, msg.getValue().toString());
                         break;
                     default:
@@ -768,12 +770,16 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             /* Build list of preset names to be used by Tuner Preset channel */
             for (int i = 1; i <= NadTunerPresetNameList.size(); i++) {
                 /* Build key used for preset name to be located in the preset names file */
-                DecimalType key = new DecimalType(i);
+                String keyVal = String.valueOf(i);
+                if (i <= 9) {
+                    keyVal = "0" + keyVal;
+                }
+                StringType key = new StringType(String.valueOf(keyVal));
                 /* Retrieve the default name for the preset preset names list array (index starts at zero) */
                 String name = NadTunerPresetNameList.getTunerPreseteName(i - 1);
                 /* Get the preset name from the user provided file. If value returned is "Not Set" use default. */
                 StringType presetName = nadavrState.getPresetDetail(key, config.getPresetNamesFilePath());
-                if (!StringType.valueOf(NOT_SET).equals(presetName)) {
+                if (!StringType.valueOf(UnDefType.UNDEF.toString()).equals(presetName)) {
                     name = presetName.toString();
                 }
                 /* Build options for the Tuner Preset channel */
