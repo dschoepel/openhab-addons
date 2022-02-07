@@ -51,10 +51,10 @@ public class NadAvrState {
     private State tunerPreset = StringType.EMPTY;
     private State tunerPresetDetail = UnDefType.UNDEF;
     private State tunerFMRdsText = StringType.EMPTY;
-    private State tunerXMChannel = DecimalType.ZERO;
-    private State tunerXMChannelName = StringType.EMPTY;
-    private State tunerXMName = StringType.EMPTY;
-    private State tunerXMSongTitle = StringType.EMPTY;
+    private State tunerXMChannel = StringType.EMPTY;
+    private State tunerXMChannelName = new StringType(" ");
+    private State tunerXMName = new StringType(" ");
+    private State tunerXMSongTitle = new StringType(" ");
 
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
@@ -386,8 +386,8 @@ public class NadAvrState {
      * @param prefix
      * @param tunerXMChannel
      */
-    public void setTunerXMChannel(String prefix, BigDecimal tunerXMChannel) {
-        DecimalType newVal = new DecimalType(tunerXMChannel);
+    public void setTunerXMChannel(String prefix, String tunerXMChannel) {
+        StringType newVal = new StringType(tunerXMChannel);
         switch (prefix) {
             case TUNER:
                 if (!newVal.equals(this.tunerXMChannel)) {

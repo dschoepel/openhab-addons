@@ -2,11 +2,11 @@
 
 ![NAD Electronics](doc/NAD_logo_red.png)
 
-This binding integrates NAD Surround Sound Receivers/Amplifiers via **Telnet** using: <ul><li>an IP Ethernet connection on devices that have an Ethernet(LAN) port</li><li>or serial RS-232 interface using an IP to Serial converter (for example USR IOT's [USR-TCP232-302](https://www.pusr.com/products/1-port-rs232-to-ethernet-converters-usr-tcp232-302.html), Global Cache's [WF2SL](https://www.globalcache.com/products/itach/wf2slspecs/), [IT2SL](https://www.globalcache.com/products/itach/ip2slspecs/), etc)</li></ul>
+This binding integrates NAD Surround Sound Receivers/Amplifiers via **Telnet** using: <ul><li>an IP Ethernet connection on devices that have an Ethernet(LAN) port</li><li>or serial RS-232 interface using an IP to Serial converter (for example Global Cache's [WF2SL](https://www.globalcache.com/products/itach/wf2slspecs/), [IT2SL](https://www.globalcache.com/products/itach/ip2slspecs/), USR IOT's [USR-TCP232-302](https://www.pusr.com/products/1-port-rs232-to-ethernet-converters-usr-tcp232-302.html), etc)</li></ul>
 
 Integration details can be found in the NAD Electronics command protocol documentation  here: [Protocol Integration Documentation](https://nadelectronics.com/software/#Protocol)
 
-The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver</li> <li>&#10060;serial RS232 port via an IP to Serial converter (USR-TCP232-302)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
+The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
 
 _DAB Tuner functionality has been included in the binding, but has not been tested._
 
@@ -14,13 +14,13 @@ _DAB Tuner functionality has been included in the binding, but has not been test
 
 | Thing | Type | Description | Connection | Zones | Tested |
 |:-:|:-:|:--|-------|:-:|:-:|
-| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  | Ethernet, Serial RS232| 4 |&#10060; No |
+| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  | Ethernet | 4 |&#10060; No |
 | ![T-758](doc/NAD-T-758-AV.svg) | T758 | Connection to NAD T-758 Surround Sound Receiver | Serial RS232 | 2 | &#10060; No |
 | ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet, Serial RS232 | 4 | &#10060; No |
-| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-785 Surround Sound Receiver | Ethernet, Serial RS232 | 2 | &#10060; No |
+| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
+| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-785 Surround Sound Receiver | Ethernet | 2 | &#10060; No |
 | ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet, Serial RS232 | 4 | &#9989; Yes |
+| ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet | 4 | &#9989; Yes |
 
 ## Discovery
 

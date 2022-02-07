@@ -603,8 +603,13 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         nadavrState.setTunerFMRdsText(commandPrefix, msg.getValue().toString());
                         break;
                     case TUNER_XM_CHANNEL_SET:
-                        BigDecimal xmChannel = new BigDecimal(msg.getValue());
-                        nadavrState.setTunerXMChannel(commandPrefix, xmChannel);
+                        String xmChannel = "0";
+                        if (msg.getValue().equals("None")) {
+                            xmChannel = "1"; // Set to default Preview channel
+                        } else {
+                            xmChannel = msg.getValue();
+                            nadavrState.setTunerXMChannel(commandPrefix, xmChannel);
+                        }
                         break;
                     case TUNER_XM_CHANNEL_NAME_SET:
                         nadavrState.setTunerXMChannelName(commandPrefix, msg.getValue().toString());
@@ -627,8 +632,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
     private void checkStatus() {
         // Sends a series of state query commands over the connection
-        logger.debug("NADAvrTelnetConnector - refreshState() started.... connector is started = {}",
-                connector.isConnected());
+        logger.debug("NADAvrHandler - checkStatus() started.... connector is started = {}", connector.isConnected());
         // ScheduledExecutorService refresh = Executors.newSingleThreadScheduledExecutor();
         if (connector.isConnected()) {
             scheduler.execute(() -> {
@@ -688,24 +692,37 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         for (int zone = 1; zone <= config.getZoneCount(); zone++) {
                             switch (zone) {
                                 case 1: // MainZone - 1
+                                    if (NadCommand.VOLUME_CONTROL_QUERY.equals(nadCmd)
+                                            || NadCommand.VOLUME_FIXED_QUERY.equals(nadCmd)) {
+                                        break; // not valid for main zone
+                                    }
                                     queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
                                             .variable(nadCmd.getVariable().toString())
                                             .operator(nadCmd.getOperator().toString())
                                             .value(nadCmd.getValue().toString()).build();
                                     break;
                                 case 2: // Zone 2
+                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                        break; // only valid for main zone
+                                    }
                                     queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone2.toString())
                                             .variable(nadCmd.getVariable().toString())
                                             .operator(nadCmd.getOperator().toString())
                                             .value(nadCmd.getValue().toString()).build();
                                     break;
                                 case 3: // Zone 3
+                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                        break; // only valid for main zone
+                                    }
                                     queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone3.toString())
                                             .variable(nadCmd.getVariable().toString())
                                             .operator(nadCmd.getOperator().toString())
                                             .value(nadCmd.getValue().toString()).build();
                                     break;
                                 case 4: // Zone 4
+                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                        break; // only valid for main zone
+                                    }
                                     queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone4.toString())
                                             .variable(nadCmd.getVariable().toString())
                                             .operator(nadCmd.getOperator().toString())

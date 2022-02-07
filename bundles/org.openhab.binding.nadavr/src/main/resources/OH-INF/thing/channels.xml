@@ -202,10 +202,9 @@
 	</channel-type>
 
 	<channel-type id="xmChannel" advanced="true">
-		<item-type>Number</item-type>
+		<item-type>String</item-type>
 		<label>XM Channel</label>
 		<description>XM Channel number 0-255</description>
-		<state min="0" max="255" step="1" pattern="%d"/>
 	</channel-type>
 
 	<channel-type id="xmChannelName" advanced="true">
