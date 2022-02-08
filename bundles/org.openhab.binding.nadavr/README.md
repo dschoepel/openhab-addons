@@ -64,7 +64,7 @@ Since the NAD control protocol does not provide a means to retrieve the descript
 
 **Note:** _If the NAD device does not have a tuner, then tuner preset name information will be ignored._
 
-####Preset Names XML file Example 
+#### Preset Names XML file Example 
 Tuner preset descriptions can be stored in an xml file that is then used to override the default (P01 - P40) options you're provided when selecting the tuner preset channel. 
 
 **Steps to create file:**
