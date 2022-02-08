@@ -27,7 +27,7 @@ _DAB Tuner functionality has been included in the binding, but has not been test
 The binding will auto-discover "support-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
 
 Auto discovered things will list the device details in the thing configuration "properties" section in the OpenHab UI.
-<ul><li>Serial number (used to create unique thing UID)</li><li>The maximunm number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
+<ul><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
 
 
 ## Binding Configuration
@@ -64,9 +64,114 @@ Since the NAD control protocol does not provide a means to retrieve the descript
 
 **Note:** _If the NAD device does not have a tuner, then tuner preset name information will be ignored._
 
-#####Preset Names XML file Example 
-[Preset_Names.xml](doc/Preset_Names.xml) 
-[NAD_Preset_NAMES.xsd](doc/NAD_Preset_Names.xsd)
+####Preset Names XML file Example 
+Tuner preset descriptions can be stored in an xml file that is then used to override the default (P01 - P40) options you're provided when selecting the tuner preset channel. 
+
+**Steps to create file:**
+<table>
+<tr>
+<th> Step </th> <th> Instructions </th>
+</tr>
+<tr>
+<td> 01 </td>
+<td> The template and schema files provided below should be used to simplify creating the preset names file. <ul> <li>Template <a href="doc/Preset_Names.xml">Preset_Names.xml</a> </li><li>Schema <a href="doc/NAD_Preset_Names.xsd">NAD_Preset_Names.xsd</a></li></ul>Follow the links to copy the source code. </td>
+</tr>
+<tr>
+<td> 02 </td>
+<td>Open an editor capable of working with and validating XML files like Visual Studio Code, Notepad++.</td>
+</tr>
+<tr>
+<td> 03 </td>
+<td>
+
+Decide where you will store the two files you will create.  Recommend you save them in ```/etc/openhab/scripts/``` folder on your OpenHab system.
+</td>
+</tr>
+<tr>
+<td> 04 </td>
+<td>
+
+Open a new file, name it ```Preset_Names``` saving it with the .xml extension. <br> Open another new file, name it ```NAD_Preset_Names``` saving it with the .xsd extension
+
+</td>
+</tr>
+<tr>
+<td> 05 </td>
+<td>
+
+Click on the link for the Schema file, copy and paste the entire contents of the file into your ```NAD_Preset_Names.xsd``` file and save it.
+</td>
+</tr>
+<tr>
+<td> 06 </td>
+<td>
+
+Click on the link for the Template file, copy and paste the entire contents of the file into your ```Preset_Names.xml``` file and save it.
+</td>
+</tr>
+<tr>
+<td> 07 </td>
+<td>
+
+Edit the ```Preset_Names.xml``` file with your preset details, replacing the template examples with your details. <br> Depending on the editor, you may or may not have to define where to find the schema to validate your entries.
+</td>
+</tr>
+<tr>
+<td> 08 </td>
+<td>
+The basic XML format should have at the minimum, one or more presets (i.e. child elements) defined between the &lttunerPresets&gt root element.
+
+```xml
+<tunerPresets>
+    <preset id="01">
+        <band>FM</band>
+        <frequency>105.70</frequency>
+        <name>WAPL</name>
+    </preset>
+    <preset id="02">
+        <band>AM</band>
+        <frequency>1150</frequency>
+        <name>WHBY</name>
+    </preset>
+    <preset id="03">
+        <band>XM</band>
+        <frequency>26</frequency>
+        <name>Classic Vinyl</name>
+    </preset>
+</tunerPresets>
+```
+
+</td>
+</tr>
+<tr>
+<td> 09 </td>
+<td>XML validation will check for:
+<table>
+<tr>
+<th> Element</th><th>Type</th><th> Validation Test </th>
+</tr>
+<tr>
+<td>id</td><td>Integer</td><td> Two digits 01-40</td>
+</tr>
+<tr>
+<td>band</td><td>String</td><td>FM, AM, XD, or DAB</td>
+</tr>
+<tr>
+<td>frequency</td><td>String</td><td>1-6 characters long</td>
+</tr>
+<tr>
+<td>name</td><td>String</td><td>1-20 characters long</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>10</td><td>
+
+Update the NAD Thing configuration with the preset name file including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` by clicking on the _Show advanced_ checkbox to display prompts for the tuner preset details.<ul><li>Toggle the Enable Preset Detail switch to On</li><li>Enter the preset name file including path in the Preset Name File prompt</li><li>Save the configuration; the file will be validated by the binding; and check for any error messages</li><li>If the file was found and is a valid format, the binding will be in an Online state</li></ul> 
+</td>
+</tr>
+</table>
 
 
 _Describe what is needed to manually configure a thing, either through the UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
