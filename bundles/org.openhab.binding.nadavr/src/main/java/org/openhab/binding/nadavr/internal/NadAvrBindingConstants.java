@@ -68,6 +68,8 @@ public class NadAvrBindingConstants {
     public static final String CHANNEL_TUNER_XM_CHANNEL_NAME = "tuner#xmChannelName";
     public static final String CHANNEL_TUNER_XM_NAME = "tuner#xmName";
     public static final String CHANNEL_TUNER_XM_SONG_TITLE = "tuner#xmSongTitle";
+    public static final String CHANNEL_TUNER_DAB_DLS_TEXT = "tuner#dabDlsText";
+    public static final String CHANNEL_TUNER_DAB_SERVICE_NAME = "tuner#dabServiceName";
 
     public static final String CHANNEL_MAIN_POWER = "zone1#power";
     public static final String CHANNEL_MAIN_LISTENING_MODE = "zone1#listeningMode";

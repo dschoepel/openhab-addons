@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -115,6 +116,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
         /* Set the Tuner Preset option values, if active, update with the user provided preset descriptions */
         populateTunerPresets();
+
+        /* Set the Tuner Band option values */
+        populateTunerBands();
 
         /* Initialize IP connector for the NAD device */
         String threadNamePrefix = "OH-Binding-" + getThing().getUID().getAsString();
@@ -580,6 +584,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         break;
                     case TUNER_BAND_SET:
                         nadavrState.setTunerBand(commandPrefix, msg.getValue().toString());
+                        // refreshTunerDetails();
                         break;
                     case TUNER_FM_FREQUENCY_SET:
                         BigDecimal fmFrequency = new BigDecimal(msg.getValue());
@@ -619,6 +624,12 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         break;
                     case TUNER_XM_SONG_TITLE_SET:
                         nadavrState.setTunerXMSongTitle(commandPrefix, msg.getValue().toString());
+                        break;
+                    case TUNER_DAB_DLS_TEXT_SET:
+                        nadavrState.setTunerDABDlsText(commandPrefix, msg.getValue().toString());
+                        break;
+                    case TUNER_DAB_SERVICE_NAME_SET:
+                        nadavrState.setTunerDABServiceName(commandPrefix, msg.getValue().toString());
                         break;
                     default:
                         break;
@@ -675,9 +686,8 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                             connector.sendCommand(queryCmd);
                         } catch (NadException e) {
                             logger.error(
-                                    "Error requesting general state informatin from the NAD device @{}, check for connection issues.  Error: {}",
+                                    "Error requesting general state information from the NAD device @{}, check for connection issues.  Error: {}",
                                     connector.getConnectionName(), e.getLocalizedMessage());
-
                         }
                     }
                 }
@@ -781,6 +791,18 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                 .operator(command.getOperator()).value(command.getValue()).build();
     }
 
+    private void populateTunerBands() {
+        Set<String> bandSet = Arrays.stream(NadCommand.DefaultTunerBandNames.values())
+                .map(prefix -> new String(prefix.name())).collect(Collectors.toSet());
+        String[] bands = bandSet.toArray(new String[bandSet.size()]);
+        Arrays.sort(bands);
+        List<StateOption> options = new ArrayList<>();
+        for (String band : bands) {
+            options.add(new StateOption(band, band));
+        }
+        stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_BAND), options);
+    }
+
     private void populateTunerPresets() {
         List<StateOption> options = new ArrayList<>();
         if (config.arePresetNamesEnabled()) {
@@ -814,5 +836,30 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         /* Update the tuner preset channel options with preset descriptions */
         stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_PRESET),
                 options);
+    }
+
+    protected void refreshTunerDetails() {
+        // When adding new commands be sure to include in array to refresh states...
+        List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_AM_FREQUENCY_QUERY,
+                NadCommand.TUNER_FM_FREQUENCY_QUERY, NadCommand.TUNER_FM_MUTE_QUERY, NadCommand.TUNER_FM_RDS_TEXT_QUERY,
+                NadCommand.TUNER_PRESET_QUERY, NadCommand.TUNER_XM_CHANNEL_QUERY));
+        logger.debug("Refresh tuner details from Handler is called...");
+        // Refresh general state information
+        for (NadCommand nadGeneralCmd : nadGeneralRefreshCmds) {
+            if (nadGeneralCmd.getOperator() == NAD_QUERY) {
+                NadMessage queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
+                        .variable(nadGeneralCmd.getVariable().toString())
+                        .operator(nadGeneralCmd.getOperator().toString()).value(nadGeneralCmd.getValue().toString())
+                        .build();
+                try {
+                    connector.sendCommand(queryCmd);
+                } catch (NadException e) {
+                    logger.error(
+                            "Error requesting general state informatin from the NAD device @{}, check for connection issues.  Error: {}",
+                            connector.getConnectionName(), e.getLocalizedMessage());
+                }
+            }
+        }
+
     }
 }

@@ -8,7 +8,8 @@ Integration details can be found in the NAD Electronics command protocol documen
 
 The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
 
-_DAB Tuner functionality has been included in the binding, but has not been tested._
+>DAB Tuner functionality has been included in the binding, but has not been tested.  
+The NAD control protocol is limiting DAB channels to _read-only_; presets can be used to change stations.
 
 ## Supported Things
 
@@ -172,11 +173,6 @@ Update the NAD Thing configuration with the preset name file including path e.g.
 </td>
 </tr>
 </table>
-
-
-_Describe what is needed to manually configure a thing, either through the UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
-
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
 
 ## Channels
 

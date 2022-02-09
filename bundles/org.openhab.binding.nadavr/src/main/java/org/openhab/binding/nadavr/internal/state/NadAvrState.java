@@ -55,6 +55,8 @@ public class NadAvrState {
     private State tunerXMChannelName = new StringType(" ");
     private State tunerXMName = new StringType(" ");
     private State tunerXMSongTitle = new StringType(" ");
+    private State tunerDABDlsText = StringType.EMPTY;
+    private State tunerDABServiceName = StringType.EMPTY;
 
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
@@ -137,6 +139,10 @@ public class NadAvrState {
                 return tunerXMName;
             case CHANNEL_TUNER_XM_SONG_TITLE:
                 return tunerXMSongTitle;
+            case CHANNEL_TUNER_DAB_DLS_TEXT:
+                return tunerDABDlsText;
+            case CHANNEL_TUNER_DAB_SERVICE_NAME:
+                return tunerDABServiceName;
             /**
              * Main zone
              */
@@ -441,6 +447,41 @@ public class NadAvrState {
                 if (!newVal.equals(this.tunerXMSongTitle)) {
                     this.tunerXMSongTitle = newVal;
                     handler.stateChanged(CHANNEL_TUNER_XM_SONG_TITLE, this.tunerXMSongTitle);
+                }
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerDABDlsText
+     */
+    public void setTunerDABDlsText(String prefix, String tunerDABDlsText) {
+        StringType newVal = StringType.valueOf(tunerDABDlsText);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerDABDlsText)) {
+                    this.tunerDABDlsText = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_DAB_DLS_TEXT, this.tunerDABDlsText);
+                } else if (this.tunerDABDlsText.equals(StringType.EMPTY)) {
+                    handler.stateChanged(CHANNEL_TUNER_DAB_DLS_TEXT, StringType.valueOf(""));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @param prefix
+     * @param tunerDABServiceName
+     */
+    public void setTunerDABServiceName(String prefix, String tunerDABServiceName) {
+        StringType newVal = new StringType(tunerDABServiceName);
+        switch (prefix) {
+            case TUNER:
+                if (!newVal.equals(this.tunerDABServiceName)) {
+                    this.tunerDABServiceName = newVal;
+                    handler.stateChanged(CHANNEL_TUNER_DAB_SERVICE_NAME, this.tunerDABServiceName);
                 }
         }
     }

@@ -19,6 +19,8 @@
 			<channel id="xmChannelName" typeId="xmChannelName"/>
 			<channel id="xmName" typeId="xmName"/>
 			<channel id="xmSongTitle" typeId="xmSongTitle"/>
+            <channel id="dabServiceName" typeId="dabServiceName"/>
+			<channel id="dabDlsText" typeId="dabDlsText"/>
 		</channels>
 	</channel-group-type>
 

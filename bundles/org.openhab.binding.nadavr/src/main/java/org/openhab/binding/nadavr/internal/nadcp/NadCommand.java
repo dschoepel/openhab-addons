@@ -56,6 +56,10 @@ public enum NadCommand {
     TUNER_XM_NAME_SET("", "XM.Name", "=", "%s"),
     TUNER_XM_SONG_TITLE_QUERY("", "XM.Title", "?", ""),
     TUNER_XM_SONG_TITLE_SET("", "XM.Title", "=", "%s"),
+    TUNER_DAB_DLS_TEXT_QUERY("", "DAB.DLS", "?", ""),
+    TUNER_DAB_DLS_TEXT_SET("", "DAB.DLS", "=", "%s"),
+    TUNER_DAB_SERVICE_NAME_QUERY("", "DAB.SERVICE", "?", ""),
+    TUNER_DAB_SERVICE_NAME_SET("", "DAB.SERVICE", "=", "%s"),
     LISTENING_MODE_SET("", "ListeningMode", "=", ""),
     LISTENING_MODE_QUERY("", "ListeningMode", "?", ""),
     VOLUME_SET("", "Volume", "=", "%d"),
@@ -115,6 +119,9 @@ public enum NadCommand {
         Source10;
     }
 
+    /**
+     * DefaultPresetNames used to initialize array to hold preset names for the AVR
+     */
     public static enum DefaultPresetNames {
         P01,
         P02,
@@ -156,7 +163,16 @@ public enum NadCommand {
         P38,
         P39,
         P40;
+    }
 
+    /**
+     * DefaultTunerBandNames used to initialize array to hold tuner band names for the AVR
+     */
+    public static enum DefaultTunerBandNames {
+        AM,
+        FM,
+        XM,
+        DAB;
     }
 
     private static HashMap<String, NadCommand> commandList = new HashMap<String, NadCommand>();
