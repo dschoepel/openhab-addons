@@ -15,12 +15,11 @@ The NAD control protocol is limiting DAB channels to _read-only_; presets can be
 
 | Thing | Type | Description | Connection | Zones | Tested |
 |:-:|:-:|:--|-------|:-:|:-:|
-| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  | Ethernet | 4 |&#10060; No |
-| ![T-758](doc/NAD-T-758-AV.svg) | T758 | Connection to NAD T-758 Surround Sound Receiver | Serial RS232 | 2 | &#10060; No |
 | ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
-| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-785 Surround Sound Receiver | Ethernet | 2 | &#10060; No |
+| ![T-775](doc/NAD-T-775.svg) | T775 | Connection to NAD T-775 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
+| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  | Ethernet | 4 |&#10060; No |
+| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
 | ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet | 4 | &#9989; Yes |
 
 ## Discovery
@@ -36,6 +35,8 @@ Auto discovered things will list the device details in the thing configuration "
 _If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
 
 ```
+# Decide if we want to disable autodiscovery 
+# 
 # Configuration for the NADAvr Binding
 #
 # Default secret key for the pairing of the NADAvr Thing.
@@ -43,9 +44,6 @@ _If your binding requires or supports general configuration settings, please cre
 # This may be changed by the user for security reasons.
 secret=openHABSecret
 ```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/OH-INF/binding``` of your binding._
-
 _If your binding does not offer any generic configurations, you can remove this section completely._
 
 ## Thing Configuration
@@ -176,18 +174,131 @@ Update the NAD Thing configuration with the preset name file including path e.g.
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+NAD AVR Thing Channels are listed by Group
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+**Zone 1 (Main)**
+| Channel Type UID  | Item Type   | Access Mode| Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| zone1#power  | Switch | RW | Main power on/off | 
+| zone1#source | String | RW | Input source for the Main zone ("1" - "10")|
+| zone1#volume | Dimmer| RW | Volume level for the main zone (1% - 100%) |
+| zone1#volumeDB | Number | RW | Volume level of the main zone (-99 to +19 dB) |
+| zone1#mute | Switch| RW | Main volume mute on/off |
+|zone1#listeningMode | String | RW | The main listening mode for this AVR |
 
-| channel  | type   | description                  |
-|----------|--------|------------------------------|
-| control  | Switch | This is the control channel  |
+**Zone 2**
+| Channel Type UID  | Item Type   | Access Mode| Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| zone2#power  | Switch | RW | Zone 2 power on/off |
+| zone2#source | String | RW | Input source for zone 2 ("1" - "11") |
+| zone2#volume | Dimmer | RW |Variable volume level for zone 2 (1% - 100%) |
+| zone2#volumeDB | Number | RW |Variable volume level for zone 2 (-99 to +19 dB) |
+| zone2#mute | Switch| RW | Zone 2 volume mute on/off|
+| zone2#volumeFixedDB | Number | RW | Fixed volume level for zone 2 (-99 to +19 dB) |
+| zone2#volumeFixed | Dimmer | RW | Fixed volume level for zone 2 (1% - 100%) |
+| zone2#volumeControl | String | RW | Volume control setting for zone 2 (Fixed/Variable)|
+
+**Zone 3**
+| Channel Type UID  | Item Type   | Access Mode| Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| zone3#power  | Switch | RW | Zone 3 power on/off |
+| zone3#source | String | RW | Input source for zone 3 ("1" - "11")|
+| zone3#volume | Dimmer | RW |Variable volume level for zone 3 (1% - 100%) |
+| zone3#volumeDB | Number | RW |Variable volume level for zone 3 (-99 to +19 dB) |
+| zone3#mute | Switch| RW | Zone 3 volume mute on/off|
+| zone3#volumeFixedDB | Number | RW | Fixed volume level for zone 3 (-99 to +19 dB) |
+| zone3#volumeFixed | Dimmer | RW | Fixed volume level for zone 3 (1% - 100%) |
+| zone3#volumeControl | String | RW | Volume control setting for zone 3 (Fixed/Variable)|
+
+**Zone 4**
+| Channel Type UID  | Item Type   | Access Mode| Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| zone4#power  | Switch | RW | Zone 4 power on/off |
+| zone4#source | String | RW | Input source for zone 4 ("1" - "11")|
+| zone4#volume | Dimmer | RW |Variable volume level for zone 4 (1% - 100%) |
+| zone4#volumeDB | Number | RW |Variable volume level for zone 4 (-99 to +19 dB) |
+| zone4#mute | Switch| RW | Zone 4 volume mute on/off|
+| zone4#volumeFixedDB | Number | RW | Fixed volume level for zone 4 (-99 to +19 dB) |
+| zone4#volumeFixed | Dimmer | RW | Fixed volume level for zone 4 (1% - 100%) |
+| zone4#volumeControl | String | RW | Volume control setting for zone 4 (Fixed/Variable)|
+
+**Tuner**
+| Channel Type UID  | Item Type   | Access Mode| Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| tuner#band  | String | RW | Tuner broadcast band (AM, FM, XM, or DAB) |
+| tuner#amFrequency | Number | RW | Tuner AM Frequency setting (540 kHz - 1700 kHz) |
+| tuner#fmFrequency | Number | RW | Tuner FM Frequency setting (88.1 mHz - 108.1 mHz) |
+| tuner#fmMute | Switch | RW | Tuner FM Mute mode filters weak signals when set to On |
+| tuner#preset | String | RW | Recall a tuner preset ("1" - "40").  If a preset has not been defined on the AVR, sending that value will be ignored when sent to the AVR. |
+| tuner#presetDetail | String | R | Tuner preset detail (requires user defined file to supply details) format will be "Band-Freq/Channel-Name" (.e.g. FM 105.7 WAPL, XM 26 Classic Vinyl) |
+| tuner#fmRdsText | String | R | Tuner FM Radio Data System Radio text readout |
+| tuner#xmChannel | String | RW | XM Channel number (None, "0"-"255") |
+| tuner#xmChannelName | String | R | XM Channel Name assigned to channel |
+| tuner#xmName | String | R | XM Performing Artist Name currently playing |
+| tuner#xmSongTitle | String | R | XM Song Title currently playing |
+| tuner#dabServiceName | String | R | DAB Broadcast station service name or id |
+| tuner#dabDlsText | String | R | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station |
 
 ## Full Example
+example.things
+```perl
+Thing nadavr:T787:1 "NAD T-787" [ zoneCount=4, hostname="T787-01F2", ipAddress="192.168.0.144", port=23, enablePresetNames=true, presetNamesFilePath="/etc/openhab/scripts/Preset_Names.xml" ]
+```
+example.items
+```java
+// Main zone items
+Switch    NADT787_Zone1Power        "Main power"             {channel="nadavr:T787:1:zone1#power"}
+String    NADT787_Zone1Source       "Main input source"      {channel="nadavr:T787:1:zone1#source"}
+Dimmer    NADT787_Zone1Volume       "Main volume"            {channel="nadavr:T787:1:zone1#volume"}
+Switch    NADT787_Zone1Mute         "Main mute"              {channel="nadavr:T787:1:zone1#mute"}
+// Zone 2 items
+Switch    NADT787_Zone2Power        "Zone 2 power"           {channel="nadavr:T787:1:zone1#power"}
+Dimmer    NADT787_Zone2Volume       "Zone 2 volume"          {channel="nadavr:T787:1:zone1#volume"}
+Switch    NADT787_Zone2Mute         "Zone 2 mute"            {channel="nadavr:T787:1:zone1#mute"}
+String    NADT787_Zone2Source       "Zone 2 input source"    {channel="nadavr:T787:1:zone2#source"}
+// Tuner items
+String    NADT787_TunerBand         "Tuner band"             {channel="nadavr:T787:1:tuner#band"}
+String    NADT787_TunerPreset       "Tuner preset"           {channel="nadavr:T787:1:tuner#preset"}
+String    NADT787_TunerFmRdsText    "Tuner FM rds text"      {channel="nadavr:T787:1:tuner#fmRdsText"}
+```
+example.sitemap
+```java
+sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example" 
+    {
+        Frame {
+            Text label="NAD T-787 Surround Sound Receiver" {
+                Frame label="Main" {
+                   Default item=NADT787_Zone1Power label="Power on/off"
+                    Default item=NADT787_Zone1Source label="Input Source"
+                    Default item=NADT787_Zone1Volume label="Volume"
+                    Default item=NADT787_Zone1Mute label="Volume Mute" 
+                }
 
+                Frame label="Zone 2" {
+                    Default item=NADT787_Zone2Power label="Power on/off"
+                    Default item=NADT787_Zone2Source label="Input Source"
+                    Default item=NADT787_Zone2Volume label="Volume"
+                    Default item=NADT787_Zone2Mute label="Volume Mute"
+                }
+
+                Frame label="Tuner"{
+                    Default item=NADT787_TunerBand label="Broadcast Band"
+                    Default item=NADT787_TunerPreset label="Preset"
+                    Default item=NADT787_TunerFmRdsText label="FM RDS Text Stream"
+                }
+            }
+        }
+}
+```
 _Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
 
 ## Any custom content here!
 
 _Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+
+<ul>
+<li>The NAD T-777v3 does not support XM or DAB tuner channels.</li>
+<li>If custom input names are set/configured on the AVR, they will be used for the zone(s) source names channels.</li>
+<li>Channels for the Main listening mode, XM and DAB tuner bands are flaged as Advanced.  To work with/view them in the OpenHab UI, tick the Show advanced box on the screen.</li>
+<li> </li> 
+</ul>

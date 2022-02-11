@@ -87,11 +87,18 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
     private Object sequenceLock = new Object();
 
+    /**
+     * @param thing
+     * @param stateDescriptionProvider
+     */
     public NadAvrHandler(Thing thing, NadAvrStateDescriptionProvider stateDescriptionProvider) {
         super(thing);
         this.stateDescriptionProvider = stateDescriptionProvider;
     }
 
+    /**
+     *
+     */
     @Override
     public void initialize() {
         if (logger.isDebugEnabled()) {
@@ -105,7 +112,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         if (!checkConfiguration(config)) {
             return;
         } else {
-            logger.info("NadHandler using configuration: {}", config.toString());
+            logger.info("nadavr:NadHandler using configuration: {}", config.toString());
         }
 
         /* Initialize the list of commands this binding supports */
@@ -148,6 +155,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void dispose() {
         if (logger.isDebugEnabled()) {
@@ -232,6 +242,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         return numberOfInputSources;
     }
 
+    /**
+     * @param config
+     */
     private void configureZoneChannels(NadAvrConfiguration config) {
         logger.debug("Configuring zone channels");
         Integer zoneCount = config.getZoneCount();
@@ -383,12 +396,15 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         logger.debug("closeConnection(): disconnected");
     }
 
+    /**
+     *
+     */
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         try {
             switch (channelUID.getId()) {
                 /**
-                 * General settings
+                 * Tuner settings
                  */
                 case CHANNEL_TUNER_BAND:
                     connector.sendTunerBandCommand(command, Prefix.Tuner);
@@ -412,7 +428,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     connector.sendTunerXMChannelCommand(command, Prefix.Tuner);
                     break;
                 /**
-                 * Main zone
+                 * Main zone (Zone 1)
                  */
                 case CHANNEL_MAIN_POWER:
                     connector.sendPowerCommand(command, Prefix.Main);
@@ -524,6 +540,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void receivedMessage(NadMessage msg) {
         logger.debug("Received status update from NAD Device @{}: data={}", connector.getConnectionName(), msg);
@@ -641,6 +660,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     *
+     */
     private void checkStatus() {
         // Sends a series of state query commands over the connection
         logger.debug("NADAvrHandler - checkStatus() started.... connector is started = {}", connector.isConnected());
@@ -765,6 +787,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void stateChanged(String channelID, State state) {
         /* Only update channels if they are linked to an item */
@@ -773,6 +798,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void connectionError(@Nullable String errorMessage) {
         if (logger.isDebugEnabled()) {
@@ -786,11 +814,18 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
     }
 
+    /**
+     * @param command
+     * @return
+     */
     private NadMessage buidMsgFromCommand(NadCommand command) {
         return new NadMessage.MessageBuilder().prefix(command.getPrefix()).variable(command.getVariable())
                 .operator(command.getOperator()).value(command.getValue()).build();
     }
 
+    /**
+     *
+     */
     private void populateTunerBands() {
         Set<String> bandSet = Arrays.stream(NadCommand.DefaultTunerBandNames.values())
                 .map(prefix -> new String(prefix.name())).collect(Collectors.toSet());
@@ -803,6 +838,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_BAND), options);
     }
 
+    /**
+     *
+     */
     private void populateTunerPresets() {
         List<StateOption> options = new ArrayList<>();
         if (config.arePresetNamesEnabled()) {
@@ -838,6 +876,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                 options);
     }
 
+    /**
+     *
+     */
     protected void refreshTunerDetails() {
         // When adding new commands be sure to include in array to refresh states...
         List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_AM_FREQUENCY_QUERY,

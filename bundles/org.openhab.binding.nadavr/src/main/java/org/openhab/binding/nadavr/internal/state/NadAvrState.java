@@ -710,25 +710,27 @@ public class NadAvrState {
      *         preset.
      */
     public StringType getPresetDetail(StringType presetKey, String fileName) {
-        // TODO if filename is empty don't parse it....
-        List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
-        Map<StringType, NadPreset> presetMap = new ConcurrentHashMap<StringType, NadPreset>();
-        for (NadPreset pm : tunerPresetDetails) {
-            StringType key = new StringType(pm.getID());
-            presetMap.put(key, pm);
-        }
         StringType presetDetail = new StringType(UnDefType.UNDEF.toString());
-        String temp = presetKey.toString();
-        StringType key = new StringType(temp);
-        if (temp.length() < 2) {
-            temp = "0" + temp;
-            key = new StringType(temp);
-        }
-        if (presetMap.containsKey(key)) {
-            NadPreset pFromMap = presetMap.getOrDefault(key,
-                    new NadPreset(key.toString(), UnDefType.UNDEF.toString(), "", ""));
-            String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
-            presetDetail = StringType.valueOf(fromMap);
+        logger.debug("fileName is {} long....", fileName.length());
+        if (!fileName.isBlank()) {
+            List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
+            Map<StringType, NadPreset> presetMap = new ConcurrentHashMap<StringType, NadPreset>();
+            for (NadPreset pm : tunerPresetDetails) {
+                StringType key = new StringType(pm.getID());
+                presetMap.put(key, pm);
+            }
+            String temp = presetKey.toString();
+            StringType key = new StringType(temp);
+            if (temp.length() < 2) {
+                temp = "0" + temp;
+                key = new StringType(temp);
+            }
+            if (presetMap.containsKey(key)) {
+                NadPreset pFromMap = presetMap.getOrDefault(key,
+                        new NadPreset(key.toString(), UnDefType.UNDEF.toString(), "", ""));
+                String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
+                presetDetail = StringType.valueOf(fromMap);
+            }
         }
         return presetDetail;
     }

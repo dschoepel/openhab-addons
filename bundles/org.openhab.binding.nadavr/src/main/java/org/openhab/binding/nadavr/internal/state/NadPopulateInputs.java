@@ -61,7 +61,6 @@ public class NadPopulateInputs {
         this.numberOfInputSources = numberOfInputSources;
     }
 
-    // TODO modify to support NADModel.getNumberOfInputSources
     private void populateInputs() throws NadException {
         isRunning = true;
         List<StateOption> options = new ArrayList<>();
