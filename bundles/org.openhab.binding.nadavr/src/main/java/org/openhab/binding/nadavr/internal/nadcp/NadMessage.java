@@ -33,6 +33,11 @@ public class NadMessage {
     private String operator = "";
     private String value = "";
 
+    /**
+     * Constructor for NAD Protocol message
+     *
+     * @param messageBuilder
+     */
     private NadMessage(MessageBuilder messageBuilder) {
         this.prefix = messageBuilder.prefix;
         this.variable = messageBuilder.variable;
@@ -40,36 +45,40 @@ public class NadMessage {
         this.value = messageBuilder.value;
     }
 
+    /**
+     * Method to get the prefix of a command protocol formated response from an NAD Device
+     *
+     * @return prefix - from an NAD device response (usually Zone or Tuner)
+     */
     public String getPrefix() {
         return prefix;
     }
 
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
+    /**
+     * Method to get the variable portion of a command protocol formated response from an NAD Device
+     *
+     * @return variable - from an NAD device response (details related to a specific Prefix, e.g. power, volume, etc)
+     */
     public String getVariable() {
         return variable;
     }
 
-    public void setVariable(String variable) {
-        this.variable = variable;
-    }
-
+    /**
+     * Method to get the operator portion of a command protocol formated response from an NAD Device
+     *
+     * @return operator - from an NAD device response (can be one of ?, or =)
+     */
     public String getOperator() {
         return operator;
     }
 
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
-
+    /**
+     * Method to get the value portion of a command protocol formated response from an NAD Device
+     *
+     * @return value - from an NAD device response (followed by an = sign) is current state of the device setting
+     */
     public String getValue() {
         return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     @Override
@@ -96,26 +105,56 @@ public class NadMessage {
         private String operator = "";
         private String value = "";
 
+        /**
+         * Method to assign a prefix to be used in the NAD protocol command
+         *
+         * @param prefix - to be used for the command (usually zone or tuner)
+         * @return prefix
+         */
         public MessageBuilder prefix(String prefix) {
             this.prefix = prefix;
             return this;
         }
 
+        /**
+         * Method to assign a variable to be used in the NAD protocol command
+         *
+         * @param variable - to be used in the NAD protocol command (.e.g. details related to a specific
+         *            Prefix, e.g. power, volume, etc)
+         * @return variable
+         */
         public MessageBuilder variable(String variable) {
             this.variable = variable;
             return this;
         }
 
+        /**
+         * Method to assign an operator to be used in the NAD protocol command
+         * 
+         * @param operator - can be one of ?, or =
+         * @return operator
+         */
         public MessageBuilder operator(String operator) {
             this.operator = operator;
             return this;
         }
 
+        /**
+         * Method to assign an value to be used in the NAD protocol command
+         *
+         * @param value - setting to be changed, can be text or number or +, - depending on the variable
+         * @return
+         */
         public MessageBuilder value(String value) {
             this.value = value;
             return this;
         }
 
+        /**
+         * Method to assemble the four components of a NAD control protocol command
+         *
+         * @return NadMessage - fully assembled message in the NAD control protocol format
+         */
         public NadMessage build() {
             return new NadMessage(this);
         }

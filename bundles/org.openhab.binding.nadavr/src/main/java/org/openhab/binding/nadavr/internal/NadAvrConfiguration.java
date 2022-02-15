@@ -25,9 +25,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public class NadAvrConfiguration {
 
     /**
-     * The host name of the NAD A/V Receiver
+     * The refresh interval in seconds for the NAD A/V Receiver
      */
-    public String hostname = "";
+    public int refreshInterval = 0; // 0=default (disabled)
 
     /**
      * The IP Address for the NAD A/V Receiver
@@ -59,75 +59,39 @@ public class NadAvrConfiguration {
 
     private BigDecimal mainVolumeMax = MAX_VOLUME;
 
-    public BigDecimal getMainVolumeMax() {
-        return mainVolumeMax;
+    /**
+     * @return zoneCount to be used to dynamically configure the zone channels for the NAD AVR thing
+     */
+    public int getRefreshInterval() {
+        return refreshInterval;
     }
 
-    public void setMainVolumeMax(BigDecimal mainVolumeMax) {
-        this.mainVolumeMax = mainVolumeMax;
-    }
-
-    public Integer getZoneCount() {
+    /**
+     * @return zoneCount to be used to dynamically configure the zone channels for the NAD AVR thing
+     */
+    public int getZoneCount() {
         return zoneCount;
     }
 
-    public void setZoneCount(Integer count) {
-        Integer zoneCount = count;
-        this.zoneCount = zoneCount;
-    }
-
+    /**
+     * @return enablePresetNames true if a file has been provided for the tuner preset names assigned to the numeric
+     *         preset numbers
+     */
     public boolean arePresetNamesEnabled() {
         return enablePresetNames;
     }
 
-    public void setenablePresetNames(boolean enablePresetNames) {
-        this.enablePresetNames = enablePresetNames;
-    }
-
-    // public NADAvrConnector getConnector() {
-    // return connector;
-    // }
-    //
-    // public void setConnector(NADAvrConnector connector) {
-    // this.connector = connector;
-    // }
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public int getTelnetPort() {
-        return telnetPort;
-    }
-
-    public void setTelnetPort(int telnetPort) {
-        this.telnetPort = telnetPort;
-    }
-
+    /**
+     * @return presetNamesFilePath for xml file that defines the tuner preset details
+     */
     public String getPresetNamesFilePath() {
         return presetNamesFilePath;
     }
 
-    public void setPresetNamesFilePath(String presetNamesFilePath) {
-        this.presetNamesFilePath = presetNamesFilePath;
-    }
-
     @Override
     public String toString() {
-        return "NadAvrConfiguration [hostname=" + hostname + ", ipAddress=" + ipAddress + ", telnetPort=" + telnetPort
-                + ", enablePresetNames=" + enablePresetNames + ", presetNamesFilePath=" + presetNamesFilePath
-                + ", zoneCount=" + zoneCount + ", mainVolumeMax=" + mainVolumeMax + "]";
+        return "NadAvrConfiguration [ipAddress=" + ipAddress + ", telnetPort=" + telnetPort + ", enablePresetNames="
+                + enablePresetNames + ", presetNamesFilePath=" + presetNamesFilePath + ", zoneCount=" + zoneCount
+                + ", mainVolumeMax=" + mainVolumeMax + "]";
     }
 }

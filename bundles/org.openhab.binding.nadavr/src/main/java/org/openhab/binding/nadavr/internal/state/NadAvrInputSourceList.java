@@ -20,7 +20,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.DefaultSourceNames;
 
 /**
- * The {@link NadAvrInputSourceList.java} class for An Array that is used to store input source names.
+ * The {@link NadAvrInputSourceList.java} class for An Array that is used to store/update input source names
+ * dynamically.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -32,7 +33,7 @@ public class NadAvrInputSourceList {
     /**
      * Initialize source names list with default source names
      *
-     * @return sourceNames array
+     * @return sourceNames - array
      */
     public static String[] sourceNames() {
         Set<String> nameSet = Arrays.stream(DefaultSourceNames.values()).map(prefix -> new String(prefix.name()))

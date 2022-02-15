@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadXmRefreshChannelInfo.java} class is used to refresh the XM Channel details for the
+ * The {@link NadXmRefreshChannelInfo.java} class is used to refresh the details for the
  * selected XM channel.
  *
  * @author Dave J Schoepel - Initial contribution
@@ -43,7 +43,7 @@ public class NadXmRefreshChannelInfo {
     /**
      * Constructor for XM Refresh Channel Info thread
      *
-     * @param connection to NAD Device to retrieve the XM Channel Info from the tuner
+     * @param connection - to NAD Device to retrieve the XM Channel Info from the tuner
      */
     public NadXmRefreshChannelInfo(NadIpConnector connection) {
         this.connection = connection;
@@ -54,7 +54,7 @@ public class NadXmRefreshChannelInfo {
      * current Channel name, song and title playing on the XM channel. This response will be received by the
      * NadAvrHandler and used to update the channels.
      *
-     * @throws NadException
+     * @throws NadException - Send diagnostic messages to help troubleshoot errors
      */
     public void getXmChannelInfo() throws NadException {
         if (logger.isDebugEnabled()) {
@@ -98,7 +98,7 @@ public class NadXmRefreshChannelInfo {
     /**
      * This method starts the thread to refresh XM channel info from the NAD Tuner Source
      *
-     * @param threadHost is the NAD Device host name to be associated with this thread
+     * @param threadHost - is the NAD Device host name to be associated with this thread
      */
     public void start(String threadHost) {
         boolean isXmShutdown = false;
@@ -106,7 +106,6 @@ public class NadXmRefreshChannelInfo {
         if (!isXmStarted()) {
             isXmShutdown = true;
         }
-
         if (isXmShutdown) {
             logger.debug("xmRefreshChannelInfo is starting...");
             xmExecutor.scheduleWithFixedDelay(xmRefreshChannelInfoThread, getXmInitialDelay(), getXmPeriodDelay(),

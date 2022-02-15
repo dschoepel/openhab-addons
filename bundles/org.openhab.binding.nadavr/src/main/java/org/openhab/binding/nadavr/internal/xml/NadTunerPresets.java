@@ -51,15 +51,24 @@ public class NadTunerPresets {
 
     protected boolean validFileFormat = false;
 
-    public void setPreset(List<NadPreset> preset) {
-        this.preset = preset;
-    }
-
+    /**
+     * Method to validate preset name file can be found and the entries are in the correct format
+     *
+     * @param fileName - preset file name from the NAD AVR thing configuration
+     * @return true if file was found and it is formated correctly, false if not found or with errors
+     */
     public boolean presetFileIsValid(String fileName) {
         parsePresets(fileName);
         return validFileFormat;
     }
 
+    /**
+     * Method to check for valid format of preset names xml file and if valid, populate the preset names array with the
+     * details obtained from the file.
+     *
+     * @param fileName - provided by user in the NAD AVR thing configuration containing preset details
+     * @return presetList containing preset details to be used to update the options for the tuner preset channel
+     */
     public List<NadPreset> parsePresets(String fileName) {
         validFileFormat = true;
         List<NadPreset> presetList = new ArrayList<>();

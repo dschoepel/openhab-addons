@@ -16,7 +16,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 
 /**
- * The {@link NadAvrStateChangedListener.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrStateChangedListener.java} class listens for state changes/errors and passes along to Handler.
  *
  * @author Dave J Schoepel - Initial contribution
  */

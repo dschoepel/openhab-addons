@@ -29,8 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadAvrHandlerFactory} is responsible for creating things and thing
- * handlers.
+ * The {@link NadAvrHandlerFactory} is responsible for creating NAD AVR things and thing handlers.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -45,7 +44,9 @@ public class NadAvrHandlerFactory extends BaseThingHandlerFactory {
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         logger.debug("supportsThingType is using thingTypeUID: {}", thingTypeUID);
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
-            logger.debug("supportsThingType found thingTypeUID: {} in SUPPORTED_THING_TYPE_UIDS.", thingTypeUID);
+            if (logger.isDebugEnabled()) {
+                logger.debug("supportsThingType found thingTypeUID: {} in SUPPORTED_THING_TYPE_UIDS.", thingTypeUID);
+            }
         }
         return SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID);
     }
@@ -53,8 +54,10 @@ public class NadAvrHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-        logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
-                SUPPORTED_THING_TYPE_UIDS);
+        if (logger.isDebugEnabled()) {
+            logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
+                    SUPPORTED_THING_TYPE_UIDS);
+        }
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
             return new NadAvrHandler(thing, stateDescriptionProvider);
         }

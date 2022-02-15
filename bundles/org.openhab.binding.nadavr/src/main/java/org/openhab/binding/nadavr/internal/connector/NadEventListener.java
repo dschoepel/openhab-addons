@@ -17,7 +17,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.nadcp.NadMessage;
 
 /**
- * The {@link NadEventListener.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadEventListener.java} class to listens for incoming messages from the NAD device and catches diagnostic
+ * messages related to connection errors..
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -27,14 +28,14 @@ public interface NadEventListener {
     /**
      * The {@link NadIpConnector} client has received a line from the NAD Device.
      *
-     * @param msg Is as state message received from the NAD device in format described in NadProtocol
+     * @param msg - Is as state message received from the NAD device in format described in NadProtocol
      */
     void receivedMessage(NadMessage msg);
 
     /**
      * The {@link NadIpConnector} client has problems connecting to the NAD Device.
      *
-     * @param errorMsg Reason for the communication/connection error
+     * @param errorMsg - Reason for the communication/connection error
      */
     void connectionError(@Nullable String errorMsg);
 }

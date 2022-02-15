@@ -32,38 +32,37 @@ Auto discovered things will list the device details in the thing configuration "
 
 ## Binding Configuration
 
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
+The binding can auto-discover the NAD AVRs present on your local network. The auto-discovery is enabled by default. To disable it, you can create a file in the services directory called nadavr.cfg with the following content:
 
-```
-# Decide if we want to disable autodiscovery 
+```java
+# Configuration for the nadavr binding
 # 
-# Configuration for the NADAvr Binding
-#
-# Default secret key for the pairing of the NADAvr Thing.
-# It has to be between 10-40 (alphanumeric) characters.
-# This may be changed by the user for security reasons.
-secret=openHABSecret
+# Auto discovery parameter 
+# true to enable, false to disable  
+org.openhab.nadavr:enableAutoDiscovery=false
 ```
-_If your binding does not offer any generic configurations, you can remove this section completely._
+
+This configuration parameter only controls the NAD AVR auto-discovery process, not the openHAB auto-discovery. Moreover, if the openHAB auto-discovery is disabled, the NAD AVR auto-discovery is disabled too.
 
 ## Thing Configuration
 
 The NAD AVR thing has the following configuration parameters:
 
-| Parameter | Parameter Id | Req/Opt | Description | Default |  Type | Accepted Values |
-| :--       | :--          | :-:               | :--         | :-:     | :-: | :--             |
-| Zone Count of the Receiver | zoneCount | Required | User can configured number of zones to be configured | 2 | Integer | 1 - maxZones listed in Thing properties |  
-| Host Name | hostname     | Required          | Host name assigned to device on the local network | | String | Host name or IPv4 address |
-| IP Address | ipAddress   | Required          | The IPv4 address assigned the the NAD Receiver | | String | Any valid IPv4 address |
-| Port      | telnetPort   | Required           | The network port for Telnet connection | 23 | Integer | Any valid TCP port number |
-| Enable Preset Detail | enablePresetNames | Optional | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
-| Preset Names File | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
+| Parameter | Parameter Id | Req/Opt | Description | Default | Type | Accepted Values |
+| :--  | :-- | :-: | :-- | :-: | :-: | :-- |
+| Refresh Interval | refreshInterval | Optional,<br>*Advanced | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
+| Zone Count of the Receiver | zoneCount | Required | User can configured number of zones to be configured | 1 | Integer | 1 - maxZones listed in Thing properties |  
+| IP Address | ipAddress   | Required | The IPv4 address assigned the the NAD Receiver | | String | Any valid IPv4 address |
+| Port      | telnetPort   | Required | The network port for Telnet connection | 23 | Integer | Any valid TCP port number |
+| Enable Preset Detail | enablePresetNames | Optional,<br>*Advanced | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
+| Preset Names File | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true,<br>*Advanced | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
 
 Since the NAD control protocol does not provide a means to retrieve the descriptive information for tuner presets, this binding provides the option to let the user create a file that can be used to give more meaning to the tuner preset channel.
 
 **Note:** _If the NAD device does not have a tuner, then tuner preset name information will be ignored._
 
 #### Preset Names XML file Example 
+
 Tuner preset descriptions can be stored in an xml file that is then used to override the default (P01 - P40) options you're provided when selecting the tuner preset channel. 
 
 **Steps to create file:**
@@ -240,11 +239,15 @@ NAD AVR Thing Channels are listed by Group
 | tuner#dabDlsText | String | R | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station |
 
 ## Full Example
+
 example.things
+
 ```perl
-Thing nadavr:T787:1 "NAD T-787" [ zoneCount=4, hostname="T787-01F2", ipAddress="192.168.0.144", port=23, enablePresetNames=true, presetNamesFilePath="/etc/openhab/scripts/Preset_Names.xml" ]
+Thing nadavr:T787:1 "NAD T-787" [ zoneCount=4, ipAddress="192.168.0.144", port=23, enablePresetNames=true, presetNamesFilePath="/etc/openhab/scripts/Preset_Names.xml" ]
 ```
+
 example.items
+
 ```java
 // Main zone items
 Switch    NADT787_Zone1Power        "Main power"             {channel="nadavr:T787:1:zone1#power"}
@@ -261,7 +264,9 @@ String    NADT787_TunerBand         "Tuner band"             {channel="nadavr:T7
 String    NADT787_TunerPreset       "Tuner preset"           {channel="nadavr:T787:1:tuner#preset"}
 String    NADT787_TunerFmRdsText    "Tuner FM rds text"      {channel="nadavr:T787:1:tuner#fmRdsText"}
 ```
+
 example.sitemap
+
 ```java
 sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example" 
     {
@@ -290,6 +295,7 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
         }
 }
 ```
+
 _Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
 
 ## Any custom content here!

@@ -46,8 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadConnection} abstract class for communicating with an
- * NAD device.
+ * The {@link NadConnection} abstract class for communicating with an NAD AV Receiver device.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -90,12 +89,17 @@ public abstract class NadConnector {
 
     private List<NadEventListener> listeners = new ArrayList<>();
 
+    /**
+     * Constructor for NAD device IP connection
+     *
+     * @param msgReaderThreadName - name to be assigned to connection thread
+     */
     public NadConnector(String msgReaderThreadName) {
         this.msgReaderThreadName = msgReaderThreadName;
     }
 
     /**
-     * Get whether the connection is established or not
+     * Mehtod to get whether the connection is established or not
      *
      * @return true if the connection is established
      */
@@ -104,7 +108,7 @@ public abstract class NadConnector {
     }
 
     /**
-     * Set whether the connection is established or not
+     * Method to set whether the connection is established or not
      *
      * @param connected true if the connection is established
      */
@@ -113,28 +117,29 @@ public abstract class NadConnector {
     }
 
     /**
-     * Set the thread that handles the feedback messages
+     * Method to set the thread that handles the feedback messages
      *
-     * @param readerThread the thread
+     * @param readerThread - the thread
      */
     protected void setMsgReaderThread(Thread readerThread) {
         this.msgReaderThread = readerThread;
     }
 
     /**
-     * Open the connection with the NAD device
+     * Method to open the connection with the NAD device
      *
-     * @throws RotelException - In case of any problem
+     * @throws NadException - In case of any problem, provide a description for troubleshooting
      */
     public abstract void open() throws NadException;
 
     /**
-     * Close the connection with the NAD device
+     * Method to close the connection with the NAD device
      */
     public abstract void close();
 
     /**
-     * Stop the thread that handles the feedback messages and close the opened input and output streams
+     * Method to ensure the connection is properly closed, stop the thread that handles the feedback messages and close
+     * the opened input and output streams.
      */
     protected void cleanup() {
         Thread readerThread = this.msgReaderThread;
@@ -168,7 +173,7 @@ public abstract class NadConnector {
      * Reads some number of bytes from the input stream and stores them into the buffer array b. The number of bytes
      * actually read is returned as an integer.
      *
-     * @param dataBuffer the buffer into which the data is read.
+     * @param dataBuffer - the buffer into which the data is read.
      *
      * @return the total number of bytes read into the buffer, or -1 if there is no more data because the end of the
      *         stream has been reached.
@@ -191,20 +196,12 @@ public abstract class NadConnector {
         }
     }
 
-    // /**
-    // * Sends a command to NAD device.
-    // *
-    // * @param cmd NAD command to send
-    // */
-    // public void send(final String prefix, final String variable, final String operator, final String value) {
-    // try {
-    // sendCommand(new NadMessage.MessageBuilder().prefix(prefix).variable(variable).operator(operator)
-    // .value(value).build());
-    // } catch (Exception e) {
-    // logger.warn("Could not send command to device on {}:{}: ", ip, port, e);
-    // }
-    // }
-
+    /**
+     * Method to send a command in the NAD command protocol format to the NAD Device
+     *
+     * @param msg - NAD formated message to be sent
+     * @throws NadException - details of any errors resulting from sending the command message to the NAD device
+     */
     public void sendCommand(NadMessage msg) throws NadException {
         String data = NadProtocol.createNADCommand(msg);
         byte[] message = new byte[0];
@@ -217,9 +214,6 @@ public abstract class NadConnector {
             dataOut.write(message);
             dataOut.flush();
         } catch (IOException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Send command \"{}\" failed: {}", msg.toString(), e.getMessage());
-            }
             throw new NadException("Send command \"" + msg.toString() + "\" failed", e);
         }
         if (logger.isDebugEnabled()) {
@@ -228,37 +222,41 @@ public abstract class NadConnector {
     }
 
     /**
-     * Add a listener to the list of listeners to be notified with events
+     * Method to add a listener to the list of listeners to be notified with events
      *
-     * @param listener the listener
+     * @param listener - the event listener to be added
      */
     public void addEventListener(NadEventListener listener) {
         listeners.add(listener);
     }
 
     /**
-     * Remove a listener from the list of listeners to be notified with events
+     * Method to remove a listener from the list of listeners to be notified with events
      *
-     * @param listener the listener
+     * @param listener - the event listener to be removed
      */
     public void removeEventListener(NadEventListener listener) {
         listeners.remove(listener);
     }
 
     /**
-     * Analyze an incoming message and dispatch corresponding (key, value) to the event listeners
+     * Method to analyze an incoming message and dispatch corresponding (key, value) to the event listeners
      *
-     * @param incomingMessage the received message
+     * @param incomingMessage - the message received from the NAD device
      */
     public void handleIncomingMessage(byte[] incomingMessage) {
-        logger.debug("handleIncomingMessage: bytes {}", HexUtils.bytesToHex(incomingMessage));
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("handleIncomingMessage: bytes {}", HexUtils.bytesToHex(incomingMessage));
+        }
+        // Check for errors
         if (READ_ERROR == incomingMessage) {
             sendConnectionErrorEvent("Read error on incoming message \"" + HexUtils.bytesToHex(incomingMessage) + "\"");
             return;
         }
         try {
+            // Validate the message received from the NAD device
             NadMessage message = NadProtocol.validateResponse(incomingMessage);
+            // When a message has a prefix, send it to the event listeners so that the thing handler can process it
             if (!message.getPrefix().equals("")) {
                 sendMessageEvent(message);
             }
@@ -268,12 +266,12 @@ public abstract class NadConnector {
     }
 
     /**
-     * Sends Power (ON/OFF/Status) commands for a specific zone
+     * Method to send Power (ON/OFF/Status) commands for a specific zone
      *
-     * @param command POWER_QUERY, POWER_SET)
-     * @param zone (see Prefix eNum for command prefixes)
-     * @throws NadUnsupportedCommandTypeException
-     * @throws NadException
+     * @param command - POWER_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
      */
     public void sendPowerCommand(Command command, Prefix zone) throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
@@ -284,7 +282,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Power command to \"" + zone + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.POWER_SET.getVariable().toString())
@@ -297,12 +297,12 @@ public abstract class NadConnector {
     }
 
     /**
-     * Sends Listening Mode (Set/Status) command for a specific zone
+     * Method to send Listening Mode setting command for a specific zone
      *
-     * @param command
-     * @param zone
-     * @throws NadUnsupportedCommandTypeException
-     * @throws NadException
+     * @param command - LISTENING_MODE_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
      */
     public void sendListeningModeCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
@@ -312,7 +312,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"else {
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Listening Mode command to \"" + zone
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
 
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
@@ -326,12 +328,12 @@ public abstract class NadConnector {
     }
 
     /**
-     * Sends Tuner Band (Set/Status) command
+     * Method to send the Tuner Band setting command
      *
-     * @param command
-     * @param zone
-     * @throws NadUnsupportedCommandTypeException
-     * @throws NadException
+     * @param command - TUNER_BAND_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
      */
     public void sendTunerBandCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
@@ -341,7 +343,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"else {
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Tuner Band command to \"" + tuner
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
 
         NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
@@ -354,6 +358,14 @@ public abstract class NadConnector {
         }
     }
 
+    /**
+     * Method to send the source setting command for a specific zone
+     *
+     * @param command - SOURCE_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendSourceCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
@@ -362,7 +374,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"else {
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Source command to \"" + zone + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.SOURCE_SET.getVariable().toString())
@@ -374,6 +388,14 @@ public abstract class NadConnector {
         }
     }
 
+    /**
+     * Method to send the mute setting command for a specific zone
+     *
+     * @param command - MUTE_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendMuteCommand(Command command, Prefix zone) throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command == OnOffType.ON) {
@@ -383,7 +405,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Mute command to \"" + zone + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.MUTE_SET.getVariable().toString())
@@ -395,7 +419,15 @@ public abstract class NadConnector {
         }
     }
 
-    // Command represents a % from the dimmer type control, need to convert to dB
+    /**
+     * Method to send the volume setting command for a specific zone. This value represents a
+     * percentage for the dimmer type control, it needs to be converted to dB before sending
+     *
+     * @param command - VOLUME_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendVolumeCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
@@ -410,7 +442,9 @@ public abstract class NadConnector {
         } else if (command instanceof DecimalType) {
             cmdValue = toNadValue(((DecimalType) command));
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Volume command to \"" + zone + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.VOLUME_SET.getVariable().toString())
@@ -422,6 +456,14 @@ public abstract class NadConnector {
         }
     }
 
+    /**
+     * Method to send the fixed volume setting command for a specific zone. Does not apply to the Main (Zone1).
+     *
+     * @param command - VOLUME_FIXED_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendVolumeFixedCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
@@ -436,7 +478,9 @@ public abstract class NadConnector {
         } else if (command instanceof DecimalType) {
             cmdValue = toNadValue(((DecimalType) command));
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Volume Fixed command to \"" + zone
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.VOLUME_FIXED_SET.getVariable().toString())
@@ -448,7 +492,15 @@ public abstract class NadConnector {
         }
     }
 
-    public void sendTunerFmFrequencyCommand(Command command, Prefix zone)
+    /**
+     * Method to send the FM frequency setting command to the tuner.
+     *
+     * @param command - TUNER_FM_FREQUENCY_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
+    public void sendTunerFmFrequencyCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command instanceof RefreshType) {
@@ -460,9 +512,11 @@ public abstract class NadConnector {
         } else if (command instanceof DecimalType) {
             cmdValue = toDenonFloatValue(((DecimalType) command));
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send FM Frequency command to \"" + tuner
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_FM_FREQUENCY_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_FM_FREQUENCY_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -472,7 +526,15 @@ public abstract class NadConnector {
         }
     }
 
-    public void sendTunerAmFrequencyCommand(Command command, Prefix zone)
+    /**
+     * Method to send the AM frequency setting command to the tuner.
+     *
+     * @param command - TUNER_AM_FREQUENCY_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
+    public void sendTunerAmFrequencyCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command instanceof RefreshType) {
@@ -484,9 +546,11 @@ public abstract class NadConnector {
         } else if (command instanceof DecimalType) {
             cmdValue = toNadValue(((DecimalType) command));
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send AM Frequency command to \"" + tuner
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_AM_FREQUENCY_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_AM_FREQUENCY_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -496,7 +560,15 @@ public abstract class NadConnector {
         }
     }
 
-    public void sendTunerPresetCommand(Command command, Prefix zone)
+    /**
+     * Method to send the preset selection setting command to the tuner.
+     *
+     * @param command - TUNER_PRESET_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
+    public void sendTunerPresetCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command instanceof RefreshType) {
@@ -508,9 +580,11 @@ public abstract class NadConnector {
         } else if (command instanceof StringType) {
             cmdValue = command.toString();
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Preset command to \"" + tuner + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_PRESET_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_PRESET_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -520,7 +594,15 @@ public abstract class NadConnector {
         }
     }
 
-    public void sendTunerXMChannelCommand(Command command, Prefix zone)
+    /**
+     * Method to send the XM Channel number setting command to the tuner.
+     *
+     * @param command - TUNER_XM_CHANNEL_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
+    public void sendTunerXMChannelCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command instanceof RefreshType) {
@@ -532,9 +614,11 @@ public abstract class NadConnector {
         } else if (command instanceof DecimalType) {
             cmdValue = toNadValue(((DecimalType) command));
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send XM Channel command to \"" + tuner
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_XM_CHANNEL_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_XM_CHANNEL_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -545,14 +629,14 @@ public abstract class NadConnector {
     }
 
     /**
-     * Sends Tuner (ON/OFF/Status) commands
+     * Method to send the FM mute setting command to the tuner.
      *
-     * @param command TUNER_FM_MUTE_QUERY, TUNER_FM_MUTE_SET)
-     * @param zone (see Prefix eNum for command prefixes)
-     * @throws NadUnsupportedCommandTypeException
-     * @throws NadException
+     * @param command - TUNER_FM_MUTE_SET
+     * @param tuner - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
      */
-    public void sendTunerFmMuteCommand(Command command, Prefix zone)
+    public void sendTunerFmMuteCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command == OnOffType.ON) {
@@ -562,9 +646,11 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send FM Mute command to \"" + tuner + "\", encountered an unsupported command value of \""
+                    + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_FM_MUTE_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_FM_MUTE_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -575,22 +661,24 @@ public abstract class NadConnector {
     }
 
     /**
-     * Sends TunerFM RDS Text Query command
+     * Method to send the FM RDS Text Query command to the tuner.
      *
-     * @param command TUNER_FM_RDS_TEXT_QUERY)
-     * @param zone (see Prefix eNum for command prefixes)
-     * @throws NadUnsupportedCommandTypeException
-     * @throws NadException
+     * @param command - TUNER_FM_RDS_TEXT_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
      */
-    public void sendTunerFmRdsTextCommand(Command command, Prefix zone)
+    public void sendTunerFmRdsTextCommand(Command command, Prefix tuner)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
         if (command instanceof RefreshType) {
             cmdValue = "?"; // Only option is to query this setting
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send FM RDS Text command to \"" + tuner
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
-        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_FM_RDS_TEXT_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_FM_RDS_TEXT_SET.getOperator().toString()).value(cmdValue).build();
         try {
@@ -600,15 +688,34 @@ public abstract class NadConnector {
         }
     }
 
+    /**
+     * Method to send the fixed volume dB setting command for a specific zone. Does not apply to the Main (Zone1).
+     *
+     * @param command - VOLUME_FIXED_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendVolumeFixedDBCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
         Command dbCommand = command;
         if (dbCommand instanceof PercentType) {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Volume Fixed dB command to \"" + zone
+                    + "\", encountered an unsupported command of \"" + command.toString() + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         sendVolumeFixedCommand(dbCommand, zone);
     }
 
+    /**
+     * Method to send the volume control setting command (Variable or Fixed) for a specific zone. Does not apply to the
+     * Main (Zone1).
+     *
+     * @param command - VOLUME_CONTROL_SET
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
     public void sendVolumeControlCommand(Command command, Prefix zone)
             throws NadUnsupportedCommandTypeException, NadException {
         String cmdValue = "";
@@ -617,7 +724,9 @@ public abstract class NadConnector {
         } else if (command instanceof RefreshType) {
             cmdValue = NAD_QUERY; // "?"else {
         } else {
-            throw new NadUnsupportedCommandTypeException();
+            String message = "Send Volume Control command to \"" + zone
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
         }
         NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
                 .variable(NadCommand.VOLUME_CONTROL_SET.getVariable().toString())
@@ -629,14 +738,14 @@ public abstract class NadConnector {
         }
     }
 
-    public void sendVolumeDbCommand(Command command, Prefix zone)
-            throws NadUnsupportedCommandTypeException, NadException {
-        Command dbCommand = command;
-        if (dbCommand instanceof PercentType) {
-            throw new NadUnsupportedCommandTypeException();
-        }
-        sendVolumeCommand(dbCommand, zone);
-    }
+    // public void sendVolumeDbCommand(Command command, Prefix zone)
+    // throws NadUnsupportedCommandTypeException, NadException {
+    // Command dbCommand = command;
+    // if (dbCommand instanceof PercentType) {
+    // throw new NadUnsupportedCommandTypeException();
+    // }
+    // sendVolumeCommand(dbCommand, zone);
+    // }
 
     protected String toDenonFloatValue(DecimalType number) {
         String dbString = String.valueOf(number.floatValue());
@@ -653,25 +762,39 @@ public abstract class NadConnector {
         return toNadValue(new DecimalType(percent));
     }
 
+    /**
+     * Method to send a received message to the thing Handler
+     *
+     * @param message - received from the NAD device
+     */
     private void sendMessageEvent(NadMessage message) {
-        // send message to event listeners
+        // send message to all event listeners
         try {
             for (NadEventListener listener : listeners) {
                 listener.receivedMessage(message);
             }
         } catch (Exception e) {
-            logger.debug("Event listener invoking error: {}", e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Event listener invoking error: {}", e.getMessage());
+            }
         }
     }
 
+    /**
+     * Method to send a connection diagnostic messages to event listeners
+     *
+     * @param errorMsg - error details to be sent to listener
+     */
     private void sendConnectionErrorEvent(@Nullable String errorMsg) {
-        // send error message to event listeners
+        // send error message to all event listeners
         try {
             for (NadEventListener listener : listeners) {
                 listener.connectionError(errorMsg);
             }
         } catch (Exception ex) {
-            logger.debug("Event listener invoking error: {}", ex.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Event listener invoking error: {}", ex.getMessage());
+            }
         }
     }
 }

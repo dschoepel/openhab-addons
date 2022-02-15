@@ -29,8 +29,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
 /**
- * The {@link NADStateDescriptionProvider} is a dynamic provider of state options while
- * leaving other description fields as original.
+ * The {@link NADStateDescriptionProvider} is a dynamic provider of state options (.e.g. input source names, broadcast
+ * bands, tuner preset names) while leaving other description fields as original.
  *
  * @author Dave J Schoepel - Initial contribution
  *         Adapted from Onkyo binding
@@ -44,6 +44,7 @@ public class NadAvrStateDescriptionProvider implements DynamicStateDescriptionPr
         channelOptionsMap.put(channelUID, options);
     }
 
+    @SuppressWarnings({ "null", "unused" })
     @Override
     public @Nullable StateDescription getStateDescription(Channel channel, @Nullable StateDescription original,
             @Nullable Locale locale) {
@@ -51,7 +52,11 @@ public class NadAvrStateDescriptionProvider implements DynamicStateDescriptionPr
 
         StateDescriptionFragmentBuilder builder = (original == null) ? StateDescriptionFragmentBuilder.create()
                 : StateDescriptionFragmentBuilder.create(original);
-        return builder.withOptions(options).build().toStateDescription();
+        if (options != null) {
+            return builder.withOptions(options).build().toStateDescription();
+        } else {
+            return null;
+        }
     }
 
     @Deactivate

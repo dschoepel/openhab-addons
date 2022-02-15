@@ -15,7 +15,7 @@ package org.openhab.binding.nadavr.internal.nadcp;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link NadUnsupportedCommandTypeException.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadUnsupportedCommandTypeException.java} class handles command exceptions for the the NAD AVR thing.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -24,10 +24,18 @@ public class NadUnsupportedCommandTypeException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Method to send error when an unsupported command is encountered
+     */
     public NadUnsupportedCommandTypeException() {
         super();
     }
 
+    /**
+     * Method to send error when an unsupported command is encountered with additional diagnostic information
+     *
+     * @param message - include diagnostic information for troubleshooting errors
+     */
     public NadUnsupportedCommandTypeException(String message) {
         super(message);
     }

@@ -43,15 +43,14 @@ public class NadIpConnector extends NadConnector {
     private @Nullable Socket clientSocket;
 
     /**
-     * Constructor
+     * Constructor for the NAD device thing's IP connection used to send and receive messages (commands).
      *
-     * @param address the IP address of the projector
-     * @param port the TCP port to be used
-     * @param readerThreadName the name of thread to be created
+     * @param address - the IP address of the device
+     * @param port - the TCP port to be used
+     * @param readerThreadName - the name of thread to be created
      */
     public NadIpConnector(String address, Integer port, String msgReaderThreadName) {
         super(msgReaderThreadName);
-
         this.address = address;
         this.port = port;
     }
@@ -60,22 +59,25 @@ public class NadIpConnector extends NadConnector {
     public void open() throws NadException {
         logger.debug("Opening IP connection on IP {} port {}", this.address, this.port);
         try {
+            // Create the IP connection socket using IP address and port specified in the thing configuration
             Socket clientSocket = new Socket(this.address, this.port);
             clientSocket.setSoTimeout(100);
-
+            // Create input and output streams for the IP connection
             dataOut = new DataOutputStream(clientSocket.getOutputStream());
             dataIn = new DataInputStream(clientSocket.getInputStream());
-
+            // Create and start a thread to be used to send and receive messages with the NAD device
             Thread thread = new NadMsgReaderThread(this, msgReaderThreadName);
             setMsgReaderThread(thread);
             thread.start();
-
+            // Assign the new socket to this connection
             this.clientSocket = clientSocket;
-
+            // Indicate connection succeeded if now errors...
             setConnected(true);
-
-            logger.debug("IP connection opened");
+            if (logger.isDebugEnabled()) {
+                logger.debug("IP connection opened");
+            }
         } catch (IOException | SecurityException | IllegalArgumentException e) {
+            // Connection errors forwarded on to event listeners
             setConnected(false);
             throw new NadException("Opening IP connection failed", e);
         }
@@ -83,7 +85,9 @@ public class NadIpConnector extends NadConnector {
 
     @Override
     public void close() {
-        logger.debug("Closing IP connection");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Closing IP connection");
+        }
         super.cleanup();
         Socket clientSocket = this.clientSocket;
         if (clientSocket != null) {
@@ -94,15 +98,16 @@ public class NadIpConnector extends NadConnector {
             this.clientSocket = null;
         }
         setConnected(false);
-        logger.debug("IP connection closed");
+        if (logger.isDebugEnabled()) {
+            logger.debug("IP connection closed");
+        }
     }
 
     /**
      * Reads some number of bytes from the input stream and stores them into the buffer array b. The number of bytes
-     * actually read is returned as an integer.
-     * In case of socket timeout, the returned value is 0.
+     * actually read is returned as an integer. In case of socket timeout, the returned value is 0.
      *
-     * @param dataBuffer the buffer into which the data is read.
+     * @param dataBuffer - the buffer into which the data is read.
      *
      * @return the total number of bytes read into the buffer, or -1 if there is no more data because the end of the
      *         stream has been reached.
@@ -123,11 +128,19 @@ public class NadIpConnector extends NadConnector {
         } catch (SocketTimeoutException e) {
             return 0;
         } catch (IOException e) {
-            logger.debug("readInput failed: {}", e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug("readInput failed: {}", e.getMessage());
+            }
             throw new NadException("readInput failed", e);
         }
     }
 
+    /**
+     * Method to return NAD Device connection name in the form of its IP address and port mostly used in diagnostic
+     * messages.
+     *
+     * @return - ip:port as connection name
+     */
     public String getConnectionName() {
         return address + ":" + port;
     }

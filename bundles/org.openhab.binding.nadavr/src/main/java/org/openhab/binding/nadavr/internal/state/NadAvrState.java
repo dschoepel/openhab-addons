@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadAvrState.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrState.java} class represents/sets the state of channels (associated items) of an NAD AVR thing.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -99,7 +99,9 @@ public class NadAvrState {
     private NadAvrStateChangedListener handler;
 
     /**
+     * NadAvrState constructor associates the state changes to the handler for a thing
      *
+     * @param handler - handler for this NAD AVR thing
      */
     public NadAvrState(NadAvrStateChangedListener handler) {
         this.handler = handler;
@@ -113,8 +115,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param channelID
-     * @return
+     * Method to get state for NAD AVR thing channels
+     *
+     * @param channelID - thing channels supported by this binding
+     * @return - current state for the channel
      */
     public State getStateForChannelID(String channelID) {
         switch (channelID) {
@@ -221,8 +225,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param powerSetting
+     * Method to set power state for NAD AVR zone
+     *
+     * @param prefix - zone to set power state
+     * @param powerSetting - true is ON, false is Off
      */
     public void setPower(String prefix, boolean powerSetting) {
         OnOffType newVal = powerSetting ? OnOffType.ON : OnOffType.OFF;
@@ -257,7 +263,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param listeningMode
+     * Method to set Listening Mode state for the NAD AVR
+     *
+     * @param prefix - zone (Main)
+     * @param listeningMode - Active listening mode to be set
      */
     public void setListeningMode(String prefix, String listeningMode) {
         StringType newVal = StringType.valueOf(listeningMode);
@@ -274,7 +283,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param tunerBand
+     * Method to change the tuner broadcast band
+     *
+     * @param prefix - tuner
+     * @param tunerBand - broadcast band to be set (AM, FM, XM, or DAB)
      */
     public void setTunerBand(String prefix, String tunerBand) {
         StringType newVal = StringType.valueOf(tunerBand);
@@ -291,7 +303,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param tunerFMRdsText
+     * Method to update the FM Radio Data Service (RDS) text stream
+     *
+     * @param prefix - tuner
+     * @param tunerFMRdsText - text received from currently active FM station supporting RDSs
      */
     public void setTunerFMRdsText(String prefix, String tunerFMRdsText) {
         StringType newVal = StringType.valueOf(tunerFMRdsText);
@@ -310,7 +325,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param tunerFMMUte
+     * Method to set the tuner FM Mute mode to filter out stations with weak signals
+     *
+     * @param prefix - tuner
+     * @param tunerFMMute - true is On (filter weak signals), false is Off (no weak signal filter)
      */
     public void setTunerFMMute(String prefix, boolean tunerFMMute) {
         OnOffType newVal = tunerFMMute ? OnOffType.ON : OnOffType.OFF;
@@ -327,7 +345,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param tunerFMFrequency
+     * Method to set the tuners FM station frequency MHz
+     *
+     * @param prefix - tuner
+     * @param tunerFMFrequency - range is 88.1-108.1 MHz
      */
     public void setTunerFMFrequency(String prefix, BigDecimal tunerFMFrequency) {
         DecimalType newVal = new DecimalType(tunerFMFrequency);
@@ -344,7 +365,11 @@ public class NadAvrState {
     }
 
     /**
-     * @param tunerPreset
+     * Method to select pre-programmed tuner preset and optionally retrieve user supplied details
+     *
+     * @param prefix - tuner
+     * @param tunerPreset - number from 1 - 40
+     * @param fileName - optional file provided in thing config with preset details
      */
     public void setTunerPreset(String prefix, String tunerPreset, String fileName) {
         StringType newVal = new StringType(tunerPreset);
@@ -371,8 +396,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerAMFrequency
+     * Method to set the tuners AM station frequency kHz
+     *
+     * @param prefix - tuner
+     * @param tunerAMFrequency - number from 540-1700 kHz
      */
     public void setTunerAMFrequency(String prefix, BigDecimal tunerAMFrequency) {
         DecimalType newVal = new DecimalType(tunerAMFrequency);
@@ -389,8 +416,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerXMChannel
+     * Method to change the tuners XM station channel
+     *
+     * @param prefix - tuner
+     * @param tunerXMChannel - string None, numbers from 0-255
      */
     public void setTunerXMChannel(String prefix, String tunerXMChannel) {
         StringType newVal = new StringType(tunerXMChannel);
@@ -404,8 +433,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerXMChannelName
+     * method to update the tuners XM Channel name
+     *
+     * @param prefix - tuner
+     * @param tunerXMChannelName - read only text received from the XM station
      */
     public void setTunerXMChannelName(String prefix, String tunerXMChannelName) {
         StringType newVal = new StringType(tunerXMChannelName);
@@ -419,8 +450,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerXMSongName
+     * Method to update the tuners XM channel performing artist name
+     *
+     * @param prefix - tuner
+     * @param tunerXMName - XM performing artist name
      */
     public void setTunerXMName(String prefix, String tunerXMName) {
         StringType newVal = new StringType(tunerXMName);
@@ -437,8 +470,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerXMSongTitle
+     * Method to update the tuners XM channel currently playing song title
+     *
+     * @param prefix - tuner
+     * @param tunerXMSongTitle - XM song title
      */
     public void setTunerXMSongTitle(String prefix, String tunerXMSongTitle) {
         StringType newVal = new StringType(tunerXMSongTitle);
@@ -452,8 +487,11 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerDABDlsText
+     * Method to update the DAB broadcast bands Dynamic Label Segment (DLS) text feed for information on music titles,
+     * program or station
+     *
+     * @param prefix - tuner
+     * @param tunerDABDlsText - text feed for information on music titles, program or station
      */
     public void setTunerDABDlsText(String prefix, String tunerDABDlsText) {
         StringType newVal = StringType.valueOf(tunerDABDlsText);
@@ -472,8 +510,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param tunerDABServiceName
+     * Method to update the tuners DAB Broadcast station service name or id
+     *
+     * @param prefix - tuner
+     * @param tunerDABServiceName - DAB Broadcast station service name or id
      */
     public void setTunerDABServiceName(String prefix, String tunerDABServiceName) {
         StringType newVal = new StringType(tunerDABServiceName);
@@ -487,12 +527,13 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param source
+     * Method to change the source input for a NAD AVR zone
+     *
+     * @param prefix - zone
+     * @param source - value of 1-10, or 11 depending on zone
      */
     public void setSourceName(String prefix, String source) {
         StringType newVal = StringType.valueOf(source);
-        logger.debug("The source name is: {} for zone: {}", source, prefix);
         switch (prefix) {
             case ZONE1:
                 if (!newVal.equals(this.mainSource)) {
@@ -524,8 +565,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param mute
+     * Method to mute volume on specific zone
+     *
+     * @param prefix - zone
+     * @param mute - true is On, false is Off
      */
     public void setMute(String prefix, boolean mute) {
         OnOffType newVal = mute ? OnOffType.ON : OnOffType.OFF;
@@ -560,8 +603,11 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param volume
+     * Method to change the volume on a specific zone of the NAD AVR. Value is in dB and used to also change
+     * volume percentage
+     *
+     * @param prefix - zone
+     * @param volume - range limits are -95 to +16
      */
     public void setVolume(String prefix, BigDecimal volume) {
         DecimalType newVal = new DecimalType(volume);
@@ -616,9 +662,11 @@ public class NadAvrState {
     }
 
     /**
-     * Sets fixed volume for Zones 2-4
+     * Method to set fixed volume level in dB for Zones 2-4 of the NAD AVR and used to also change
+     * volume percentage
      *
-     * @param volume (Range limits are -95 to +16)
+     * @param prefix - zone
+     * @param volume - range limits are -95 to +16
      */
     public void setVolumeFixed(String prefix, BigDecimal volume) {
         DecimalType newVal = new DecimalType(volume);
@@ -662,8 +710,10 @@ public class NadAvrState {
     }
 
     /**
-     * @param prefix
-     * @param volumeControl
+     * Method to set the volume control mode for zones 2-4 on the NAD AVR
+     *
+     * @param prefix - zone 2-4
+     * @param volumeControl - volume control mode is either Variable or Fixed
      */
     public void setVolumeControl(String prefix, String volumeControl) {
         StringType newVal = StringType.valueOf(volumeControl);
@@ -692,10 +742,10 @@ public class NadAvrState {
     }
 
     /**
-     * Convert sound volume in decibels to a percentage
+     * method to convert sound volume in decibels to a percentage for the NAD AVR
      *
-     * @param volume
-     * @return
+     * @param volume - dB value to be converted to a percentage
+     * @return percent representation of the dB volume value
      */
     private BigDecimal calculateVolumePercent(BigDecimal volume) {
         BigDecimal volumePct = volume.subtract(VOLUME_DB_MIN);
@@ -705,13 +755,14 @@ public class NadAvrState {
     }
 
     /**
-     * @param presetKey represents preset number used to located detail in array...
+     * Method to retrieve user provided tuner preset details
+     *
+     * @param presetKey - represents preset number used to located detail in array...
      * @return presetDetail string containing tuner Band Frequency and User defined name to be associated with the
      *         preset.
      */
     public StringType getPresetDetail(StringType presetKey, String fileName) {
         StringType presetDetail = new StringType(UnDefType.UNDEF.toString());
-        logger.debug("fileName is {} long....", fileName.length());
         if (!fileName.isBlank()) {
             List<NadPreset> tunerPresetDetails = tunerPresets.parsePresets(fileName);
             Map<StringType, NadPreset> presetMap = new ConcurrentHashMap<StringType, NadPreset>();
@@ -730,6 +781,11 @@ public class NadAvrState {
                         new NadPreset(key.toString(), UnDefType.UNDEF.toString(), "", ""));
                 String fromMap = pFromMap.getBand() + " " + pFromMap.getFrequency() + " " + pFromMap.getName();
                 presetDetail = StringType.valueOf(fromMap);
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("NadAvrState:getPresetDetail() presetKey \"{}\" not found in file \"{}\".", presetKey,
+                            fileName);
+                }
             }
         }
         return presetDetail;

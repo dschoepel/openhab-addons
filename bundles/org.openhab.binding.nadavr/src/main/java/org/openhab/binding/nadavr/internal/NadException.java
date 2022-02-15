@@ -37,10 +37,22 @@ public class NadException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     *
+     * Method to report errors detected by the binding
+     *
+     * @param message - diagnostic information about the error that was detected
+     */
     public NadException(String message) {
         super(message);
     }
 
+    /**
+     * Method to report java errors detected by the binding
+     *
+     * @param message - diagnostic information about the error that was detected
+     * @param cause - java error details captured when error occurred
+     */
     public NadException(String message, Throwable cause) {
         super(message, cause);
     }

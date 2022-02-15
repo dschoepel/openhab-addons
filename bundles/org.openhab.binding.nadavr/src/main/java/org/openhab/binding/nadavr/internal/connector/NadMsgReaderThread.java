@@ -41,13 +41,14 @@ public class NadMsgReaderThread extends Thread {
 
     @Override
     public void run() {
-        logger.debug("Data listener started...");
+        if (logger.isDebugEnabled()) {
+            logger.debug("NadMsgReaderThread: Data listener started...");
+        }
         final int size = 128;
         byte[] readDataBuffer = new byte[READ_BUFFER_SIZE];
         byte[] dataBuffer = new byte[size];
         int index = 0;
-        final char terminatingChar = '\n'; /* carriage return */
-
+        final char terminatingChar = '\n'; /* new line */
         try {
             while (!Thread.interrupted()) {
                 int len = connector.readInput(readDataBuffer);
@@ -69,13 +70,17 @@ public class NadMsgReaderThread extends Thread {
             }
         } catch (InterruptedIOException e) {
             Thread.currentThread().interrupt();
-            logger.debug("Interrupted via InterruptedIOException");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Interrupted via InterruptedIOException");
+            }
         } catch (NadException e) {
-            logger.debug("Reading failed: {}", e.getMessage(), e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("NadMsgReaderThread: Reading NAD incoming message failed: {}", e.getMessage(), e);
+            }
             connector.handleIncomingMessage(NadConnector.READ_ERROR);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Data listener stopped!");
+            logger.debug("NadMsgReaderThread: Data listener stopped!");
         }
     }
 }

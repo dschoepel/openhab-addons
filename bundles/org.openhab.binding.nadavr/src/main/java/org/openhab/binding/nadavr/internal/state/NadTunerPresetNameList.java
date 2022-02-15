@@ -20,7 +20,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 
 /**
- * The {@link NadTunerPresetNameList.java} class for An Array that is used to store input source names.
+ * The {@link NadTunerPresetNameList.java} class for an array that is used to store user supplied preset details
+ * (band-frequency-name).
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -30,9 +31,9 @@ public class NadTunerPresetNameList {
     public static String[] presetNameList = presetNames();
 
     /**
-     * Initialize source names list with default source names
+     * Initialize preset names list with default preset names
      *
-     * @return sourceNames array
+     * @return presetNames array
      */
     public static String[] presetNames() {
         Set<String> nameSet = Arrays.stream(NadCommand.DefaultPresetNames.values())

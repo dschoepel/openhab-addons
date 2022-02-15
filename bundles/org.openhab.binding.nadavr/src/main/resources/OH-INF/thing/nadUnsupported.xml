@@ -11,11 +11,11 @@
 			odd behaviors.</description>
 
 		<channel-groups>
-			<channel-group typeId="zone1Controls" id="zone1" />
-			<channel-group typeId="zone2Controls" id="zone2" />
+			<channel-group typeId="zone1Controls" id="zone1"/>
+			<channel-group typeId="zone2Controls" id="zone2"/>
 		</channel-groups>
 
-		<config-description-ref uri="thing-type:nadavr:config" />
+		<config-description-ref uri="thing-type:nadavr:config"/>
 	</thing-type>
 
 </thing:thing-descriptions>

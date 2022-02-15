@@ -18,16 +18,18 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * The {@link NadCommand} represents NAD AVR Ethernet/RS232 Protocol Commands
+ * The {@link NadCommand} represents the binding supported NAD AVR Ethernet/RS232 Protocol Commands.
+ * <ul>
+ * <li>Format for a command is Prefix, dot(.), Variable, Operator(+,- =, ?), Value.</li>
+ * <li>For example 'Power' is prefixed by Main, Zone2-4 and has operator and value "Main.Power=On" .</li>
+ * </ul>
  *
  * @author Dave J Schoepel - Initial contribution
  */
 @NonNullByDefault
 public enum NadCommand {
     /**
-     * Format for a command is Prefix, dot(.), Variable, Operator(+,- =, =), Value. For example 'Power' is prefixed by
-     * Main,
-     * Zone2-4 and has operator and value "Main.Power=On" .
+     * Commands supported in this Binding
      */
     EMPTY_COMMAND("", "", "", ""),
     POWER_QUERY("", "Power", "?", ""),
@@ -104,7 +106,7 @@ public enum NadCommand {
     }
 
     /**
-     * DefaultSourceNames used to initialize array to hold input source names for the AVR
+     * Default Source Names is used to initialize an array to hold input source names for the AVR
      */
     public static enum DefaultSourceNames {
         Source01,
@@ -120,7 +122,7 @@ public enum NadCommand {
     }
 
     /**
-     * DefaultPresetNames used to initialize array to hold preset names for the AVR
+     * Default Preset Names is used to initialize an array to hold preset names for the AVR
      */
     public static enum DefaultPresetNames {
         P01,
@@ -166,7 +168,7 @@ public enum NadCommand {
     }
 
     /**
-     * DefaultTunerBandNames used to initialize array to hold tuner band names for the AVR
+     * Default Tuner Band Names is used to initialize an array to hold tuner band names for the AVR
      */
     public static enum DefaultTunerBandNames {
         AM,
@@ -182,6 +184,15 @@ public enum NadCommand {
     private String operator;
     private String value;
 
+    /**
+     *
+     * Constructor for the NAD RS232/IP Command protocol format
+     *
+     * @param prefix - see enum {@link Prefix}
+     * @param variable - see enum {@link NadCommand} variable part of command
+     * @param operator - either of +, -, + or ?
+     * @param value - the value of a channel (item) state or the value to be set for the channel (item)
+     */
     private NadCommand(String prefix, String variable, String operator, String value) {
         this.prefix = prefix;
         this.variable = variable;
@@ -217,11 +228,20 @@ public enum NadCommand {
         return value;
     }
 
-    public static NadCommand getCommandForPrefix(Prefix prefix, NadCommand baseCommand)
-            throws IllegalArgumentException {
-        return NadCommand.valueOf(prefix.toString() + "." + baseCommand);
-    }
+    // /**
+    // * @param prefix
+    // * @param baseCommand
+    // * @return
+    // * @throws IllegalArgumentException
+    // */
+    // public static NadCommand getCommandForPrefix(Prefix prefix, NadCommand baseCommand)
+    // throws IllegalArgumentException {
+    // return NadCommand.valueOf(prefix.toString() + "." + baseCommand);
+    // }
 
+    /**
+     * The intializeCommandList() method builds the list of commands that this binding supports
+     */
     public static void initializeCommandList() {
         for (NadCommand command : values()) {
             String key = command.getVariable() + command.getOperator();
@@ -229,6 +249,14 @@ public enum NadCommand {
         }
     }
 
+    /**
+     * Method to determine if the command received from the NAD device is supported
+     *
+     * @param variable - see enum {@link NadCommand} variable part of command
+     * @param operator - either of +, -, + or ?
+     * @return the {@link NadCommand} based on the variable and operator found in the list of supported commands
+     * @throws IllegalArgumentException
+     */
     public static @Nullable NadCommand getCommandByVariableAndOperator(String variable, String operator)
             throws IllegalArgumentException {
         String key = variable + operator;
@@ -236,7 +264,6 @@ public enum NadCommand {
             NadCommand candidate = commandList.get(key);
             return candidate;
         }
-
         throw new IllegalArgumentException(
                 "There is no matching command name for the variable '" + variable + "' and operator '" + operator);
     }

@@ -32,7 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadTunerMonitor} class Monitors for active tuner and turns on RDS stream if FM band is set.
+ * The {@link NadTunerMonitor} class Monitors for active tuner and turns on RDS stream if FM band is set, Channel
+ * information stream if XM band is set, or DLS text stream if DAB band is set.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -56,12 +57,13 @@ public class NadTunerMonitor {
     private NadIpConnector connection;
 
     /**
-     * The constructor for {@link NadTunerMonitor}
+     * Constructor for {@link NadTunerMonitor}
      *
-     * @param connector to the NAD AVR Thing
-     * @param config details for the NAD AVR thing
+     * @param connector - IP connection used by the NAD AVR thing
+     * @param config - configuration details for the NAD AVR thing
+     * @param nadavrState - channel state details for the NAD AVR thing
+     * @param threadNamePrefix - Thread name prefix to match NAD AVR thing
      */
-
     public NadTunerMonitor(NadIpConnector connection, NadAvrConfiguration config, NadAvrState nadavrState,
             String threadNamePrefix) {
         this.connection = connection;
@@ -90,7 +92,7 @@ public class NadTunerMonitor {
                         .operator(NadCommand.TUNER_BAND_QUERY.getOperator().toString())
                         .value(NadCommand.TUNER_BAND_QUERY.getValue()).build());
             } catch (NadException e) {
-                logger.error("Error sending tuner band query.  Error: ", e.getLocalizedMessage());
+                logger.error("Error sending tuner band query.  Error: {}", e.getLocalizedMessage());
             }
             if (logger.isDebugEnabled()) {
                 logger.debug(

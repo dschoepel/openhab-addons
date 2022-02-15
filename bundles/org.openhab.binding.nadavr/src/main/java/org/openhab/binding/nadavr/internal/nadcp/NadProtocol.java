@@ -60,7 +60,7 @@ public class NadProtocol {
     /**
      * Builds command in a NAD Protocol format (prefix . variable operator value).
      *
-     * @param msg
+     * @param msg - command to be wrapped in carriage returns
      *
      * @return String holding the fully formated Command to send to the NAD Device
      */
@@ -77,9 +77,9 @@ public class NadProtocol {
     /**
      * Validate the content of a received message from the NAD Device
      *
-     * @param receivedMessage the byte stream containing the State status message
+     * @param receivedMessage - the byte stream containing the State status message
      *
-     * @throws NadException - If the message has unexpected content
+     * @throws NadException If the message has unexpected content
      */
     public static NadMessage validateResponse(byte[] receivedMessage) throws NadException {
         Logger logger = LoggerFactory.getLogger(NadProtocol.class);
@@ -94,7 +94,9 @@ public class NadProtocol {
             throw new NadException("Error: The received message lenght {" + receivedMessage.length + "} is too short!");
         }
 
-        logger.debug("Message Recieved: chars *{}*", message);
+        if (logger.isDebugEnabled()) {
+            logger.debug("NadProtocol: validateResponse - Message Recieved: chars *{}*", message);
+        }
         message = message.trim();
         if (message.isEmpty()) {
             return new NadMessage.MessageBuilder().prefix(NadCommand.EMPTY_COMMAND.getPrefix())

@@ -34,7 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadAvrPopulateInputs.java} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrPopulateInputs.java} class starts a thread to monitor for and update input source names for related
+ * channel's options. This captures user modified source names, and any changes that may be made to them
+ * via the device's configuration menu outside of this binding.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -50,6 +52,16 @@ public class NadPopulateInputs {
     NadAvrStateDescriptionProvider stateDescriptionProvider;
     NadIpConnector connection;
 
+    /**
+     * Constructor for populating the NAD Input source names for each of the Devices zones.
+     *
+     * @param thingUID - thing UID of the device whose source input channel options will be updated
+     * @param config - thing configuration settings
+     * @param connection - details for the thing used to request source names
+     * @param stateDescriptionProvider - used to dynamically update the channel options with input source names
+     * @param sendSourceQuery - flag to indicate if a source query has been sent to prevent sending too many requests
+     * @param numberOfInputSources - number of input sources associated with the things model
+     */
     public NadPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadIpConnector connection,
             NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery,
             int numberOfInputSources) {
@@ -61,24 +73,32 @@ public class NadPopulateInputs {
         this.numberOfInputSources = numberOfInputSources;
     }
 
+    /**
+     * Method to query source input names and dynamically update them on each of the active zones channel for source
+     * input options.
+     *
+     * @throws NadException -
+     */
     private void populateInputs() throws NadException {
         isRunning = true;
         List<StateOption> options = new ArrayList<>();
         List<StateOption> optionsZ2to4 = new ArrayList<>();
-        logger.debug("Number of input sources = {}", numberOfInputSources);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Number of input sources = {}", numberOfInputSources);
+        }
         // Build list of source names to be used by Input Source channel (options)
         for (int i = 1; i <= numberOfInputSources; i++) {
             String name = NadAvrInputSourceList.getSourceName(i - 1);
             options.add(new StateOption(String.valueOf(i), name));
             optionsZ2to4.add(new StateOption(String.valueOf(i), name));
         }
-        logger.debug("Value of i = {}", optionsZ2to4.size());
+        // Zones 2-4 will have one extra input called local that points back to the main source
         optionsZ2to4.add(new StateOption(String.valueOf(options.size() + 1), LOCAL));
-        logger.debug("Got Source Name input List from NAD Device {}", options);
-        logger.debug("Got Source Name input List from NAD Device {}", optionsZ2to4);
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Got Source Name input List from NAD Device {}", options);
+            logger.debug("Got Source Name input List from NAD Device {}", optionsZ2to4);
+        }
         NadCommand srcQuery = NadCommand.INPUT_SOURCE_QUERY;
-
         for (int i = 1; i <= config.getZoneCount(); i++) {
             switch (i) {
                 case 1:
@@ -120,10 +140,14 @@ public class NadPopulateInputs {
                     break;
             }
         }
-
-        logger.debug("NadAvrPopulateInputs - populateInputs() finished....");
+        if (logger.isDebugEnabled()) {
+            logger.debug("NadAvrPopulateInputs - populateInputs() finished....");
+        }
     }
 
+    /**
+     * Scheduled thread to poll for source input names and populate channel options with source names
+     */
     Runnable scheduler = new Runnable() {
         @Override
         public void run() {
@@ -156,16 +180,31 @@ public class NadPopulateInputs {
         }
     };
 
+    /**
+     * Method to start the populateInputs thread
+     */
     public void startPi() {
-        logger.debug("PopulateInputs started...");
+        if (logger.isDebugEnabled()) {
+            logger.debug("PopulateInputs started...");
+        }
         piExecutor.schedule(scheduler, 3, TimeUnit.SECONDS);
     }
 
+    /**
+     * Method to stop the populateInputs thread
+     */
     public void stopPi() {
-        logger.debug("PopulateInputs stopped...");
+        if (logger.isDebugEnabled()) {
+            logger.debug("PopulateInputs stopped...");
+        }
         piExecutor.shutdown();
     }
 
+    /**
+     * Method to determine if the populateInputs thread is active
+     *
+     * @return true if this thread is running, false if not
+     */
     public boolean isRunning() {
         return isRunning;
     }

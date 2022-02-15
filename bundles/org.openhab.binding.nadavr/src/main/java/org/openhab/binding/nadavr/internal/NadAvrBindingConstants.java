@@ -36,9 +36,10 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 public class NadAvrBindingConstants {
 
     private static final String BINDING_ID = "nadavr";
+    private static final String SYSTEM_STATE_CHANNEL_TYPE = "system";
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_NADAVR = new ThingTypeUID(BINDING_ID, "nadAVR");
+    public static final ThingTypeUID THING_TYPE_NADAVR = new ThingTypeUID(BINDING_ID, "nadAvr");
     public static final ThingTypeUID THING_TYPE_NAD_UNSUPPORTED = new ThingTypeUID(BINDING_ID, "nadUnsupported");
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPE_UIDS = Stream
@@ -108,26 +109,26 @@ public class NadAvrBindingConstants {
     // Map of Zone2 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE2_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_POWER, new ChannelTypeUID(BINDING_ID, "power"));
-        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
+        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_POWER, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "power"));
+        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
-        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
+        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_MUTE, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "mute"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_FIXED_DB, new ChannelTypeUID(BINDING_ID, "volumeFixedDB"));
-        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_FIXED, new ChannelTypeUID(BINDING_ID, "volumeFixed"));
+        ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_FIXED, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE2_CHANNEL_TYPES.put(CHANNEL_ZONE2_VOLUME_CONTROL, new ChannelTypeUID(BINDING_ID, "volumeControl"));
     }
 
     // Map of Zone3 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE3_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_POWER, new ChannelTypeUID(BINDING_ID, "power"));
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_POWER, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "power"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_MUTE, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "mute"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED_DB, new ChannelTypeUID(BINDING_ID, "volumeFixedDB"));
-        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED, new ChannelTypeUID(BINDING_ID, "volumeFixed"));
+        ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_FIXED, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE3_CHANNEL_TYPES.put(CHANNEL_ZONE3_VOLUME_CONTROL, new ChannelTypeUID(BINDING_ID, "volumeControl"));
 
     }
@@ -135,21 +136,18 @@ public class NadAvrBindingConstants {
     // Map of Zone4 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> ZONE4_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_POWER, new ChannelTypeUID(BINDING_ID, "power"));
-        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME, new ChannelTypeUID(BINDING_ID, "volume"));
+        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_POWER, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "power"));
+        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_DB, new ChannelTypeUID(BINDING_ID, "volumeDB"));
-        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_MUTE, new ChannelTypeUID(BINDING_ID, "mute"));
+        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_MUTE, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "mute"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_SOURCE, new ChannelTypeUID(BINDING_ID, "source"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_FIXED_DB, new ChannelTypeUID(BINDING_ID, "volumeFixedDB"));
-        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_FIXED, new ChannelTypeUID(BINDING_ID, "volumeFixed"));
+        ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_FIXED, new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "volume"));
         ZONE4_CHANNEL_TYPES.put(CHANNEL_ZONE4_VOLUME_CONTROL, new ChannelTypeUID(BINDING_ID, "volumeControl"));
     }
 
     /**
-     * Static mapping of ChannelType-to-ItemType (workaround while waiting for
-     * https://github.com/eclipse/smarthome/issues/4950 as yet there is no convenient way to extract the item type from
-     * thing-types.xml)
-     * See https://github.com/eclipse/smarthome/pull/4787#issuecomment-362287430
+     * Static mapping of ChannelType-to-ItemType
      */
     public static final Map<String, String> CHANNEL_ITEM_TYPES = new HashMap<>();
     static {
@@ -179,6 +177,39 @@ public class NadAvrBindingConstants {
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE4_VOLUME_FIXED_DB, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE4_VOLUME_FIXED, "Dimmer");
         CHANNEL_ITEM_TYPES.put(CHANNEL_ZONE4_VOLUME_CONTROL, "String");
+    }
+
+    /**
+     * Static mapping of ChannelType-to-ItemType
+     */
+    public static final Map<String, String> CHANNEL_ITEM_LABELS = new HashMap<>();
+    static {
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_POWER, "Power Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME, "Volume Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME_DB, "VolumeDB Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_MUTE, "Mute Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_SOURCE, "Input Source Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME_FIXED_DB, "Fixed Volume(dB) Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME_FIXED, "Fixed Volume Z2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME_CONTROL, "Volume Control Z2");
+
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_POWER, "Power Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_VOLUME, "Volume Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_VOLUME_DB, "VolumeDB Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_MUTE, "Mute Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_SOURCE, "Input Source Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_VOLUME_FIXED_DB, "Fixed Volume(dB) Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_VOLUME_FIXED, "Fixed Volume Z3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE3_VOLUME_CONTROL, "Volume Control Z3");
+
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_POWER, "Power Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_VOLUME, "Volume Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_VOLUME_DB, "VolumeDB Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_MUTE, "Mute Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_SOURCE, "Input Source Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_VOLUME_FIXED_DB, "Fixed Volume(dB) Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_VOLUME_FIXED, "Fixed Volume Z4");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE4_VOLUME_CONTROL, "Volume Control Z4");
     }
 
     // Used to calculate Volume percentage from dB (range is -99 to 19)

@@ -15,7 +15,7 @@ package org.openhab.binding.nadavr.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enumerates all supported NAD models.
+ * Enumerates all supported NAD Audio Video Receiver models.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -24,7 +24,7 @@ public enum NadModel {
 
     /**
      * Please also remember to add supported models to the README.md
-     * T187, T765, T777, T787, T753
+     * T765, T775, T785, T187, T777, T787
      * Format is model name, max number of zones for that specific model, source inputs
      */
 
@@ -39,20 +39,43 @@ public enum NadModel {
     private final int maxZones;
     private final int numberOfInputSources;
 
+    /**
+     * Constructor for the NAD model class used to identify models during discovery and
+     * create the NAD Avr thing.
+     *
+     * @param id - Model number
+     * @param maxZones - maximum number of zones that can be configured for the model
+     * @param numberOfInputSources - number of input sources available for this model
+     */
     private NadModel(String id, int maxZones, int numberOfInputSources) {
         this.id = id;
         this.maxZones = maxZones;
         this.numberOfInputSources = numberOfInputSources;
     }
 
+    /**
+     * Method to get the model id from the NadModel enum
+     *
+     * @return id - NAD model
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Method to get the maximum zones allowed for the device from the NadModel enum
+     *
+     * @return maxZones - maximum number of zones that can be configured for the model
+     */
     public int getMaxZones() {
         return maxZones;
     }
 
+    /**
+     * Method to get the input sources available for the device from the NadModel enum
+     *
+     * @return numberOfInputSources - number of input sources available for this model
+     */
     public int getNumberOfInputSources() {
         return numberOfInputSources;
     }

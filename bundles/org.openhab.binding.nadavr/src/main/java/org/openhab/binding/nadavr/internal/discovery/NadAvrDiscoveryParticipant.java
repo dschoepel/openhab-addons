@@ -44,7 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NADDiscoveryParticipant} class contains fields mapping thing configuration parameters.
+ * The {@link NadAvrDiscoveryParticipant} class discovers IP connected NAD devices on the local LAN connected to the
+ * OpenHab server using multicast DNS.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -100,23 +101,30 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
     @Override
     public @Nullable DiscoveryResult createResult(ServiceInfo serviceInfo) {
         if (!serviceInfo.hasData()) {
-            logger.debug("ServiceInfo does not have data");
+            if (logger.isDebugEnabled()) {
+                logger.debug("ServiceInfo does not have data");
+            }
             return null;
         }
+        // qualified name is in format like "NAD T787 (824F01F2)._telnet._tcp.local."
         String qualifiedName = serviceInfo.getQualifiedName();
-        logger.debug("AVR found: {}", qualifiedName);
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("AVR found: {}", qualifiedName);
+        }
+        // The telnet server of the discovered device
         String server = serviceInfo.getServer();
-
+        // port being listened to by telnet server
         int port = serviceInfo.getPort();
-
+        // Internet Protocol address for discovered device
         InetAddress[] ipAddresses = serviceInfo.getInetAddresses();
-
-        logger.debug("NAD mDNS service qualifiedName: {}, server: {}, port: {}, ipAddresses: {} ({})", qualifiedName,
-                server, port, ipAddresses, ipAddresses.length);
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("NAD mDNS service qualifiedName: {}, server: {}, port: {}, ipAddresses: {} ({})",
+                    qualifiedName, server, port, ipAddresses, ipAddresses.length);
+        }
         ThingUID thingUID = getThingUID(serviceInfo);
-        logger.debug("ThingUID = {}", thingUID);
+        if (logger.isDebugEnabled()) {
+            logger.debug("ThingUID = {}", thingUID);
+        }
         if (thingUID != null) {
             Matcher matcher = NAD_AVR_PATTERN.matcher(qualifiedName);
             matcher.matches(); // we already know it matches, it was matched in getThingUID
@@ -124,7 +132,9 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
             String vendor = matcher.group(1).trim();
             String model = matcher.group(2).trim();
             if (serviceInfo.getHostAddresses().length == 0) {
-                logger.debug("Could not determine IP address for the NAD AVR");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Could not determine IP address for the NAD AVR");
+                }
                 return null;
             }
             Matcher matchHostName = NAD_AVR_HOSTNAME_PATTERN.matcher(server);
@@ -133,14 +143,18 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
                 hostName = matchHostName.group(1);
 
             } else {
-                logger.debug("Could not match hostname: {}", server);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Could not match hostname: {}", server);
+                }
             }
 
             String ipAddress = serviceInfo.getHostAddresses()[0];
-            logger.debug("IP Address: {}", ipAddress);
+            if (logger.isDebugEnabled()) {
+                logger.debug("IP Address: {}", ipAddress);
+            }
 
             Map<String, Object> properties = new HashMap<>(2);
-
+            // Store the properties of the mDNS query in the thing along with the max zones for the model
             properties.put(PARAMETER_HOST, hostName);
             properties.put(PARAMETER_IP_ADDRESS, ipAddress);
             properties.put(Thing.PROPERTY_SERIAL_NUMBER, serial);
@@ -148,9 +162,9 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
             properties.put(Thing.PROPERTY_MODEL_ID, model);
             String maxZones = String.valueOf(getMaxZonesForModel(model));
             properties.put(PARAMETER_MAX_ZONES, maxZones);
-
+            // Suggested name of discovered device (.e.g. "NAD T-787")
             String label = vendor + " " + model;
-
+            // Add discovered NAD Receiver to the In-box
             DiscoveryResult result = DiscoveryResultBuilder.create(thingUID).withProperties(properties).withLabel(label)
                     .withRepresentationProperty(Thing.PROPERTY_SERIAL_NUMBER).build();
             return result;
@@ -161,20 +175,32 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
     @Override
     public @Nullable ThingUID getThingUID(ServiceInfo service) {
-        // if (isAutoDiscoveryEnabled) {
-        Matcher matcher = NAD_AVR_PATTERN.matcher(service.getQualifiedName());
-        if (matcher.matches()) {
-            logger.debug("This seems like a supported NAD A/V Receiver!");
-            String serial = matcher.group(3).toLowerCase();
-            ThingTypeUID thingTypeUID = findThingType(matcher.group(2));
-            return new ThingUID(thingTypeUID, serial);
-        } else {
-            logger.debug("This discovered device is not supported by the NAD binding: {}", service.getQualifiedName());
+        if (isAutoDiscoveryEnabled) {
+            Matcher matcher = NAD_AVR_PATTERN.matcher(service.getQualifiedName());
+            if (matcher.matches()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("This seems like a supported NAD A/V Receiver!");
+                }
+                String serial = matcher.group(3).toLowerCase();
+                ThingTypeUID thingTypeUID = findThingType(matcher.group(2));
+                // Add the serial number to the UID to make it unique and identifiable
+                return new ThingUID(thingTypeUID, serial);
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("This discovered device is not supported by the NAD binding: {}",
+                            service.getQualifiedName());
+                }
+            }
         }
-        // }
         return null;
     }
 
+    /**
+     * Method to set the thing UID for the found device
+     *
+     * @param deviceModel - Device model obtained from the mDNS service info
+     * @return - A supported device UID or Unsupported if not found
+     */
     private ThingTypeUID findThingType(@Nullable String deviceModel) {
         ThingTypeUID thingTypeUID = THING_TYPE_NAD_UNSUPPORTED;
 
@@ -191,15 +217,14 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
     }
 
     /**
-     * Return true only if the given device model is supported.
+     * Method to determine if the discovered device is supported by the binding
      *
-     * @param deviceModel
-     * @return
+     * @param deviceModel - Device mode obtained from the mDNS service info
+     * @return True of found in list of supported models and false if not
      */
     private boolean isSupportedDeviceModel(final @Nullable String deviceModel) {
         boolean isSupported = false;
         if (deviceModel != null && !deviceModel.isBlank()) {
-            // List<NadModel> models = Arrays.asList(NadModel.values());
             List<NadModel> models = new ArrayList<NadModel>(EnumSet.allOf(NadModel.class));
             ListIterator<NadModel> modelIterator = models.listIterator();
             while (modelIterator.hasNext() && !isSupported) {
@@ -207,13 +232,14 @@ public class NadAvrDiscoveryParticipant implements MDNSDiscoveryParticipant {
             }
         }
         return isSupported;
-        // return deviceModel != null && !deviceModel.isBlank() && Arrays.stream(NadModel.values())
-        // .anyMatch(model -> StringUtils.startsWithIgnoreCase(deviceModel, model.getId()));
     }
 
     /**
-     * @param model
-     * @return
+     * Method to retrieve the maximum zone count for the model to bused in the thing properties
+     * and validating the thing configuration settings.
+     *
+     * @param model - validated from the mDNS discovery
+     * @return maxZones for the device
      */
     private int getMaxZonesForModel(String model) {
         int maxZones = 2;

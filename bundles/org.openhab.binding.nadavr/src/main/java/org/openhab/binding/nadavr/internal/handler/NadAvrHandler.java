@@ -62,8 +62,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadHandler} is responsible for handling commands, which are
- * sent to one of the channels.
+ * The {@link NadHandler} is responsible for initializing the NAD AVR Thing, validating the configuration, handling
+ * commands sent to one of the channels, updating item states when changes are detected, and disposing of the thing.
  *
  * @author Dave J Schoepel - Initial contribution
  */
@@ -75,6 +75,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private static final long POLLING_INTERVAL = TimeUnit.SECONDS.toSeconds(60);
 
     private @Nullable ScheduledFuture<?> connectionJob;
+    private @Nullable ScheduledFuture<?> requestDeviceDetailsJob;
 
     private NadAvrConfiguration config = new NadAvrConfiguration();
     private NadAvrStateDescriptionProvider stateDescriptionProvider;
@@ -88,8 +89,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private Object sequenceLock = new Object();
 
     /**
-     * @param thing
-     * @param stateDescriptionProvider
+     * Constructor for NAD Audio Receiver Handler
+     *
+     * @param thing - Surround sound audio receiver
+     * @param stateDescriptionProvider - Dynamic provider of state options for user described zone and tuner channels
      */
     public NadAvrHandler(Thing thing, NadAvrStateDescriptionProvider stateDescriptionProvider) {
         super(thing);
@@ -97,7 +100,14 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     *
+     * Method to initialize a NAD AV Receiver thing.
+     * <ul>
+     * <li>Validate configuration settings</li>
+     * <li>Configure number of zones for the AV Receiver thing from 1 to up to max allowed for model</li>
+     * <li>Connect to device and start thread to check for failed connections</li>
+     * <li>Initialize channel states with settings retrieved from the receiver</li>
+     * <li>Start threads to monitor for input name changes and tuner setting changes</li>
+     * </ul>
      */
     @Override
     public void initialize() {
@@ -141,22 +151,46 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             populateInputs = new NadPopulateInputs(thing.getUID(), config, connector, stateDescriptionProvider, true,
                     numberOfInputSources);
             populateInputs.startPi();
-            logger.info("NadHandler - Populate Inputs Started ....");
         }
         // Start thread to capture state of the tuner input and capture RDS Stream if band is FM
         if (!tunerMonitor.isTmStarted()) {
             tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, threadNamePrefix);
             tunerMonitor.startTm();
-            logger.info("NadHandler - Tuner Monitor Started ....");
         }
-
         if (logger.isDebugEnabled()) {
             logger.debug("Finished initializing handler for thing {}", getThing().getUID());
+        }
+
+        if (config.refreshInterval > 0) {
+            // To be sure this job is not running try to cancel it before starting a new one
+            cancelRequestDeviceDetailsJob();
+            // Start state refresh updater
+            requestDeviceDetailsJob = scheduler.scheduleWithFixedDelay(() -> {
+                Thread.currentThread().setName("OH-binding-" + this.thing.getUID() + "-reqeustDeviceDetailsJob");
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Send item state requests to NAD Receiver @{}", connector.getConnectionName());
+                    }
+                    requestDeviceDetails();
+                } catch (LinkageError e) {
+                    logger.warn("Failed to send item state refresh requests to NAD Receiver @{}. Cause: {}",
+                            connector.getConnectionName(), e.getMessage());
+                } catch (Exception ex) {
+                    logger.warn("Exception in item state refresh Thread NAD Receiver @{}. Cause: {}",
+                            connector.getConnectionName(), ex.getMessage());
+                }
+            }, config.refreshInterval, config.refreshInterval, TimeUnit.SECONDS);
         }
     }
 
     /**
-     *
+     * Method to shutdown and remove NAD AV Receiver thing.
+     * <ul>
+     * <li>Close connection</li>
+     * <li>Kill reconnection thread</li>
+     * <li>Kill threads to monitor for input name changes and tuner setting changes</li>
+     * <li>Remove handler</li>
+     * </ul>
      */
     @Override
     public void dispose() {
@@ -165,15 +199,17 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         }
         closeConnection();
         cancelConnectionJob();
+        cancelRequestDeviceDetailsJob();
         populateInputs.stopPi();
         tunerMonitor.stopTm();
         super.dispose();
     }
 
     /**
-     * Validate configuration settings before bringing NAD AVR Thing online
+     * Method to validate configuration settings before bringing NAD AVR Thing online
      *
-     * @return true indicating all checks passed or false there are errors to be addressed
+     * @param config - NAD AV Receiver thing configuration settings
+     * @return true indicating all checks passed or false when there are errors to be addressed
      */
     public boolean checkConfiguration(NadAvrConfiguration config) {
         // Check that zone count is within the supported range 1 - max zones for this model
@@ -211,8 +247,11 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * @param model
-     * @return
+     * Method to get the maximum number of zones for the NAD thing's model. The default is 2 zones if the model
+     * is not found in {@link NadModel.java}
+     *
+     * @param model - NAD AVR thing model number
+     * @return maximum physical zones this NAD model has
      */
     public int getMaxZonesForModel(String model) {
         int maxZones = 2;
@@ -225,10 +264,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * Retrieve the number of input sources for a given NAD Model, NADPopulateInputs uses
+     * Method to retrieve the number of input sources for a given NAD Model, {@link NADPopulateInputs.java} uses
      * this number to update the input source channels for the NAD device zones
      *
-     * @param model NAD Model name to lookup the number of input sources
+     * @param model - NAD Model name to lookup the number of input sources
      * @return numberOfInputSources available on the given NAD Model
      */
     public int getNumberOfInputSources(String model) {
@@ -243,28 +282,31 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * @param config
+     * Method to configure the number of zone channels for the NAD AV Receiver. This can be
+     * specified on the thing configuration "zoneCount" between 1 and the max number of zones allowed
+     * for the model. Channels will be dynamically added or removed depending increasing or decreasing the
+     * zoneCount.
+     *
+     * @param config NAD AV Receiver thing configuration settings
      */
     private void configureZoneChannels(NadAvrConfiguration config) {
         logger.debug("Configuring zone channels");
         Integer zoneCount = config.getZoneCount();
-
+        // current zone channels
         ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
-
         boolean channelsUpdated = false;
-
         // construct a set with the existing channel type UIDs, to quickly check
         Set<String> currentChannels = new HashSet<>();
         channels.forEach(channel -> currentChannels.add(channel.getUID().getId()));
-
+        // Make sure list of channels is clean by removing and adding them
         editThing().withoutChannels(channels);
         editThing().withChannels(channels);
-
+        // Initialize empty List to hold channels to be removed
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
-
+        // Process of adding or removing zones based on number set in the thing configuration
         if (zoneCount > 1) {
+            // add channels for zone 2
             List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(ZONE2_CHANNEL_TYPES.entrySet());
-
             if (zoneCount > 2) {
                 // add channels for zone 3
                 channelsToAdd.addAll(ZONE3_CHANNEL_TYPES.entrySet());
@@ -284,17 +326,17 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             if (!channelsToAdd.isEmpty()) {
                 for (Entry<String, ChannelTypeUID> entry : channelsToAdd) {
                     String itemType = CHANNEL_ITEM_TYPES.get(entry.getKey());
-                    logger.debug("Adding channel ThingUID = {}, key = {}, item type = {}, item value = {}",
-                            this.getThing().getUID(), entry.getKey(), itemType, entry.getValue());
-                    Channel channel = ChannelBuilder.create(new ChannelUID(this.getThing().getUID(), entry.getKey()))
-                            .withType(entry.getValue()).build();
-                    logger.debug("adding channel Label = {}, Description = {}, UID = {}", channel.getLabel(),
-                            channel.getDescription(), channel.getUID());
+                    String itemLabel = CHANNEL_ITEM_LABELS.get(entry.getKey());
+                    Channel channel = ChannelBuilder
+                            .create(new ChannelUID(this.getThing().getUID(), entry.getKey()), itemType)
+                            .withLabel(itemLabel).withType(entry.getValue()).build();
                     channels.add(channel);
                 }
                 channelsUpdated = true;
             } else {
-                logger.debug("No zone channels have been added");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("No zone channels have been added");
+                }
             }
         } else {
             channelsToRemove.addAll(ZONE2_CHANNEL_TYPES.entrySet());
@@ -307,14 +349,20 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         if (!channelsToRemove.isEmpty()) {
             for (Entry<String, ChannelTypeUID> entry : channelsToRemove) {
                 if (channels.removeIf(c -> (entry.getKey()).equals(c.getUID().getId()))) {
-                    logger.debug("Removed channel {}", entry.getKey());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Removed channel {}", entry.getKey());
+                    }
                 } else {
-                    logger.debug("Could NOT remove channel {}", entry.getKey());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Could NOT remove channel {}", entry.getKey());
+                    }
                 }
             }
             channelsUpdated = true;
         } else {
-            logger.debug("No zone channels have been removed");
+            if (logger.isDebugEnabled()) {
+                logger.debug("No zone channels have been removed");
+            }
         }
         // update Thing if channels changed
         if (channelsUpdated) {
@@ -323,27 +371,34 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * Schedule the reconnection job
+     * Method to Schedule the reconnection job. If connection is dropped, will try to reconnect
+     * or send diagnostic messages to troubleshoot.
      */
     private void scheduleConnectionJob() {
         if (logger.isDebugEnabled()) {
-            logger.debug("Schedule connection job");
+            logger.debug("Scheduling connection job");
         }
-
+        // Make sure there is no active connection
         cancelConnectionJob();
+        // Schedule connection job with initial delay and Polling Interval in seconds
         connectionJob = scheduler.scheduleWithFixedDelay(() -> {
             if (!connector.isConnected()) {
-                logger.debug("Trying to reconnect...");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Trying to reconnect...");
+                }
                 closeConnection();
                 String error = null;
                 if (openConnection()) {
                     synchronized (sequenceLock) {
                         try {
-                            checkStatus();
+                            // Send commands to Receiver to initialize channel states and verify connection
+                            requestDeviceDetails();
                             connector.sendCommand(buidMsgFromCommand(NadCommand.POWER_QUERY));
                         } catch (NadException e) {
                             error = "@text/offline.comm-error-first-command-after-reconnection";
-                            logger.debug("First command after connection failed", e);
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("First command after connection failed", e);
+                            }
                             closeConnection();
                         }
                     }
@@ -351,8 +406,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     error = "@text/offline.comm-error-reconnection";
                 }
                 if (error != null) {
+                    // Connection errors - set thing to offline and send diagnostic messages
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, error);
                 } else {
+                    // Connection is active, set thing to ONLINE
                     updateStatus(ThingStatus.ONLINE);
                 }
             }
@@ -371,19 +428,35 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * Open the connection with the Rotel device
+     * Cancel the checkStatus job
+     */
+    private void cancelRequestDeviceDetailsJob() {
+        ScheduledFuture<?> requestDeviceDetailsJob = this.requestDeviceDetailsJob;
+        if (requestDeviceDetailsJob != null && !requestDeviceDetailsJob.isCancelled()) {
+            requestDeviceDetailsJob.cancel(true);
+            this.requestDeviceDetailsJob = null;
+        }
+    }
+
+    /**
+     * Open the connection with the NAD AV Receiver
      *
-     * @return true if the connection is opened successfully or flase if not
+     * @return true if the connection is opened successfully or false if not
      */
     private synchronized boolean openConnection() {
         connector.addEventListener(this);
         try {
             connector.open();
-            checkStatus();
+            // Send commands to Receiver to initialize channel states
+            requestDeviceDetails();
         } catch (NadException e) {
-            logger.debug("openConnection() failed", e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("openConnection() failed", e);
+            }
         }
-        logger.debug("openConnection(): {}", connector.isConnected() ? "connected" : "disconnected");
+        if (logger.isDebugEnabled()) {
+            logger.debug("openConnection(): {}", connector.isConnected() ? "connected" : "disconnected");
+        }
         return connector.isConnected();
     }
 
@@ -393,11 +466,13 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private synchronized void closeConnection() {
         connector.close();
         connector.removeEventListener(this);
-        logger.debug("closeConnection(): disconnected");
+        if (logger.isDebugEnabled()) {
+            logger.debug("closeConnection(): disconnected");
+        }
     }
 
     /**
-     *
+     * Method to handle sending a command from a given channel to the NAD AV Receiver thing.
      */
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
@@ -533,7 +608,9 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                     throw new NadUnsupportedCommandTypeException();
             }
         } catch (NadUnsupportedCommandTypeException e) {
-            logger.debug("Unsupported Command {} for channel {}", command, channelUID.getId());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Unsupported Command {} for channel {}", command, channelUID.getId());
+            }
         } catch (NadException e) {
             logger.error("Sending command to channel \"{}\" failed.  Error: {}", channelUID.getId(),
                     e.getLocalizedMessage());
@@ -545,28 +622,38 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
      */
     @Override
     public void receivedMessage(NadMessage msg) {
-        logger.debug("Received status update from NAD Device @{}: data={}", connector.getConnectionName(), msg);
-
-        updateStatus(ThingStatus.ONLINE);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received status update from NAD Device @{}: data={}", connector.getConnectionName(), msg);
+        }
+        // Connection is live, set status to ONLINE if it is not already set
+        if (!ThingStatus.ONLINE.equals(thing.getStatus())) {
+            updateStatus(ThingStatus.ONLINE);
+        }
+        // Initialize receivedCommand before validating the NadMesage
         NadCommand receivedCommand = NadCommand.EMPTY_COMMAND;
         try {
             receivedCommand = NadCommand.getCommandByVariableAndOperator(msg.getVariable(), msg.getOperator());
         } catch (IllegalArgumentException ex) {
-            logger.debug("Received unknown status update from NAD Device @{}: data={}",
-                    config.hostname + ":" + config.ipAddress, msg);
+            // Some messages are not configured/supported in this binding and are simply ignored. Use debug to see them.
+            // The NaDCommand.java class defines the messages recognized by this binding //
+            if (logger.isDebugEnabled()) {
+                logger.debug("Received unknown status update from NAD Device @{}: data={}", config.ipAddress, msg);
+            }
             return;
         }
         try {
             String commandPrefix = msg.getPrefix();
-
+            // Look for input source names to be used to update the the input options for a zone
             if (commandPrefix.contains(NAD_PREFIX_SOURCE) && msg.getVariable().contains(NAD_VARIABLE_NAME)
                     && NAD_EQUALS_OPERATOR.equals(msg.getOperator())) {
                 int index = (Integer.parseInt(commandPrefix.substring(6).stripTrailing()) - 1);
                 NadAvrInputSourceList.updateSourceName(index, msg.getValue());
-
-                logger.debug("NadAvrInputSourceList updated with new name at index - {}, value = {}", index,
-                        msg.getValue());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("NadAvrInputSourceList updated with new name at index - {}, value = {}", index,
+                            msg.getValue());
+                }
             }
+            // Process valid command to update the respective channel state.
             if (receivedCommand != null) {
                 switch (receivedCommand) {
                     case SOURCE_SET:
@@ -655,140 +742,128 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                 }
             }
         } catch (Exception ex) {
+            // Highlight invalid messages
             logger.warn("Exception in receivedMessage for NAD Device @{}. Cause: {}, message received: {}",
                     connector.getConnectionName(), ex.getMessage(), msg);
         }
     }
 
     /**
-     *
+     * Method to send state query commands to the NAD AV Receiver to initialize/refresh channel states
      */
-    private void checkStatus() {
+    private void requestDeviceDetails() {
         // Sends a series of state query commands over the connection
-        logger.debug("NADAvrHandler - checkStatus() started.... connector is started = {}", connector.isConnected());
-        // ScheduledExecutorService refresh = Executors.newSingleThreadScheduledExecutor();
+        if (logger.isDebugEnabled()) {
+            logger.debug("NADAvrHandler - checkStatus() started.... connector is started = {}",
+                    connector.isConnected());
+        }
+        // Start a one-shot thread to send the queries to the Receiver
         if (connector.isConnected()) {
-            scheduler.execute(() -> {
-                // Initialize message with default "Main.Power=?" command
-                NadMessage queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
-                        .variable(NadCommand.POWER_QUERY.getVariable().toString())
-                        .operator(NadCommand.POWER_QUERY.getOperator().toString())
-                        .value(NadCommand.POWER_QUERY.getValue().toString()).build();
+            // scheduler.execute(() -> {
+            // Initialize message with default "Main.Power=?" command
+            NadMessage queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
+                    .variable(NadCommand.POWER_QUERY.getVariable().toString())
+                    .operator(NadCommand.POWER_QUERY.getOperator().toString())
+                    .value(NadCommand.POWER_QUERY.getValue().toString()).build();
 
-                // Refresh source input names
-                for (int input = 1; input <= 10; input++) {
-                    String prefix = "Source" + input;
-                    NadCommand nadCmd = NadCommand.SOURCE_NAME_QUERY;
-                    queryCmd = new NadMessage.MessageBuilder().prefix(prefix).variable(nadCmd.getVariable().toString())
-                            .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString()).build();
+            // Refresh source input names
+            for (int input = 1; input <= 10; input++) {
+                String prefix = "Source" + input;
+                NadCommand nadCmd = NadCommand.SOURCE_NAME_QUERY;
+                queryCmd = new NadMessage.MessageBuilder().prefix(prefix).variable(nadCmd.getVariable().toString())
+                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString()).build();
 
-                    try {
-                        connector.sendCommand(queryCmd);
-                    } catch (NadException e) {
-                        logger.error(
-                                "Error requesting source name refresh from the NAD device @{}, check for connection issues.  Error: {}",
-                                connector.getConnectionName(), e.getLocalizedMessage());
+                try {
+                    connector.sendCommand(queryCmd);
+                } catch (NadException e) {
+                    logger.error(
+                            "Error requesting source name refresh from the NAD device @{}, check for connection issues.  Error: {}",
+                            connector.getConnectionName(), e.getLocalizedMessage());
 
-                    }
                 }
-                // When adding new general commands be sure to include in array to refresh states...
-                List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_BAND_QUERY,
-                        NadCommand.TUNER_AM_FREQUENCY_QUERY, NadCommand.TUNER_FM_FREQUENCY_QUERY,
-                        NadCommand.TUNER_FM_MUTE_QUERY, NadCommand.TUNER_FM_RDS_TEXT_QUERY,
-                        NadCommand.TUNER_PRESET_QUERY, NadCommand.TUNER_XM_CHANNEL_QUERY));
+            }
 
-                // Refresh general state information
-                for (NadCommand nadGeneralCmd : nadGeneralRefreshCmds) {
-                    if (nadGeneralCmd.getOperator() == NAD_QUERY) {
-                        queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
-                                .variable(nadGeneralCmd.getVariable().toString())
-                                .operator(nadGeneralCmd.getOperator().toString())
-                                .value(nadGeneralCmd.getValue().toString()).build();
+            // Refresh tuner state information
+            refreshTunerDetails();
+
+            // When adding new zone commands be sure to include in array to refresh states...
+            List<NadCommand> nadZoneRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.POWER_QUERY,
+                    NadCommand.INPUT_SOURCE_QUERY, NadCommand.VOLUME_QUERY, NadCommand.LISTENING_MODE_QUERY,
+                    NadCommand.MUTE_QUERY, NadCommand.VOLUME_CONTROL_QUERY, NadCommand.VOLUME_FIXED_QUERY));
+            // Refresh zone state information
+            for (NadCommand nadCmd : nadZoneRefreshCmds) {
+                if (nadCmd.getOperator() == NAD_QUERY) {
+                    logger.debug("------- >>> NADcmd = {}", nadCmd);
+                    for (int zone = 1; zone <= config.getZoneCount(); zone++) {
+                        switch (zone) {
+                            case 1: // MainZone - 1
+                                if (NadCommand.VOLUME_CONTROL_QUERY.equals(nadCmd)
+                                        || NadCommand.VOLUME_FIXED_QUERY.equals(nadCmd)) {
+                                    break; // not valid for main zone
+                                }
+                                queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
+                                        .build();
+                                break;
+                            case 2: // Zone 2
+                                if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                    break; // only valid for main zone
+                                }
+                                queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone2.toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
+                                        .build();
+                                break;
+                            case 3: // Zone 3
+                                if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                    break; // only valid for main zone
+                                }
+                                queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone3.toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
+                                        .build();
+                                break;
+                            case 4: // Zone 4
+                                if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
+                                    break; // only valid for main zone
+                                }
+                                queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone4.toString())
+                                        .variable(nadCmd.getVariable().toString())
+                                        .operator(nadCmd.getOperator().toString()).value(nadCmd.getValue().toString())
+                                        .build();
+                                break;
+                            default: // General commands
+                                break;
+                        }
                         try {
                             connector.sendCommand(queryCmd);
-                        } catch (NadException e) {
+                        } catch (NadException e1) {
                             logger.error(
-                                    "Error requesting general state information from the NAD device @{}, check for connection issues.  Error: {}",
-                                    connector.getConnectionName(), e.getLocalizedMessage());
-                        }
-                    }
-                }
-                // When adding new zone commands be sure to include in array to refresh states...
-                List<NadCommand> nadZoneRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.POWER_QUERY,
-                        NadCommand.INPUT_SOURCE_QUERY, NadCommand.VOLUME_QUERY, NadCommand.LISTENING_MODE_QUERY,
-                        NadCommand.MUTE_QUERY, NadCommand.VOLUME_CONTROL_QUERY, NadCommand.VOLUME_FIXED_QUERY));
-                // Refresh zone state information
-                for (NadCommand nadCmd : nadZoneRefreshCmds) {
-                    if (nadCmd.getOperator() == NAD_QUERY) {
-                        logger.debug("------- >>> NADcmd = {}", nadCmd);
-                        for (int zone = 1; zone <= config.getZoneCount(); zone++) {
-                            switch (zone) {
-                                case 1: // MainZone - 1
-                                    if (NadCommand.VOLUME_CONTROL_QUERY.equals(nadCmd)
-                                            || NadCommand.VOLUME_FIXED_QUERY.equals(nadCmd)) {
-                                        break; // not valid for main zone
-                                    }
-                                    queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Main.toString())
-                                            .variable(nadCmd.getVariable().toString())
-                                            .operator(nadCmd.getOperator().toString())
-                                            .value(nadCmd.getValue().toString()).build();
-                                    break;
-                                case 2: // Zone 2
-                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
-                                        break; // only valid for main zone
-                                    }
-                                    queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone2.toString())
-                                            .variable(nadCmd.getVariable().toString())
-                                            .operator(nadCmd.getOperator().toString())
-                                            .value(nadCmd.getValue().toString()).build();
-                                    break;
-                                case 3: // Zone 3
-                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
-                                        break; // only valid for main zone
-                                    }
-                                    queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone3.toString())
-                                            .variable(nadCmd.getVariable().toString())
-                                            .operator(nadCmd.getOperator().toString())
-                                            .value(nadCmd.getValue().toString()).build();
-                                    break;
-                                case 4: // Zone 4
-                                    if (NadCommand.LISTENING_MODE_QUERY.equals(nadCmd)) {
-                                        break; // only valid for main zone
-                                    }
-                                    queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Zone4.toString())
-                                            .variable(nadCmd.getVariable().toString())
-                                            .operator(nadCmd.getOperator().toString())
-                                            .value(nadCmd.getValue().toString()).build();
-                                    break;
-                                default: // General commands
-                                    break;
-                            }
-                            try {
-                                connector.sendCommand(queryCmd);
-                            } catch (NadException e1) {
-                                logger.error(
-                                        "Error requesting zone state information from the NAD device @{}, check for connection issues.  Error: {}",
-                                        connector.getConnectionName(), e1.getLocalizedMessage());
+                                    "Error requesting zone state information from the NAD device @{}, check for connection issues.  Error: {}",
+                                    connector.getConnectionName(), e1.getLocalizedMessage());
 
-                            }
-                            // pause enough for command status to be returned...
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(50);
-                                // TimeUnit.SECONDS.sleep(3); // 3 seconds
-                            } catch (InterruptedException e) {
+                        }
+                        // pause enough for command status to be returned...
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(50);
+                        } catch (InterruptedException e) {
+                            if (logger.isDebugEnabled()) {
                                 logger.debug("Nadhandler refresh Error in sleep to receive status", e);
                             }
                         }
                     }
                 }
-            });
+            }
+            // });
         } else {
+            // Not Connected, set to OFFLINE
             updateStatus(ThingStatus.OFFLINE);
         }
     }
 
     /**
-     *
+     * Method to update a changed state
      */
     @Override
     public void stateChanged(String channelID, State state) {
@@ -799,7 +874,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     *
+     * Method to handle/report connection errors
      */
     @Override
     public void connectionError(@Nullable String errorMessage) {
@@ -815,8 +890,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     * @param command
-     * @return
+     * Method to format command components into an NadMessage
+     *
+     * @param command - ENUM {@link NadCommand.java} version of an NADCommand
+     * @return formatted NadMessage (.e.g Main.Power=On)
      */
     private NadMessage buidMsgFromCommand(NadCommand command) {
         return new NadMessage.MessageBuilder().prefix(command.getPrefix()).variable(command.getVariable())
@@ -824,7 +901,7 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     *
+     * Method to update tuner band channel name options
      */
     private void populateTunerBands() {
         Set<String> bandSet = Arrays.stream(NadCommand.DefaultTunerBandNames.values())
@@ -835,11 +912,13 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         for (String band : bands) {
             options.add(new StateOption(band, band));
         }
+        /* Update the tuner band channel options with broadcast band descriptions */
         stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_BAND), options);
     }
 
     /**
-     *
+     * Method to populate/update tuner preset names with default values (P01-P40) or user defined descriptions
+     * from a file specified in the NAD AV Receiver thing configuration
      */
     private void populateTunerPresets() {
         List<StateOption> options = new ArrayList<>();
@@ -877,30 +956,35 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     }
 
     /**
-     *
+     * Method to refresh tuner channel details when the broadcast band changes
      */
     protected void refreshTunerDetails() {
-        // When adding new commands be sure to include in array to refresh states...
-        List<NadCommand> nadGeneralRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_AM_FREQUENCY_QUERY,
-                NadCommand.TUNER_FM_FREQUENCY_QUERY, NadCommand.TUNER_FM_MUTE_QUERY, NadCommand.TUNER_FM_RDS_TEXT_QUERY,
-                NadCommand.TUNER_PRESET_QUERY, NadCommand.TUNER_XM_CHANNEL_QUERY));
-        logger.debug("Refresh tuner details from Handler is called...");
-        // Refresh general state information
-        for (NadCommand nadGeneralCmd : nadGeneralRefreshCmds) {
-            if (nadGeneralCmd.getOperator() == NAD_QUERY) {
-                NadMessage queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
-                        .variable(nadGeneralCmd.getVariable().toString())
-                        .operator(nadGeneralCmd.getOperator().toString()).value(nadGeneralCmd.getValue().toString())
-                        .build();
+        // Initialize message with empty command
+        NadMessage queryCmd = new NadMessage.MessageBuilder().prefix(NadCommand.EMPTY_COMMAND.getPrefix().toString())
+                .variable(NadCommand.EMPTY_COMMAND.getVariable().toString())
+                .operator(NadCommand.EMPTY_COMMAND.getOperator().toString())
+                .value(NadCommand.EMPTY_COMMAND.getValue().toString()).build();
+
+        // When adding new tuner commands be sure to include in array to refresh states...
+        List<NadCommand> nadTunerRefreshCmds = new ArrayList<>(Arrays.asList(NadCommand.TUNER_BAND_QUERY,
+                NadCommand.TUNER_AM_FREQUENCY_QUERY, NadCommand.TUNER_FM_FREQUENCY_QUERY,
+                NadCommand.TUNER_FM_MUTE_QUERY, NadCommand.TUNER_FM_RDS_TEXT_QUERY, NadCommand.TUNER_PRESET_QUERY,
+                NadCommand.TUNER_XM_CHANNEL_QUERY));
+
+        // Refresh tuner state information
+        for (NadCommand nadTunerCmd : nadTunerRefreshCmds) {
+            if (nadTunerCmd.getOperator() == NAD_QUERY) {
+                queryCmd = new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
+                        .variable(nadTunerCmd.getVariable().toString()).operator(nadTunerCmd.getOperator().toString())
+                        .value(nadTunerCmd.getValue().toString()).build();
                 try {
                     connector.sendCommand(queryCmd);
                 } catch (NadException e) {
                     logger.error(
-                            "Error requesting general state informatin from the NAD device @{}, check for connection issues.  Error: {}",
+                            "Error requesting tuner state information from the NAD device @{}, check for connection issues.  Error: {}",
                             connector.getConnectionName(), e.getLocalizedMessage());
                 }
             }
         }
-
     }
 }

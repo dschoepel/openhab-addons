@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link NadDABDlsTextStream.java} class is used to capture tuner DAB DLS text stream.
+ * The {@link NadDABDlsTextStream.java} class is used to capture tuner DAB DLS text stream using a separate thread.
  *
  * @author Dave J Schoepel - Initial contribution
  */
