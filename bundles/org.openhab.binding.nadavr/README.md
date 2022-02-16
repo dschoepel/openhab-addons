@@ -18,7 +18,7 @@ The NAD control protocol is limiting DAB channels to _read-only_; presets can be
 | ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-775](doc/NAD-T-775.svg) | T775 | Connection to NAD T-775 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Pre-Amplifier  | Ethernet | 4 |&#10060; No |
+| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Preamp Processor | Ethernet | 4 |&#10060; No |
 | ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
 | ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet | 4 | &#9989; Yes |
 
@@ -27,14 +27,14 @@ The NAD control protocol is limiting DAB channels to _read-only_; presets can be
 The binding will auto-discover "support-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
 
 Auto discovered things will list the device details in the thing configuration "properties" section in the OpenHab UI.
-<ul><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
+<ul><li>Host name</li><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
 
 
 ## Binding Configuration
 
 The binding can auto-discover the NAD AVRs present on your local network. The auto-discovery is enabled by default. To disable it, you can create a file in the services directory called nadavr.cfg with the following content:
 
-```java
+```ruby
 # Configuration for the nadavr binding
 # 
 # Auto discovery parameter 
@@ -50,12 +50,13 @@ The NAD AVR thing has the following configuration parameters:
 
 | Parameter | Parameter Id | Req/Opt | Description | Default | Type | Accepted Values |
 | :--  | :-- | :-: | :-- | :-: | :-: | :-- |
-| Refresh Interval | refreshInterval | Optional,<br>*Advanced | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
-| Zone Count of the Receiver | zoneCount | Required | User can configured number of zones to be configured | 1 | Integer | 1 - maxZones listed in Thing properties |  
+| Refresh Interval\* | refreshInterval | Optional | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
+| Zone Count of the Receiver | zoneCount | Required | User can configure number of zones. For example: If the receiver has 4 zones, but your only using Main and Zone2, setting this at 2 reduces the number of channels the binding needs to keep track of.  | 1 | Integer | 1 up to maxZones listed in Thing properties |  
 | IP Address | ipAddress   | Required | The IPv4 address assigned the the NAD Receiver | | String | Any valid IPv4 address |
 | Port      | telnetPort   | Required | The network port for Telnet connection | 23 | Integer | Any valid TCP port number |
-| Enable Preset Detail | enablePresetNames | Optional,<br>*Advanced | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
-| Preset Names File | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true,<br>*Advanced | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
+| Enable Preset Detail\* | enablePresetNames | Optional | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
+| Preset Names File\* | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
+\* hidden unless "Show advanced" checked on UI 
 
 Since the NAD control protocol does not provide a means to retrieve the descriptive information for tuner presets, this binding provides the option to let the user create a file that can be used to give more meaning to the tuner preset channel.
 
@@ -183,7 +184,8 @@ NAD AVR Thing Channels are listed by Group
 | zone1#volume | Dimmer| RW | Volume level for the main zone (1% - 100%) |
 | zone1#volumeDB | Number | RW | Volume level of the main zone (-99 to +19 dB) |
 | zone1#mute | Switch| RW | Main volume mute on/off |
-|zone1#listeningMode | String | RW | The main listening mode for this AVR |
+| zone1#listeningMode\* | String | RW | The main listening mode for this AVR |
+\* hidden unless "Show advanced" checked on UI  
 
 **Zone 2**
 | Channel Type UID  | Item Type   | Access Mode| Description                  |
@@ -231,12 +233,13 @@ NAD AVR Thing Channels are listed by Group
 | tuner#preset | String | RW | Recall a tuner preset ("1" - "40").  If a preset has not been defined on the AVR, sending that value will be ignored when sent to the AVR. |
 | tuner#presetDetail | String | R | Tuner preset detail (requires user defined file to supply details) format will be "Band-Freq/Channel-Name" (.e.g. FM 105.7 WAPL, XM 26 Classic Vinyl) |
 | tuner#fmRdsText | String | R | Tuner FM Radio Data System Radio text readout |
-| tuner#xmChannel | String | RW | XM Channel number (None, "0"-"255") |
-| tuner#xmChannelName | String | R | XM Channel Name assigned to channel |
-| tuner#xmName | String | R | XM Performing Artist Name currently playing |
-| tuner#xmSongTitle | String | R | XM Song Title currently playing |
-| tuner#dabServiceName | String | R | DAB Broadcast station service name or id |
-| tuner#dabDlsText | String | R | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station |
+| tuner#xmChannel\* | String | RW | XM Channel number (None, "0"-"255") |
+| tuner#xmChannelName\* | String | R | XM Channel Name assigned to channel |
+| tuner#xmName\* | String | R | XM Performing Artist Name currently playing |
+| tuner#xmSongTitle\* | String | R | XM Song Title currently playing |
+| tuner#dabServiceName\* | String | R | DAB Broadcast station service name or id |
+| tuner#dabDlsText\* | String | R | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station |
+\* hidden unless "Show advanced" checked on UI  
 
 ## Full Example
 
@@ -296,15 +299,44 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
 }
 ```
 
-_Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
+## Additional Considerations and Reference Documentation
 
-## Any custom content here!
-
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
-
+####Considerations
 <ul>
+<li> If setting a refresh interval, be careful not to set the interval too short as it will likely impact the performance of our OpenHab environment.  Anything less than 60 seconds is not recommended.  Only use this if the channels are not being updated as you would expect them to be.</li> 
+<li>Channels for the Main listening mode, XM and DAB tuner bands are flagged as Advanced.  To work with/view them in the OpenHab UI, tick the "Show advanced" box on the screen.</li>
 <li>The NAD T-777v3 does not support XM or DAB tuner channels.</li>
-<li>If custom input names are set/configured on the AVR, they will be used for the zone(s) source names channels.</li>
-<li>Channels for the Main listening mode, XM and DAB tuner bands are flaged as Advanced.  To work with/view them in the OpenHab UI, tick the Show advanced box on the screen.</li>
-<li> </li> 
+<li>If custom input names are set/configured on the AVR (can be done outside of binding using the AVR configuration menu or <a href="https://apps.apple.com/us/app/nad-a-v-remote/id626998469">NAD App</a>, they will be used for the zone(s) source names channels.</li>
 </ul>
+
+####Reference Documentation
+
+<table>
+<tr><th>Item</th><th>Documents</th></tr>
+<tr><td><a href="https://nadelectronics.com/software/#Protocol">NAD Protocol Documentation</a></td>
+<td><a href="doc/nad_ethernet_rs232_spec_2.03.pdf">NAD RS232/Ethernet Spec</a></td>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-765-av-surround-sound-receiver/">T-765 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T765_Commands.pdf">NAD T-765 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-775-av-surround-sound-receiver/">T-775 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T775_Commands.pdf">NAD T-775 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-785-av-surround-sound-receiver/">T-785 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T785_Commands.pdf">NAD T-785 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-187-surround-sound-preamp-processor/">T-187 Surround Sound Preamp Processor</a></td>
+<td><a href="doc/T187_Commands.pdf">NAD T-187 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-777-av-surround-sound-receiver/">T-777 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T777_Commands.pdf">NAD T-777 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-787-av-surround-sound-receiver/">T-787 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T787_Commands.pdf">NAD T-787 Commands</a></td>
+</tr>
+</table>

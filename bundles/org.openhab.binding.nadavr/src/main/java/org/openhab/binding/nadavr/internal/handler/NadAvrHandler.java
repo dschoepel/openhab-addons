@@ -327,10 +327,12 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                 for (Entry<String, ChannelTypeUID> entry : channelsToAdd) {
                     String itemType = CHANNEL_ITEM_TYPES.get(entry.getKey());
                     String itemLabel = CHANNEL_ITEM_LABELS.get(entry.getKey());
-                    Channel channel = ChannelBuilder
-                            .create(new ChannelUID(this.getThing().getUID(), entry.getKey()), itemType)
-                            .withLabel(itemLabel).withType(entry.getValue()).build();
-                    channels.add(channel);
+                    if (itemLabel != null) {
+                        Channel channel = ChannelBuilder
+                                .create(new ChannelUID(this.getThing().getUID(), entry.getKey()), itemType)
+                                .withType(entry.getValue()).withLabel(itemLabel).build();
+                        channels.add(channel);
+                    }
                 }
                 channelsUpdated = true;
             } else {

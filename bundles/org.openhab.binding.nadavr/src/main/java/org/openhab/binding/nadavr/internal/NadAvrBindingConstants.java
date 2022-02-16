@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
@@ -182,7 +183,7 @@ public class NadAvrBindingConstants {
     /**
      * Static mapping of ChannelType-to-ItemType
      */
-    public static final Map<String, String> CHANNEL_ITEM_LABELS = new HashMap<>();
+    public static final Map<String, @Nullable String> CHANNEL_ITEM_LABELS = new HashMap<>();
     static {
         CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_POWER, "Power Z2");
         CHANNEL_ITEM_LABELS.put(CHANNEL_ZONE2_VOLUME, "Volume Z2");
