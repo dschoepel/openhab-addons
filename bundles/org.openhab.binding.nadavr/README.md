@@ -301,7 +301,8 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
 
 ## Additional Considerations and Reference Documentation
 
-#### Considerations
+### Considerations
+
 <ul>
 <li> If setting a refresh interval, be careful not to set the interval too short as it will likely impact the performance of our OpenHab environment.  Anything less than 60 seconds is not recommended.  Only use this if the channels are not being updated as you would expect them to be.</li> 
 <li>Channels for the Main listening mode, XM and DAB tuner bands are flagged as Advanced.  To work with/view them in the OpenHab UI, tick the "Show advanced" box on the screen.</li>
@@ -309,7 +310,7 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
 <li>If custom input names are set/configured on the AVR (can be done outside of binding using the AVR configuration menu or <a href="https://apps.apple.com/us/app/nad-a-v-remote/id626998469">NAD App</a>, they will be used for the zone(s) source names channels.</li>
 </ul>
 
-#### Reference Documentation
+### Reference Documentation
 
 <table>
 <tr><th>Item</th><th>Documents</th></tr>
