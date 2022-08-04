@@ -10,21 +10,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hdpowerview;
-
-import java.util.Locale;
+package org.openhab.binding.boschindego.internal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.i18n.LocaleProvider;
 
 /**
- * Locale provider for unit tests.
- *
+ * {@link DeviceStateAttribute} describes a characteristic for a device state.
+ * 
  * @author Jacob Laursen - Initial contribution
  */
 @NonNullByDefault
-public class LocaleProviderForTests implements LocaleProvider {
-    public Locale getLocale() {
-        return Locale.ENGLISH;
-    }
+public enum DeviceStateAttribute {
+    READY_TO_MOW,
+    DOCKED,
+    CHARGING,
+    ACTIVE,
+    COMPLETED
 }
