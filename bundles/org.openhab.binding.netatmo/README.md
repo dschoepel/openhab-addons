@@ -9,6 +9,7 @@ The Netatmo binding integrates the following Netatmo products:
 - *Outdoor Camera / Presence*. Reports last event, consult picture and video from event/camera.
 - *Doorbell* 
 - *Smoke Detector*
+- *Smart Door Sensor*
 
 See https://www.netatmo.com/ for details on their product.
 
@@ -52,6 +53,13 @@ The Account bridge has the following configuration elements:
 
 (*) Strictly said this parameter is not mandatory at first run, until you grant your binding on Netatmo Connect. Once present, you'll not have to grant again.
 
+**Supported channels for the Account bridge thing:**
+
+| Channel Group | Channel Id    | Item Type | Description                                                        |
+|---------------|---------------|-----------|--------------------------------------------------------------------|
+| monitoring    | request-count | Number    | Number of requests transmitted to Netatmo API during the last hour |
+
+
 ### Configure the Bridge
 
 1. Complete the Netatmo Application Registration if you have not already done so, see above.
@@ -60,7 +68,7 @@ The Account bridge has the following configuration elements:
 1. The bridge thing will go _OFFLINE_ / _CONFIGURATION_ERROR_ - this is fine. You have to authorize this bridge with Netatmo Connect.
 1. Go to the authorization page of your server. `http://<your openHAB address>:8080/netatmo/connect/<_CLIENT_ID_>`. Your newly added bridge should be listed there (no need for you to expose your openHAB server outside your local network for this).
 1. Press the _"Authorize Thing"_ button. This will take you either to the login page of Netatmo Connect or directly to the authorization screen. Login and/or authorize the application. You will be returned and the entry should go green. 
-1. The binding will be updated with a refresh token and go _ONLINE_. The refresh token is used to re-authorize the bridge with Netatmo Connect Web API whenever required.
+1. The bridge configuration will be updated with a refresh token and go _ONLINE_. The refresh token is used to re-authorize the bridge with Netatmo Connect Web API whenever required. So you can consult this token by opening the Thing page in MainUI, this is the value of the advanced parameter named “Refresh Token”.
 1. If you're using file based .things config file, copy the provided refresh token in the **refreshToken** parameter of your thing definition (example below).
 
 Now that you have got your bridge _ONLINE_ you can now start a scan with the binding to auto discover your things.
@@ -87,6 +95,7 @@ Now that you have got your bridge _ONLINE_ you can now start a scan with the bin
 | thermostat      | Thing  | NATherm1       | The Thermostat device placed in a given room.                                                        | id                                                                        |
 | room            | Thing  | NARoom         | A room in your house.                                                                                | id                                                                        |
 | valve           | Thing  | NRV            | A valve controlling a radiator.                                                                      | id                                                                        |
+| tag             | Thing  | NACamDoorTag   | A door / window sensor                                                                               | id                                                                        |
 
 
 
@@ -113,6 +122,12 @@ NB: Allowed ports for webhooks are 80, 88, 443 and 9443.
 
 
 ### Configure Things
+
+The easiest way to retrieve the IDs for all the devices and modules is to use the console command `openhab:netatmo showIds`.
+It shows the hierarchy of all the devices and modules including their IDs.
+This can help to define all your things in a configuration file.
+
+**Another way to get the IDs is to use the developer documentation on the netatmo site:**
 
 The IDs for the modules can be extracted from the developer documentation on the netatmo site.
 First login with your user.
@@ -603,6 +618,17 @@ Note: live feeds either locally or via VPN are not available in Netatmo API.
 | battery       | low-battery       | Switch       | Read-only  | Low battery                                          |
 
 
+**Supported channels for the Door Tag thing:**
+
+| Channel Group | Channel ID        | Item Type    | Read/Write | Description                                          |
+|---------------|-------------------|--------------|------------|------------------------------------------------------|
+| tag           | status            | Contact      | Read-only  | Status of tag (OPEN,CLOSED)                          |
+| signal        | strength          | Number       | Read-only  | Signal strength (0 for no signal, 1 for weak...)     |
+| signal        | value             | Number:Power | Read-only  | Signal strength in dBm                               |
+| timestamp     | last-seen         | DateTime     | Read-only  | Last time the module reported its presence           |
+| battery       | value             | Number       | Read-only  | Battery level                                        |
+| battery       | low-battery       | Switch       | Read-only  | Low battery                                          |
+
 ### Welcome Person
 
 Netatmo API distinguishes two kinds of persons:
@@ -670,6 +696,13 @@ Bridge netatmo:account:myaccount "Netatmo Account" [clientId="xxxxx", clientSecr
                 Type live-stream-url : live#local-stream-url [ quality="high" ]
                 Type live-stream-url : live#vpn-stream-url [ quality="low" ]
         }
+    }
+    Bridge home myhomeheating "Home heating" [ id="..." ] {
+        Bridge plug relay "Boiler relay" [ id="..." ] {
+            thermostat thermostat "Thermostat" [ id="..." ]
+            valve valveoffice "Valve in office" [ id="..." ]
+        }
+        room office "Office" [ id="..." ]
     }
 }
 ```
