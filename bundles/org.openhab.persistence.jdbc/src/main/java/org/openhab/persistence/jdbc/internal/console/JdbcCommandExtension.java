@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.persistence.jdbc.console;
+package org.openhab.persistence.jdbc.internal.console;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -26,10 +26,11 @@ import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
 import org.openhab.core.persistence.PersistenceService;
 import org.openhab.core.persistence.PersistenceServiceRegistry;
-import org.openhab.persistence.jdbc.ItemTableCheckEntry;
-import org.openhab.persistence.jdbc.ItemTableCheckEntryStatus;
+import org.openhab.persistence.jdbc.internal.ItemTableCheckEntry;
+import org.openhab.persistence.jdbc.internal.ItemTableCheckEntryStatus;
 import org.openhab.persistence.jdbc.internal.JdbcPersistenceService;
 import org.openhab.persistence.jdbc.internal.JdbcPersistenceServiceConstants;
+import org.openhab.persistence.jdbc.internal.exceptions.JdbcSQLException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -70,22 +71,14 @@ public class JdbcCommandExtension extends AbstractConsoleCommandExtension implem
         if (persistenceService == null) {
             return;
         }
-        if (SUBCMD_TABLES_LIST.equalsIgnoreCase(args[1])) {
-            listTables(persistenceService, console, args.length == 3 && PARAMETER_ALL.equalsIgnoreCase(args[2]));
-            return;
-        } else if (SUBCMD_TABLES_CLEAN.equalsIgnoreCase(args[1])) {
-            if (args.length == 3) {
-                cleanupItem(persistenceService, console, args[2], false);
-                return;
-            } else if (args.length == 4 && PARAMETER_FORCE.equalsIgnoreCase(args[3])) {
-                cleanupItem(persistenceService, console, args[2], true);
-                return;
-            } else {
-                cleanupTables(persistenceService, console);
+        try {
+            if (!execute(persistenceService, args, console)) {
+                printUsage(console);
                 return;
             }
+        } catch (JdbcSQLException e) {
+            console.println(e.toString());
         }
-        printUsage(console);
     }
 
     private @Nullable JdbcPersistenceService getPersistenceService() {
@@ -97,16 +90,37 @@ public class JdbcCommandExtension extends AbstractConsoleCommandExtension implem
         return null;
     }
 
-    private void listTables(JdbcPersistenceService persistenceService, Console console, Boolean all) {
+    private boolean execute(JdbcPersistenceService persistenceService, String[] args, Console console)
+            throws JdbcSQLException {
+        if (SUBCMD_TABLES_LIST.equalsIgnoreCase(args[1])) {
+            listTables(persistenceService, console, args.length == 3 && PARAMETER_ALL.equalsIgnoreCase(args[2]));
+            return true;
+        } else if (SUBCMD_TABLES_CLEAN.equalsIgnoreCase(args[1])) {
+            if (args.length == 3) {
+                cleanupItem(persistenceService, console, args[2], false);
+                return true;
+            } else if (args.length == 4 && PARAMETER_FORCE.equalsIgnoreCase(args[3])) {
+                cleanupItem(persistenceService, console, args[2], true);
+                return true;
+            } else {
+                cleanupTables(persistenceService, console);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void listTables(JdbcPersistenceService persistenceService, Console console, Boolean all)
+            throws JdbcSQLException {
         List<ItemTableCheckEntry> entries = persistenceService.getCheckedEntries();
         if (!all) {
             entries.removeIf(t -> t.getStatus() == ItemTableCheckEntryStatus.VALID);
         }
         entries.sort(Comparator.comparing(ItemTableCheckEntry::getTableName));
         int itemNameMaxLength = Math
-                .max(entries.stream().map(t -> t.getItemName().length()).max(Integer::compare).get(), 4);
+                .max(entries.stream().map(t -> t.getItemName().length()).max(Integer::compare).orElse(0), 4);
         int tableNameMaxLength = Math
-                .max(entries.stream().map(t -> t.getTableName().length()).max(Integer::compare).get(), 5);
+                .max(entries.stream().map(t -> t.getTableName().length()).max(Integer::compare).orElse(0), 5);
         int statusMaxLength = Stream.of(ItemTableCheckEntryStatus.values()).map(t -> t.toString().length())
                 .max(Integer::compare).get();
         console.println(String.format(
@@ -125,7 +139,7 @@ public class JdbcCommandExtension extends AbstractConsoleCommandExtension implem
         }
     }
 
-    private void cleanupTables(JdbcPersistenceService persistenceService, Console console) {
+    private void cleanupTables(JdbcPersistenceService persistenceService, Console console) throws JdbcSQLException {
         console.println("Cleaning up all inconsistent items...");
         List<ItemTableCheckEntry> entries = persistenceService.getCheckedEntries();
         entries.removeIf(t -> t.getStatus() == ItemTableCheckEntryStatus.VALID || t.getItemName().isEmpty());
@@ -139,8 +153,8 @@ public class JdbcCommandExtension extends AbstractConsoleCommandExtension implem
         }
     }
 
-    private void cleanupItem(JdbcPersistenceService persistenceService, Console console, String itemName,
-            boolean force) {
+    private void cleanupItem(JdbcPersistenceService persistenceService, Console console, String itemName, boolean force)
+            throws JdbcSQLException {
         console.print("Cleaning up item " + itemName + "... ");
         if (persistenceService.cleanupItem(itemName, force)) {
             console.println("done.");
