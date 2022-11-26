@@ -34,6 +34,7 @@ import org.openhab.core.types.State;
 import org.openhab.persistence.jdbc.internal.dto.ItemVO;
 import org.openhab.persistence.jdbc.internal.dto.ItemsVO;
 import org.openhab.persistence.jdbc.internal.dto.JdbcPersistenceItemInfo;
+import org.openhab.persistence.jdbc.internal.exceptions.JdbcException;
 import org.openhab.persistence.jdbc.internal.exceptions.JdbcSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,9 @@ public class JdbcMapper {
     private boolean ifItemsTableExists() throws JdbcSQLException {
         logger.debug("JDBC::ifItemsTableExists");
         long timerStart = System.currentTimeMillis();
-        boolean res = conf.getDBDAO().doIfTableExists(new ItemsVO());
+        ItemsVO vo = new ItemsVO();
+        vo.setItemsManageTable(conf.getItemsManageTable());
+        boolean res = conf.getDBDAO().doIfTableExists(vo);
         logTime("doIfTableExists", timerStart, System.currentTimeMillis());
         return res;
     }
@@ -150,7 +153,9 @@ public class JdbcMapper {
     private List<ItemsVO> getItemIDTableNames() throws JdbcSQLException {
         logger.debug("JDBC::getItemIDTableNames");
         long timerStart = System.currentTimeMillis();
-        List<ItemsVO> vo = conf.getDBDAO().doGetItemIDTableNames(new ItemsVO());
+        ItemsVO isvo = new ItemsVO();
+        isvo.setItemsManageTable(conf.getItemsManageTable());
+        List<ItemsVO> vo = conf.getDBDAO().doGetItemIDTableNames(isvo);
         logTime("getItemIDTableNames", timerStart, System.currentTimeMillis());
         return vo;
     }
@@ -158,9 +163,10 @@ public class JdbcMapper {
     protected List<ItemsVO> getItemTables() throws JdbcSQLException {
         logger.debug("JDBC::getItemTables");
         long timerStart = System.currentTimeMillis();
-        ItemsVO vo = new ItemsVO();
-        vo.setJdbcUriDatabaseName(conf.getDbName());
-        List<ItemsVO> vol = conf.getDBDAO().doGetItemTables(vo);
+        ItemsVO isvo = new ItemsVO();
+        isvo.setJdbcUriDatabaseName(conf.getDbName());
+        isvo.setItemsManageTable(conf.getItemsManageTable());
+        List<ItemsVO> vol = conf.getDBDAO().doGetItemTables(isvo);
         logTime("getItemTables", timerStart, System.currentTimeMillis());
         return vol;
     }
@@ -183,7 +189,7 @@ public class JdbcMapper {
         return vo;
     }
 
-    protected void storeItemValue(Item item, State itemState, @Nullable ZonedDateTime date) throws JdbcSQLException {
+    protected void storeItemValue(Item item, State itemState, @Nullable ZonedDateTime date) throws JdbcException {
         logger.debug("JDBC::storeItemValue: item={} state={} date={}", item, itemState, date);
         String tableName = getTable(item);
         long timerStart = System.currentTimeMillis();
@@ -285,14 +291,17 @@ public class JdbcMapper {
      * DATABASE TABLEHANDLING *
      **************************/
     protected void checkDBSchema() throws JdbcSQLException {
+        ItemsVO vo = new ItemsVO();
+        vo.setItemsManageTable(conf.getItemsManageTable());
+
         if (!conf.getTableUseRealCaseSensitiveItemNames()) {
-            createItemsTableIfNot(new ItemsVO());
+            createItemsTableIfNot(vo);
         }
         if (conf.getRebuildTableNames()) {
             formatTableNames();
 
             if (conf.getTableUseRealCaseSensitiveItemNames()) {
-                dropItemsTableIfExists(new ItemsVO());
+                dropItemsTableIfExists(vo);
             }
             logger.info(
                     "JDBC::checkDBSchema: Rebuild complete, configure the 'rebuildTableNames' setting to 'false' to stop rebuilds on startup");
@@ -302,7 +311,7 @@ public class JdbcMapper {
         populateItemNameToTableNameMap();
     }
 
-    private void populateItemNameToTableNameMap() throws JdbcSQLException {
+    public void populateItemNameToTableNameMap() throws JdbcSQLException {
         itemNameToTableNameMap.clear();
         if (conf.getTableUseRealCaseSensitiveItemNames()) {
             for (String itemName : getItemTables().stream().map(t -> t.getTableName()).collect(Collectors.toList())) {
@@ -316,25 +325,27 @@ public class JdbcMapper {
         }
     }
 
-    protected String getTable(Item item) throws JdbcSQLException {
-        int itemId = 0;
-        ItemsVO isvo;
-        ItemVO ivo;
-
+    protected String getTable(Item item) throws JdbcException {
         String itemName = item.getName();
-        String tableName = itemNameToTableNameMap.get(itemName);
+        if (!initialized) {
+            throw new JdbcException("Not initialized, unable to find table for item " + itemName);
+        }
 
         // Table already exists - return the name
+        String tableName = itemNameToTableNameMap.get(itemName);
         if (!Objects.isNull(tableName)) {
             return tableName;
         }
 
-        logger.debug("JDBC::getTable: no table found for item '{}' in sqlTables", itemName);
+        logger.debug("JDBC::getTable: no table found for item '{}' in itemNameToTableNameMap", itemName);
+
+        int itemId = 0;
 
         if (!conf.getTableUseRealCaseSensitiveItemNames()) {
             // Create a new entry in items table
-            isvo = new ItemsVO();
+            ItemsVO isvo = new ItemsVO();
             isvo.setItemName(itemName);
+            isvo.setItemsManageTable(conf.getItemsManageTable());
             isvo = createNewEntryInItemsTable(isvo);
             itemId = isvo.getItemId();
             if (itemId == 0) {
@@ -348,7 +359,7 @@ public class JdbcMapper {
 
         // Create table for item
         String dataType = conf.getDBDAO().getDataType(item);
-        ivo = new ItemVO(tableName, itemName);
+        ItemVO ivo = new ItemVO(tableName, itemName);
         ivo.setDbType(dataType);
         ivo = createItemTable(ivo);
         logger.debug("JDBC::getTable: Table created for item '{}' with dataType {} in SQL database.", itemName,
@@ -380,6 +391,7 @@ public class JdbcMapper {
             for (String itemName : itemTables) {
                 ItemsVO isvo = new ItemsVO();
                 isvo.setItemName(itemName);
+                isvo.setItemsManageTable(conf.getItemsManageTable());
                 isvo = createNewEntryInItemsTable(isvo);
                 int itemId = isvo.getItemId();
                 if (itemId == 0) {
@@ -391,7 +403,7 @@ public class JdbcMapper {
                 }
             }
         } else {
-            String itemsManageTable = new ItemsVO().getItemsManageTable();
+            String itemsManageTable = conf.getItemsManageTable();
             Map<Integer, String> itemIdToItemNameMap = new HashMap<>();
 
             for (ItemsVO vo : itemIdTableNames) {
