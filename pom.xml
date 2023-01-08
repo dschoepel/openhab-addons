@@ -72,7 +72,7 @@
     <bnd.version>6.4.0</bnd.version>
     <commons.net.version>3.9.0</commons.net.version>
     <eea.version>2.2.1</eea.version>
-    <jackson.version>2.12.7</jackson.version>
+    <jackson.version>2.14.1</jackson.version>
     <karaf.version>4.3.7</karaf.version>
     <netty.version>4.1.72.Final</netty.version>
     <okhttp.version>3.14.9</okhttp.version>
@@ -425,13 +425,14 @@ Import-Package: \\
               <include>**/features/**/header.xml</include>
             </includes>
             <excludes>
+              <exclude>**/3rdparty/**</exclude>
               <exclude>target/**</exclude>
               <exclude>**/pom.xml</exclude>
               <exclude>_*.java</exclude>
             </excludes>
             <useDefaultExcludes>true</useDefaultExcludes>
             <properties>
-              <year>2022</year>
+              <year>2023</year>
             </properties>
             <encoding>UTF-8</encoding>
           </configuration>
