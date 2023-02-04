@@ -113,12 +113,26 @@ The following table describes the `poePort` configuration parameters:
 
 The `site` information that is retrieved is available as these channels:
 
-| Channel ID      | Item Type | Description                          | Permissions |
-|-----------------|-----------|--------------------------------------|-------------|
-| totalClients    | Number    | Total number of clients connected    | Read        |
-| wirelessClients | Number    | Number of wireless clients connected | Read        |
-| wiredClients    | Number    | Number of wired clients connected    | Read        |
-| guestClients    | Number    | Number of guest clients connected    | Read        |
+| Channel ID            | Item Type | Description                                                            | Permissions |
+|-----------------------|-----------|------------------------------------------------------------------------|-------------|
+| totalClients          | Number    | Total number of clients connected                                      | Read        |
+| wirelessClients       | Number    | Number of wireless clients connected                                   | Read        |
+| wiredClients          | Number    | Number of wired clients connected                                      | Read        |
+| guestClients          | Number    | Number of guest clients connected                                      | Read        |
+| guestVoucher          | String    | Guest voucher for access through the guest portal                      | Read        |
+| guestVouchersGenerate | String    | Generate additional guest vouchers for access through the guest portal | Write       |
+
+The `guestVouchersGenerate` string channel is a command only channel that will trigger voucher creation.
+It has configuration parameters to tailor the vouchers created:
+
+| Parameter                | Description                                                                 | Config   | Default |
+| ------------------------ | --------------------------------------------------------------------------- |--------- | ------- |
+| voucherCount             | Number of vouchers to create                                                | Optional |    1    |
+| voucherExpiration        | Minutes a voucher is valid after activation (default is 1 day)              | Optional |  1440   |
+| voucherUsers             | Number of users for voucher, 0 for no limit                                 | Optional |    1    |
+| voucherUpLimit           | Upload speed limit in kbps, no limit if not set                             | Optional |         |
+| voucherDownLimit         | Download speed limit in kbps, no limit if not set                           | Optional |         |
+| voucherDataQuota         | Data transfer quota in MB per user, no limit if not set                     | Optional |         |
 
 ### `wlan`
 
@@ -154,13 +168,15 @@ The `wirelessClient` information that is retrieved is available as these channel
 | Channel ID | Item Type            | Description                                                          | Permissions |
 |------------|----------------------|----------------------------------------------------------------------|-------------|
 | online     | Switch               | Online status of the client                                          | Read        |
+| name       | String               | Name of device (from the controller web UI)                          | Read        |
+| hostname   | String               | Hostname of device (from the controller web UI)                      | Read        |
 | site       | String               | Site name (from the controller web UI) the client is associated with | Read        |
 | macAddress | String               | MAC address of the client                                            | Read        |
 | ipAddress  | String               | IP address of the client                                             | Read        |
 | guest      | Switch               | On if this is a guest client                                         | Read        |
 | ap         | String               | Access point (AP) the client is connected to                         | Read        |
 | essid      | String               | Network name (ESSID) the client is connected to                      | Read        |
-| rssi       | Number               | Received signal strength indicator (RSSI) of the client              | Read        |
+| rssi       | Number:Power         | Received signal strength indicator (RSSI) of the client              | Read        |
 | uptime     | Number:Time          | Uptime of the client (in seconds)                                    | Read        |
 | lastSeen   | DateTime             | Date and Time the client was last seen                               | Read        |
 | experience | Number:Dimensionless | Overall health indication of the client (in percentage)              | Read        |
@@ -178,6 +194,8 @@ The `wiredClient` information that is retrieved is available as these channels:
 | Channel ID | Item Type            | Description                                                          | Permissions |
 |------------|----------------------|----------------------------------------------------------------------|-------------|
 | online     | Switch               | Online status of the client                                          | Read        |
+| name       | String               | Name of device (from the controller web UI)                          | Read        |
+| hostname   | String               | Hostname of device (from the controller web UI)                      | Read        |
 | site       | String               | Site name (from the controller web UI) the client is associated with | Read        |
 | macAddress | String               | MAC address of the client                                            | Read        |
 | ipAddress  | String               | IP address of the client                                             | Read        |
@@ -229,17 +247,17 @@ Replace `$user`, `$password` and `$cid` accordingly.
 items/unifi.items
 
 ```
-Switch      MatthewsPhone           "Matthew's iPhone [MAP(unifi.map):%s]"             { channel="unifi:wirelessClient:home:matthewsPhone:online" }
-String      MatthewsPhoneSite       "Matthew's iPhone: Site [%s]"                      { channel="unifi:wirelessClient:home:matthewsPhone:site" }
-String      MatthewsPhoneMAC        "Matthew's iPhone: MAC [%s]"                       { channel="unifi:wirelessClient:home:matthewsPhone:macAddress" }
-String      MatthewsPhoneIP         "Matthew's iPhone: IP [%s]"                        { channel="unifi:wirelessClient:home:matthewsPhone:ipAddress" }
-String      MatthewsPhoneAP         "Matthew's iPhone: AP [%s]"                        { channel="unifi:wirelessClient:home:matthewsPhone:ap" }
-String      MatthewsPhoneESSID      "Matthew's iPhone: ESSID [%s]"                     { channel="unifi:wirelessClient:home:matthewsPhone:essid" }
-Number      MatthewsPhoneRSSI       "Matthew's iPhone: RSSI [%d]"                      { channel="unifi:wirelessClient:home:matthewsPhone:rssi" }
-Number:Time MatthewsPhoneUptime     "Matthew's iPhone: Uptime [%1$tR]"                 { channel="unifi:wirelessClient:home:matthewsPhone:uptime" }
-DateTime    MatthewsPhoneLastSeen   "Matthew's iPhone: Last Seen [%1$tH:%1$tM:%1$tS]"  { channel="unifi:wirelessClient:home:matthewsPhone:lastSeen" }
-Switch      MatthewsPhoneBlocked    "Matthew's iPhone: Blocked"                        { channel="unifi:wirelessClient:home:matthewsPhone:blocked" }
-Switch      MatthewsPhoneReconnect  "Matthew's iPhone: Reconnect"                      { channel="unifi:wirelessClient:home:matthewsPhone:reconnect" }
+Switch       MatthewsPhone           "Matthew's iPhone [MAP(unifi.map):%s]"             { channel="unifi:wirelessClient:home:matthewsPhone:online" }
+String       MatthewsPhoneSite       "Matthew's iPhone: Site [%s]"                      { channel="unifi:wirelessClient:home:matthewsPhone:site" }
+String       MatthewsPhoneMAC        "Matthew's iPhone: MAC [%s]"                       { channel="unifi:wirelessClient:home:matthewsPhone:macAddress" }
+String       MatthewsPhoneIP         "Matthew's iPhone: IP [%s]"                        { channel="unifi:wirelessClient:home:matthewsPhone:ipAddress" }
+String       MatthewsPhoneAP         "Matthew's iPhone: AP [%s]"                        { channel="unifi:wirelessClient:home:matthewsPhone:ap" }
+String       MatthewsPhoneESSID      "Matthew's iPhone: ESSID [%s]"                     { channel="unifi:wirelessClient:home:matthewsPhone:essid" }
+Number:Power MatthewsPhoneRSSI       "Matthew's iPhone: RSSI [%d dBm]"                  { channel="unifi:wirelessClient:home:matthewsPhone:rssi" }
+Number:Time  MatthewsPhoneUptime     "Matthew's iPhone: Uptime [%1$tR]"                 { channel="unifi:wirelessClient:home:matthewsPhone:uptime" }
+DateTime     MatthewsPhoneLastSeen   "Matthew's iPhone: Last Seen [%1$tH:%1$tM:%1$tS]"  { channel="unifi:wirelessClient:home:matthewsPhone:lastSeen" }
+Switch       MatthewsPhoneBlocked    "Matthew's iPhone: Blocked"                        { channel="unifi:wirelessClient:home:matthewsPhone:blocked" }
+Switch       MatthewsPhoneReconnect  "Matthew's iPhone: Reconnect"                      { channel="unifi:wirelessClient:home:matthewsPhone:reconnect" }
 ```
 
 transform/unifi.map
