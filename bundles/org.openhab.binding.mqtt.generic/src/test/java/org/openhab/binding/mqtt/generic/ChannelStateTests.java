@@ -262,8 +262,8 @@ public class ChannelStateTests {
         c.processMessage("state", "12,18,231".getBytes());
         assertThat(value.getChannelState(), is(t)); // HSB
         // rgb -> hsv -> rgb is quite lossy
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("13,20,229"));
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), "%3$d,%2$d,%1$d"), is("229,20,13"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("11,18,232"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), "%3$d,%2$d,%1$d"), is("232,18,11"));
     }
 
     @Test
@@ -297,23 +297,23 @@ public class ChannelStateTests {
 
         c.processMessage("state", "ON".getBytes()); // Normal on state
         assertThat(value.getChannelState().toString(), is("0,0,10"));
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.312716,0.329002,10.00"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.322700,0.329000,10.00"));
 
         c.processMessage("state", "FOFF".getBytes()); // Custom off state
         assertThat(value.getChannelState().toString(), is("0,0,0"));
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.312716,0.329002,0.00"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.000000,0.000000,0.00"));
 
         c.processMessage("state", "10".getBytes()); // Brightness only
         assertThat(value.getChannelState().toString(), is("0,0,10"));
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.312716,0.329002,10.00"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.322700,0.329000,10.00"));
 
         HSBType t = HSBType.fromXY(0.3f, 0.6f);
 
         c.processMessage("state", "0.3,0.6,100".getBytes());
         assertThat(value.getChannelState(), is(t)); // HSB
-        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.300000,0.600000,100.00"));
+        assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), null), is("0.298700,0.601500,100.00"));
         assertThat(value.getMQTTpublishValue((Command) value.getChannelState(), "%3$.1f,%2$.4f,%1$.4f"),
-                is("100.0,0.6000,0.3000"));
+                is("100.0,0.6015,0.2987"));
     }
 
     @Test
