@@ -10,21 +10,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.boschindego.internal.dto.response;
+package org.openhab.binding.windcentrale.internal.api;
 
-import com.google.gson.annotations.SerializedName;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Response from authenticating with server.
- * 
- * @author Jacob Laursen - Initial contribution
+ * Interface for listeners that want to monitor if {@link WindcentraleAPI} requests error or succeed.
+ *
+ * @author Wouter Born - Initial contribution
  */
-public class AuthenticationResponse {
+@NonNullByDefault
+public interface RequestListener {
 
-    public String contextId;
+    void onError(Exception exception);
 
-    public String userId;
-
-    @SerializedName("alm_sn")
-    public String serialNumber;
+    void onSuccess();
 }
