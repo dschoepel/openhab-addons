@@ -96,84 +96,99 @@ public class ShieldTVMessageParser {
                 callback.setHostName(encHostname);
             } else if (msg.startsWith(MESSAGE_HOSTNAME)) {
                 // Longer hostname reply
-                // 080b 12 5b08b510 12 TOTALLEN? 0a LEN Hostname 12 LEN IPADDR Padding? 22 LEN DeviceID 2a LEN arm64-v8a
+                // 080b 12 5b08b510 12 TOTALLEN? 0a LEN Hostname 12 LEN IPADDR 18 9b46 22 LEN DeviceID 2a LEN arm64-v8a
                 // 2a LEN armeabi-v7a 2a LEN armeabi 180b
                 // It's possible for there to be more or less of the arm lists
                 logger.trace("{} - Longer Hostname Reply", thingId);
 
-                int i = 20;
+                int i = 18;
                 int length;
                 int current;
 
-                // Hostname
-                String st = "" + charArray[i] + "" + charArray[i + 1];
-                length = Integer.parseInt(st, 16) * 2;
-                i += 2;
-
                 StringBuilder hostname = new StringBuilder();
-                current = i;
-
-                for (; i < current + length; i = i + 2) {
-                    st = "" + charArray[i] + "" + charArray[i + 1];
-                    hostname.append(st);
-                }
-
-                i += 2; // 12
-
-                // ipAddress
-                st = "" + charArray[i] + "" + charArray[i + 1];
-                length = Integer.parseInt(st, 16) * 2;
-                i += 2;
-
                 StringBuilder ipAddress = new StringBuilder();
-                current = i;
-
-                for (; i < current + length; i = i + 2) {
-                    st = "" + charArray[i] + "" + charArray[i + 1];
-                    ipAddress.append(st);
-                }
-
-                st = "" + charArray[i] + "" + charArray[i + 1];
-                while (!DELIMITER_22.equals(st)) {
-                    i += 2;
-                    st = "" + charArray[i] + "" + charArray[i + 1];
-                }
-
-                i += 2; // 22
-
-                // deviceId
-
-                st = "" + charArray[i] + "" + charArray[i + 1];
-                length = Integer.parseInt(st, 16) * 2;
-                i += 2;
-
                 StringBuilder deviceId = new StringBuilder();
-                current = i;
+                StringBuilder arch = new StringBuilder();
 
-                for (; i < current + length; i = i + 2) {
+                String st = "" + charArray[i] + "" + charArray[i + 1];
+
+                if (DELIMITER_0A.equals(st)) {
+                    i += 2; // 0a
+                    // Hostname
                     st = "" + charArray[i] + "" + charArray[i + 1];
-                    deviceId.append(st);
+                    length = Integer.parseInt(st, 16) * 2;
+                    i += 2;
+
+                    current = i;
+
+                    for (; i < current + length; i = i + 2) {
+                        st = "" + charArray[i] + "" + charArray[i + 1];
+                        hostname.append(st);
+                    }
+                }
+                st = "" + charArray[i] + "" + charArray[i + 1];
+
+                if (DELIMITER_12.equals(st)) {
+                    i += 2; // 12
+
+                    // ipAddress
+                    st = "" + charArray[i] + "" + charArray[i + 1];
+                    length = Integer.parseInt(st, 16) * 2;
+                    i += 2;
+
+                    current = i;
+
+                    for (; i < current + length; i = i + 2) {
+                        st = "" + charArray[i] + "" + charArray[i + 1];
+                        ipAddress.append(st);
+                    }
+                }
+
+                st = "" + charArray[i] + "" + charArray[i + 1];
+                if (DELIMITER_18.equals(st)) {
+                    while (!DELIMITER_22.equals(st)) {
+                        i += 2;
+                        st = "" + charArray[i] + "" + charArray[i + 1];
+                    }
+                }
+
+                st = "" + charArray[i] + "" + charArray[i + 1];
+                if (DELIMITER_22.equals(st)) {
+                    i += 2; // 22
+
+                    // deviceId
+
+                    st = "" + charArray[i] + "" + charArray[i + 1];
+                    length = Integer.parseInt(st, 16) * 2;
+                    i += 2;
+
+                    current = i;
+
+                    for (; i < current + length; i = i + 2) {
+                        st = "" + charArray[i] + "" + charArray[i + 1];
+                        deviceId.append(st);
+                    }
                 }
 
                 // architectures
                 st = "" + charArray[i] + "" + charArray[i + 1];
-                StringBuilder arch = new StringBuilder();
-                while (DELIMITER_2A.equals(st)) {
-                    i += 2;
-                    st = "" + charArray[i] + "" + charArray[i + 1];
-                    length = Integer.parseInt(st, 16) * 2;
-                    i += 2;
-                    current = i;
-                    for (; i < current + length; i = i + 2) {
+                if (DELIMITER_2A.equals(st)) {
+                    while (DELIMITER_2A.equals(st)) {
+                        i += 2;
                         st = "" + charArray[i] + "" + charArray[i + 1];
-                        arch.append(st);
-                    }
-                    st = "" + charArray[i] + "" + charArray[i + 1];
-                    if (DELIMITER_2A.equals(st)) {
-                        arch.append("2c");
+                        length = Integer.parseInt(st, 16) * 2;
+                        i += 2;
+                        current = i;
+                        for (; i < current + length; i = i + 2) {
+                            st = "" + charArray[i] + "" + charArray[i + 1];
+                            arch.append(st);
+                        }
+                        st = "" + charArray[i] + "" + charArray[i + 1];
+                        if (DELIMITER_2A.equals(st)) {
+                            arch.append("2c");
+                        }
                     }
                 }
-
                 String encHostname = ShieldTVRequest.encodeMessage(hostname.toString());
                 String encIpAddress = ShieldTVRequest.encodeMessage(ipAddress.toString());
                 String encDeviceId = ShieldTVRequest.encodeMessage(deviceId.toString());
@@ -340,14 +355,17 @@ public class ShieldTVMessageParser {
                 }
             } else if (msg.startsWith(MESSAGE_GOOD_COMMAND)) {
                 // This has something to do with successful command response, maybe.
+                logger.trace("{} - Good Command Response", thingId);
             } else if (KEEPALIVE_REPLY.equals(msg)) {
                 // Keepalive Reply
+                logger.trace("{} - Keepalive Reply", thingId);
             } else if (msg.startsWith(MESSAGE_LOWPRIV) && msg.startsWith(MESSAGE_PINSTART, 6)) {
                 // 080a 12 0308cf08 180a
                 logger.debug("PIN Process Started");
             } else if (msg.startsWith(MESSAGE_CERT_COMING) && msg.length() == 6) {
                 // This seems to be 20**** when observed. It is unclear what this does.
                 // This seems to send immediately before the certificate reply and as a reply to the pin being sent
+                logger.trace("{} - Certificate To Follow", thingId);
             } else if (msg.startsWith(MESSAGE_SUCCESS)) {
                 // Successful command received
                 // 08f007 12 0c 0804 12 08 0a0608 01100c200f 18f007 - GOOD LOGIN
@@ -365,6 +383,7 @@ public class ShieldTVMessageParser {
                 logger.debug("{} - Timeout {}", thingId, msg);
             } else if (msg.startsWith(MESSAGE_APP_SUCCESS) && msg.startsWith(MESSAGE_APP_GET_SUCCESS, 10)) {
                 // Get current app command successful. Usually paired with 0807 reply below.
+                logger.trace("{} - Current App Request Successful", thingId);
             } else if (msg.startsWith(MESSAGE_APP_SUCCESS) && msg.startsWith(MESSAGE_APP_CURRENT, 10)) {
                 // Current App
                 // 08ec07 12 2a0807 22 262205 656e5f555342 1d 636f6d2e676f6f676c652e616e64726f69642e74766c61756e63686572
@@ -439,7 +458,8 @@ public class ShieldTVMessageParser {
                 logger.info("{} - Unknown payload received. {}", thingId, msg);
             }
         } catch (Exception e) {
-            logger.info("{} - Message Parser Caught Exception", thingId, e);
+            logger.warn("{} - Message Parser Exception on {}", thingId, msg);
+            logger.warn("{} - Message Parser Caught Exception", thingId, e);
         }
     }
 }
