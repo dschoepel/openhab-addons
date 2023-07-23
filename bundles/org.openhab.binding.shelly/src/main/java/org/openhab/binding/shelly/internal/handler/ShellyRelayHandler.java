@@ -134,9 +134,10 @@ public class ShellyRelayHandler extends ShellyBaseHandler {
                 api.setAutoTimer(rIndex, SHELLY_TIMER_AUTOOFF, getNumber(command).doubleValue());
                 break;
             case CHANNEL_EMETER_RESETTOTAL:
-                logger.debug("{}: Reset Meter Totals", thingName);
-                int mIndex = Integer.parseInt(substringAfter(groupName, CHANNEL_GROUP_METER)) - 1;
-                api.resetMeterTotal(mIndex);
+                String id = substringAfter(groupName, CHANNEL_GROUP_METER);
+                int mIdx = id.isEmpty() ? 0 : Integer.parseInt(id) - 1;
+                logger.debug("{}: Reset Meter Totals for meter {}", thingName, mIdx + 1);
+                api.resetMeterTotal(mIdx); // currently there is only 1 emdata component
                 updateChannel(groupName, CHANNEL_EMETER_RESETTOTAL, OnOffType.OFF);
                 break;
         }

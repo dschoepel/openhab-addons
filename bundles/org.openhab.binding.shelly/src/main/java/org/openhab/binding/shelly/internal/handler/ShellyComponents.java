@@ -75,7 +75,8 @@ public class ShellyComponents {
 
         Integer rssi = getInteger(status.wifiSta.rssi);
         thingHandler.updateChannel(CHANNEL_GROUP_DEV_STATUS, CHANNEL_DEVST_RSSI, mapSignalStrength(rssi));
-        if (status.tmp != null && !thingHandler.getProfile().isSensor && status.tmp.tC != SHELLY_API_INVTEMP) {
+        if (status.tmp != null && getBool(status.tmp.isValid) && !thingHandler.getProfile().isSensor
+                && status.tmp.tC != SHELLY_API_INVTEMP) {
             thingHandler.updateChannel(CHANNEL_GROUP_DEV_STATUS, CHANNEL_DEVST_ITEMP,
                     toQuantityType(getDouble(status.tmp.tC), DIGITS_NONE, SIUnits.CELSIUS));
         } else if (status.temperature != null && status.temperature != SHELLY_API_INVTEMP) {
@@ -428,8 +429,6 @@ public class ShellyComponents {
                             toQuantityType((double) bminutes, DIGITS_NONE, Units.MINUTE));
                     updated |= thingHandler.updateChannel(CHANNEL_GROUP_CONTROL, CHANNEL_CONTROL_MODE, getStringType(
                             getBool(t.targetTemp.enabled) ? SHELLY_TRV_MODE_AUTO : SHELLY_TRV_MODE_MANUAL));
-                    updated |= thingHandler.updateChannel(CHANNEL_GROUP_SENSOR, CHANNEL_SENSOR_OPEN,
-                            getOpenClosed(t.windowOpen));
 
                     int pid = getBool(t.schedule) ? getInteger(t.profile) : 0;
                     updated |= thingHandler.updateChannel(CHANNEL_GROUP_CONTROL, CHANNEL_CONTROL_SCHEDULE,

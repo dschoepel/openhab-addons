@@ -61,19 +61,28 @@ public class AndroidTVHandler extends BaseThingHandler {
     private static final int THING_STATUS_FREQUENCY = 250;
 
     private final AndroidTVDynamicCommandDescriptionProvider commandDescriptionProvider;
+    private final AndroidTVTranslationProvider translationProvider;
     private final ThingTypeUID thingTypeUID;
     private final String thingID;
 
+    private String currentThingStatus = "";
+    private boolean currentThingFailed = false;
+
     public AndroidTVHandler(Thing thing, AndroidTVDynamicCommandDescriptionProvider commandDescriptionProvider,
-            ThingTypeUID thingTypeUID) {
+            AndroidTVTranslationProvider translationProvider, ThingTypeUID thingTypeUID) {
         super(thing);
         this.commandDescriptionProvider = commandDescriptionProvider;
+        this.translationProvider = translationProvider;
         this.thingTypeUID = thingTypeUID;
         this.thingID = this.getThing().getUID().getId();
     }
 
     public void setThingProperty(String property, String value) {
         thing.setProperty(property, value);
+    }
+
+    public AndroidTVTranslationProvider getTranslationProvider() {
+        return translationProvider;
     }
 
     public String getThingID() {
@@ -105,6 +114,9 @@ public class AndroidTVHandler extends BaseThingHandler {
     }
 
     public void checkThingStatus() {
+        String currentThingStatus = this.currentThingStatus;
+        boolean currentThingFailed = this.currentThingFailed;
+
         String statusMessage = "";
         boolean failed = false;
 
@@ -113,29 +125,30 @@ public class AndroidTVHandler extends BaseThingHandler {
 
         if (googletvConnectionManager != null) {
             if (!googletvConnectionManager.getLoggedIn()) {
-                statusMessage = "GoogleTV: " + googletvConnectionManager.getStatusMessage();
                 failed = true;
-            } else {
-                statusMessage = "GoogleTV: ONLINE";
             }
+            statusMessage = "GoogleTV: " + googletvConnectionManager.getStatusMessage();
         }
 
         if (THING_TYPE_SHIELDTV.equals(thingTypeUID)) {
             if (shieldtvConnectionManager != null) {
                 if (!shieldtvConnectionManager.getLoggedIn()) {
-                    statusMessage = statusMessage + " | ShieldTV: " + shieldtvConnectionManager.getStatusMessage();
                     failed = true;
-                } else {
-                    statusMessage = statusMessage + " | ShieldTV: ONLINE";
                 }
+                statusMessage = statusMessage + " | ShieldTV: " + shieldtvConnectionManager.getStatusMessage();
             }
         }
 
-        if (failed) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, statusMessage);
-        } else {
-            updateStatus(ThingStatus.ONLINE);
+        if (!currentThingStatus.equals(statusMessage) || (currentThingFailed != failed)) {
+            if (failed) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, statusMessage);
+            } else {
+                updateStatus(ThingStatus.ONLINE);
+            }
         }
+
+        this.currentThingStatus = statusMessage;
+        this.currentThingFailed = failed;
     }
 
     @Override
