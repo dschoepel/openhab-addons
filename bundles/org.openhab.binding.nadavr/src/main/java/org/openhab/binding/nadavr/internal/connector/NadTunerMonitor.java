@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -147,7 +147,8 @@ public class NadTunerMonitor {
         for (int i = 1; i <= config.getZoneCount(); i++) {
             switch (i) {
                 case 1:
-                    if (TUNER.equals(nadavrState.getStateForChannelID(CHANNEL_MAIN_SOURCE).toString())) {
+                    if (TUNER.equals(nadavrState.getStateForChannelID(CHANNEL_MAIN_SOURCE).toString())
+                            || C427.equals(nadavrState.getStateForChannelID(CHANNEL_MAIN_MODEL).toString())) {
                         zonesWithTuner.put(CHANNEL_MAIN_SOURCE, i);
                     }
                     break;
@@ -310,7 +311,7 @@ public class NadTunerMonitor {
      * @return The tunerMonitor thread scheduler delay between executions in seconds.
      */
     public int getTmPeriodDelay() {
-        return 10;
+        return 20;
     }
 
     /**

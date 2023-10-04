@@ -20,6 +20,7 @@ The NAD control protocol is limiting DAB channels to _read-only_; presets can be
 | ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Preamp Processor | Ethernet | 4 |&#10060; No |
 | ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
+| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-778 Surround Sound Receiver | Ethernet | 2 | &#9989; Yes |
 | ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet | 4 | &#9989; Yes |
 
 ## Discovery

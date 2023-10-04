@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -32,12 +32,21 @@ public enum NadCommand {
      * Commands supported in this Binding
      */
     EMPTY_COMMAND("", "", "", ""),
+    MODEL_QUERY("", "Model", "?", ""),
+    MODEL_NAME("", "Model", "=", "%s"),
     POWER_QUERY("", "Power", "?", ""),
     POWER_SET("", "Power", "=", "%s"),
     SOURCE_NAME_QUERY("", "Name", "?", ""),
     SOURCE_NAME("", "Name", "=", "%s"),
     INPUT_SOURCE_QUERY("", "Source", "?", ""),
     SOURCE_SET("", "Source", "=", "%s"),
+    TEMP_PSU("", "Temp.PSU", "=", "%s"),
+    TEMP_FRONT("", "Temp.Front", "=", "%s"),
+    TEMP_CENTER("", "Temp.Center", "=", "%s"),
+    TEMP_BACK("", "Temp.Back", "=", "%s"),
+    TEMP_SURROUND("", "Temp.Surround", "=", "%s"),
+    TEMP_HEIGHT("", "Temp.Height", "=", "%s"),
+    FAN_STATUS("", "Fan.Status", "=", "%s"),
     TUNER_FM_MUTE_QUERY("", "FM.Mute", "?", ""),
     TUNER_FM_MUTE_SET("", "FM.Mute", "=", "%s"),
     TUNER_FM_FREQUENCY_QUERY("", "FM.Frequency", "?", ""),

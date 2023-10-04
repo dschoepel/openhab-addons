@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -48,7 +48,8 @@ public class NadMsgReaderThread extends Thread {
         byte[] readDataBuffer = new byte[READ_BUFFER_SIZE];
         byte[] dataBuffer = new byte[size];
         int index = 0;
-        final char terminatingChar = '\n'; /* new line */
+        final char terminatingChar1 = '\n'; /* new line */
+        final char terminatingChar2 = '\r'; /* carriage return */
         try {
             while (!Thread.interrupted()) {
                 int len = connector.readInput(readDataBuffer);
@@ -57,9 +58,17 @@ public class NadMsgReaderThread extends Thread {
                         if (index < size) {
                             dataBuffer[index++] = readDataBuffer[i];
                         }
-                        if (readDataBuffer[i] == terminatingChar) {
+                        if (readDataBuffer[i] == terminatingChar1) {
                             if (index > +size) {
-                                dataBuffer[index - 1] = (byte) terminatingChar;
+                                dataBuffer[index - 1] = (byte) terminatingChar1;
+                            }
+                            byte[] msg = Arrays.copyOf(dataBuffer, index);
+                            connector.handleIncomingMessage(msg);
+                            index = 0;
+                        }
+                        if (readDataBuffer[i] == terminatingChar2) {
+                            if (index > +size) {
+                                dataBuffer[index - 1] = (byte) terminatingChar2;
                             }
                             byte[] msg = Arrays.copyOf(dataBuffer, index);
                             connector.handleIncomingMessage(msg);

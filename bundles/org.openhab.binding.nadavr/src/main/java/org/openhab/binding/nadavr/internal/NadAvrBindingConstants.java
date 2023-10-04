@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -65,7 +65,9 @@ public class NadAvrBindingConstants {
     public static final String CHANNEL_TUNER_AM_FREQUENCY = "tuner#amFrequency";
     public static final String CHANNEL_TUNER_FM_FREQUENCY = "tuner#fmFrequency";
     public static final String CHANNEL_TUNER_FM_MUTE = "tuner#fmMute";
+    public static final String CHANNEL_TUNER_FM_BLEND = "tuner#fmBlend";
     public static final String CHANNEL_TUNER_FM_RDS_TEXT = "tuner#fmRdsText";
+    public static final String CHANNEL_TUNER_FM_RDS_NAME = "tuner#fmRdsName";
     public static final String CHANNEL_TUNER_XM_CHANNEL = "tuner#xmChannel";
     public static final String CHANNEL_TUNER_XM_CHANNEL_NAME = "tuner#xmChannelName";
     public static final String CHANNEL_TUNER_XM_NAME = "tuner#xmName";
@@ -79,6 +81,9 @@ public class NadAvrBindingConstants {
     public static final String CHANNEL_MAIN_VOLUME_DB = "zone1#volumeDB";
     public static final String CHANNEL_MAIN_MUTE = "zone1#mute";
     public static final String CHANNEL_MAIN_SOURCE = "zone1#source";
+    public static final String CHANNEL_MAIN_MODEL = "zone1#model";
+    public static final String CHANNEL_MAIN_SLEEP = "zone1#sleep";
+    public static final String CHANNEL_MAIN_VERSION = "zone1#version";
 
     public static final String CHANNEL_ZONE2_POWER = "zone2#power";
     public static final String CHANNEL_ZONE2_VOLUME = "zone2#volume";
@@ -223,6 +228,7 @@ public class NadAvrBindingConstants {
     public static final String NAD_PREFIX_SOURCE = "Source";
     public static final String NAD_VARIABLE_NAME = "Name";
     public static final String TUNER = "Tuner";
+    public static final String C427 = "C427";
     public static final StringType FM = StringType.valueOf("FM");
     public static final StringType XM = StringType.valueOf("XM");
     public static final String NOT_SET = "Not Set";

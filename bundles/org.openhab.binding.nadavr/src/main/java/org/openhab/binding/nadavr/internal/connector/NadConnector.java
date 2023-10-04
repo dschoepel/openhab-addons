@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -681,6 +681,34 @@ public abstract class NadConnector {
         NadMessage msg = new NadMessage.MessageBuilder().prefix(tuner.toString())
                 .variable(NadCommand.TUNER_FM_RDS_TEXT_SET.getVariable().toString())
                 .operator(NadCommand.TUNER_FM_RDS_TEXT_SET.getOperator().toString()).value(cmdValue).build();
+        try {
+            sendCommand(msg);
+        } catch (NadException e) {
+            throw new NadException("Send command \"" + msg.toString() + "\" failed", e);
+        }
+    }
+
+    /**
+     * Method to send the Model Query command to the AVR.
+     *
+     * @param command - MODEL_QUERY
+     * @param zone - see Prefix eNum for command prefixes
+     * @throws NadUnsupportedCommandTypeException - invalid value was used on the command
+     * @throws NadException - send failures captured for troubleshooting
+     */
+    public void sendModelQueryCommand(Command command, Prefix zone)
+            throws NadUnsupportedCommandTypeException, NadException {
+        String cmdValue = "";
+        if (command instanceof RefreshType) {
+            cmdValue = "?"; // Only option is to query this setting
+        } else {
+            String message = "Send Model Query command to \"" + zone
+                    + "\", encountered an unsupported command value of \"" + cmdValue + "\"!";
+            throw new NadUnsupportedCommandTypeException(message);
+        }
+        NadMessage msg = new NadMessage.MessageBuilder().prefix(zone.toString())
+                .variable(NadCommand.MODEL_QUERY.getVariable().toString())
+                .operator(NadCommand.MODEL_QUERY.getOperator().toString()).value(cmdValue).build();
         try {
             sendCommand(msg);
         } catch (NadException e) {

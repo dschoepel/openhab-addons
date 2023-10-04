@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -24,15 +24,17 @@ public enum NadModel {
 
     /**
      * Please also remember to add supported models to the README.md
-     * T765, T775, T785, T187, T777, T787
+     * T765, T775, T785, T187, T777, T778, T787
      * Format is model name, max number of zones for that specific model, source inputs
      */
 
+    C_427("C427", 1, 0),
     T_765("T765", 4, 10),
     T_775("T775", 4, 10),
     T_785("T785", 4, 10),
     T_187("T187", 4, 10),
     T_777("T777", 4, 10),
+    T_778("T778", 2, 8),
     T_787("T787", 4, 10);
 
     private final String id;

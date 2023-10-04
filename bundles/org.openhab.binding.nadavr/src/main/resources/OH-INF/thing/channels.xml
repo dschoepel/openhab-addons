@@ -11,6 +11,12 @@
 		<description>Power On/Off the Device</description>
 	</channel-type>
 
+	<channel-type id="model">
+		<item-type>String</item-type>
+		<label>Model</label>
+		<description>Device model</description>
+	</channel-type>
+
 	<channel-type id="source">
 		<item-type>String</item-type>
 		<label>Input Source</label>
@@ -52,20 +58,28 @@
 		</state>
 	</channel-type>
 
+	<channel-type id="sleep">
+		<item-type>Dimmer</item-type>
+		<label>Sleep</label>
+		<description>Set the number of minutes for the sleep function</description>
+		<state min="0" max="90" step="1" pattern="%d'%'" />
+	</channel-type>
+
 	<channel-type id="volume">
 		<item-type>Dimmer</item-type>
 		<label>Volume</label>
 		<description>Set the volume level of this zone</description>
 		<category>SoundVolume</category>
-		<state min="1" max="100" step="1" pattern="%d'%'"/>
+		<state min="1" max="100" step="1" pattern="%d'%'" />
 	</channel-type>
+
 
 	<channel-type id="volumeDB">
 		<item-type>Number</item-type>
 		<label>Volume (dB)</label>
 		<description>Set the volume level (dB).</description>
 		<category>SoundVolume</category>
-		<state min="-99" max="19" step="1" pattern="%d"/>
+		<state min="-99" max="19" step="1" pattern="%d" />
 
 	</channel-type>
 
@@ -80,7 +94,7 @@
 		<label>Fixed Volume (dB)</label>
 		<description>Set the fixed volume level (dB).</description>
 		<category>SoundVolume</category>
-		<state min="-99" max="19" step="1" pattern="%d"/>
+		<state min="-99" max="19" step="1" pattern="%d" />
 	</channel-type>
 
 	<channel-type id="volumeFixed">
@@ -88,7 +102,7 @@
 		<label>Fixed Volume</label>
 		<description>Set the fixed volume level of this zone (%)</description>
 		<category>SoundVolume</category>
-		<state min="1" max="100" step="1" pattern="%d'%'"/>
+		<state min="1" max="100" step="1" pattern="%d'%'" />
 	</channel-type>
 
 	<channel-type id="volumeControl">
@@ -122,20 +136,26 @@
 		<item-type>Number</item-type>
 		<label>AM Frequency</label>
 		<description>Tuner AM Frequency setting (e.g 1050)</description>
-		<state min="540" max="1700" step="10" pattern="%d kHz"/>
+		<state min="540" max="1700" step="10" pattern="%d kHz" />
 	</channel-type>
 
 	<channel-type id="fmFrequency">
 		<item-type>Number</item-type>
 		<label>FM Frequency</label>
 		<description>Tuner FM Frequency setting (e.g 105.70)</description>
-		<state min="88.1" max="108.1" step=".2" pattern="%.1f MHz"/>
+		<state min="88.1" max="108.1" step=".2" pattern="%.1f MHz" />
 	</channel-type>
 
 	<channel-type id="fmMute">
 		<item-type>Switch</item-type>
 		<label>FM Mute Mode</label>
 		<description>Tuner FM Mute mode filters weak signals when set to ON</description>
+	</channel-type>
+
+	<channel-type id="fmBlend">
+		<item-type>Switch</item-type>
+		<label>FM Blend</label>
+		<description>Tuner FM Blend reduces the amount of noise retains stereo separation when set to ON</description>
 	</channel-type>
 
 	<channel-type id="preset">
@@ -199,6 +219,12 @@
 		<item-type>String</item-type>
 		<label>FM RDS Text</label>
 		<description>Tuner FM Radio Data System Radio text readout</description>
+	</channel-type>
+
+	<channel-type id="fmRdsName">
+		<item-type>String</item-type>
+		<label>FM RDS Name</label>
+		<description>Tuner FM Radio Data System Radio stations name</description>
 	</channel-type>
 
 	<channel-type id="xmChannel" advanced="true">

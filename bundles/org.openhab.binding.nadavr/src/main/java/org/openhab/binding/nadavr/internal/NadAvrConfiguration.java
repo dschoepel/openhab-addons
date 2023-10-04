@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -54,6 +54,9 @@ public class NadAvrConfiguration {
     // Default zone count
     private Integer zoneCount = 4;
 
+    // Enable Tuner support
+    public boolean enableTunerSupport = false;
+
     // Default maximum volume
     public static final BigDecimal MAX_VOLUME = new BigDecimal("19");
 
@@ -71,6 +74,13 @@ public class NadAvrConfiguration {
      */
     public int getZoneCount() {
         return zoneCount;
+    }
+
+    /**
+     * @return zoneCount to be used to dynamically configure the zone channels for the NAD AVR thing
+     */
+    public boolean getEnableTunerSupport() {
+        return enableTunerSupport;
     }
 
     /**
@@ -92,6 +102,6 @@ public class NadAvrConfiguration {
     public String toString() {
         return "NadAvrConfiguration [ipAddress=" + ipAddress + ", telnetPort=" + telnetPort + ", enablePresetNames="
                 + enablePresetNames + ", presetNamesFilePath=" + presetNamesFilePath + ", zoneCount=" + zoneCount
-                + ", mainVolumeMax=" + mainVolumeMax + "]";
+                + ", enableTunerSupport=" + enableTunerSupport + ", mainVolumeMax=" + mainVolumeMax + "]";
     }
 }

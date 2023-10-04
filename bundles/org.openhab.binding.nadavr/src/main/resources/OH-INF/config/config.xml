@@ -39,6 +39,11 @@
 				number of zones for this device.</description>
 			<default>1</default>
 		</parameter>
+		<parameter name="enableTunerSupport" type="boolean" required="true" groupName="receiverProperties">
+			<label>Enable Tuner Support</label>
+			<description>Indicates this AVR has a tuner.</description>
+			<default>false</default>
+		</parameter>
 		<parameter name="ipAddress" type="text" required="true" groupName="connectionSettings">
 			<context>network-address</context>
 			<label>IP Address</label>

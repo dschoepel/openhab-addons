@@ -4,16 +4,13 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="T765">
-		<label>NAD T-765 Surround Sound Receiver</label>
-		<description>Serial RS-232 NAD Surround Sound Receiver (requires IP to Serial converter)</description>
+	<thing-type id="C427">
+		<label>NAD C-427 AM FM Tuner Receiver</label>
+		<description>Serial RS-232 NAD AM/FM Tuner (requires IP to Serial converter)</description>
 
 		<channel-groups>
-			<channel-group typeId="tunerControls" id="tuner"/>
-			<channel-group typeId="zone1Controls" id="zone1"/>
-			<channel-group typeId="zone2Controls" id="zone2"/>
-			<channel-group typeId="zone3Controls" id="zone3"/>
-			<channel-group typeId="zone4Controls" id="zone4"/>
+			<channel-group typeId="c427Zone1Controls" id="zone1"/>
+			<channel-group typeId="c427TunerControls" id="tuner"/>
 		</channel-groups>
 
 		<config-description-ref uri="thing-type:nadavr:config"/>

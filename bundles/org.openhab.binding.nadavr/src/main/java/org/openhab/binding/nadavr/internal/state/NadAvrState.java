@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -58,8 +58,11 @@ public class NadAvrState {
     private State tunerDABDlsText = StringType.EMPTY;
     private State tunerDABServiceName = StringType.EMPTY;
 
+    // TODO add model to state to track in case this is a c427 am fm tuner
+
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
+    private State mainModel = StringType.EMPTY;
     private State listeningMode = StringType.EMPTY;
     private State mute = UnDefType.UNDEF;
     private State mainVolume = DecimalType.ZERO;
@@ -152,6 +155,8 @@ public class NadAvrState {
              */
             case CHANNEL_MAIN_POWER:
                 return mainPower;
+            case CHANNEL_MAIN_MODEL:
+                return mainModel;
             case CHANNEL_MAIN_LISTENING_MODE:
                 return listeningMode;
             case CHANNEL_MAIN_MUTE:
@@ -257,6 +262,44 @@ public class NadAvrState {
                     handler.stateChanged(CHANNEL_ZONE4_POWER, this.zone4Power);
                 }
                 break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Method to set model name state for NAD AVR zone
+     *
+     * @param prefix - zone to set model name
+     * @param modelName - AVR ressponse to model name query
+     */
+    public void setModelName(String prefix, String modelName) {
+        StringType newVal = StringType.valueOf(modelName);
+        switch (prefix) {
+            case ZONE1:
+                if (newVal != mainModel) {
+                    this.mainModel = newVal;
+                    handler.stateChanged(CHANNEL_MAIN_MODEL, this.mainModel);
+                }
+                break;
+            // case ZONE2:
+            // if (newVal != zone2Power) {
+            // this.zone2Power = newVal;
+            // handler.stateChanged(CHANNEL_ZONE2_POWER, this.zone2Power);
+            // }
+            // break;
+            // case ZONE3:
+            // if (newVal != zone3Power) {
+            // this.zone3Power = newVal;
+            // handler.stateChanged(CHANNEL_ZONE3_POWER, this.zone3Power);
+            // }
+            // break;
+            // case ZONE4:
+            // if (newVal != zone4Power) {
+            // this.zone4Power = newVal;
+            // handler.stateChanged(CHANNEL_ZONE4_POWER, this.zone4Power);
+            // }
+            // break;
             default:
                 break;
         }
