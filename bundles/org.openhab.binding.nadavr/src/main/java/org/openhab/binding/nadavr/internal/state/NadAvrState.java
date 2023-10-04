@@ -277,7 +277,7 @@ public class NadAvrState {
         StringType newVal = StringType.valueOf(modelName);
         switch (prefix) {
             case ZONE1:
-                if (newVal != mainModel) {
+                if (!newVal.equals(mainModel)) {
                     this.mainModel = newVal;
                     handler.stateChanged(CHANNEL_MAIN_MODEL, this.mainModel);
                 }

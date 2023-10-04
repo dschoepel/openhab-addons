@@ -6,15 +6,38 @@ This binding integrates NAD Surround Sound Receivers/Amplifiers via **Telnet** u
 
 Integration details can be found in the NAD Electronics command protocol documentation  here: [Protocol Integration Documentation](https://nadelectronics.com/software/#Protocol)
 
-The binding has been tested with an NAD T-787 using: <ul><li>a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li></ul>  
+## Testing
 
->DAB Tuner functionality has been included in the binding, but has not been tested.  
-The NAD control protocol is limiting DAB channels to _read-only_; presets can be used to change stations.
+#### NAD T-787 AVR: 
+ 
+<ul>
+<li>using auto discovery and adding thing via inbox</li>
+<li>via a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li>
+<li>DAB Tuner functionality has been included in the binding, but has not been tested.</li>
+<li>the NAD control protocol is limiting DAB channels to <em>read-only</em>; presets can be used to change stations.</li>
+</ul>  
+
+#### NAD T-778 AVR:  
+
+<ul>
+<li>using auto discovery and adding thing via inbox</li>
+<li>via a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> 
+</ul>  
+
+#### NAD C-427 AM/FM Tuner: 
+ 
+<ul>
+<li>manually added the tuner thing using the binding</li>
+<li>via a USR-TCP232-302 IP to Serial converter set up as a TCP Server to enable a direct Ethernet (LAN) connection to the Tuner via Telnet(TCP)</li>
+<li><mark>Note: </mark>All NAD RS232 connections require a straight through RS232 cable.  The USR converter has a built-in null modem.  To override this, you will need to connect with a null modem RS232 cable - effectively canceling out the internal null modem and becoming a straight through connection expected by NAD.</li> 
+</ul>  
+
 
 ## Supported Things
 
 | Thing | Type | Description | Connection | Zones | Tested |
 |:-:|:-:|:--|-------|:-:|:-:|
+| ![C-427](doc/NAD-C-427.svg) | C427 | Connection to NAD C-427 AM/FM Tuner | Serial RS232 | 1 | &#9989; Yes |
 | ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-775](doc/NAD-T-775.svg) | T775 | Connection to NAD T-775 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
 | ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
@@ -25,7 +48,9 @@ The NAD control protocol is limiting DAB channels to _read-only_; presets can be
 
 ## Discovery
 
-The binding will auto-discover "support-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
+The binding will auto-discover "supported-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
+
+>The binding will not discover NAD RS232 devices connected via an IP to Serial converter - those will have to be manually installed/configured.
 
 Auto discovered things will list the device details in the thing configuration "properties" section in the OpenHab UI.
 <ul><li>Host name</li><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
@@ -318,6 +343,9 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
 <tr><td><a href="https://nadelectronics.com/software/#Protocol">NAD Protocol Documentation</a></td>
 <td><a href="doc/nad_ethernet_rs232_spec_2.03.pdf">NAD RS232/Ethernet Spec</a></td>
 </tr>
+<tr><td><a href="https://nadelectronics.com/product/c-427-stereo-am-fm-tuner/">C-427 AM/FM Tuner</a></td>
+<td><a href="doc/C427_Commands.pdf">NAD C-427 Commands</a></td>
+</tr>
 <tr><td><a href="https://nadelectronics.com/product/t-765-av-surround-sound-receiver/">T-765 A/V Surround Sound Receiver</a></td>
 <td><a href="doc/T765_Commands.pdf">NAD T-765 Commands</a></td>
 </tr>
@@ -336,6 +364,10 @@ sitemap nadavr label="OH3.3.0 NAD AVR Binding Sitemap Example"
 </tr>
 <tr><td><a href="https://nadelectronics.com/product/t-777-av-surround-sound-receiver/">T-777 A/V Surround Sound Receiver</a></td>
 <td><a href="doc/T777_Commands.pdf">NAD T-777 Commands</a></td>
+</tr>
+</tr>
+<tr><td><a href="https://nadelectronics.com/product/t-777-av-surround-sound-receiver/">T-778 A/V Surround Sound Receiver</a></td>
+<td><a href="doc/T778_Commands.pdf">NAD T-778 Commands</a></td>
 </tr>
 </tr>
 <tr><td><a href="https://nadelectronics.com/product/t-787-av-surround-sound-receiver/">T-787 A/V Surround Sound Receiver</a></td>

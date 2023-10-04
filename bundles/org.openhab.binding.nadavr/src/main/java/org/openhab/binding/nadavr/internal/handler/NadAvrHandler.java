@@ -787,7 +787,6 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
             // Refresh source input names if the number of inputs are greater than zero
             if (getNumberOfInputSources(thing.getThingTypeUID().getId()) > 0) {
-
                 for (int input = 1; input <= 10; input++) {
                     String prefix = "Source" + input;
                     NadCommand nadCmd = NadCommand.SOURCE_NAME_QUERY;
