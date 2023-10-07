@@ -10,17 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hue.internal.dto.clip2.enums;
+package org.openhab.binding.enphase.internal.exception;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enum for tap dial rotation directions.
+ * Exception thrown when an api call is made while the hostname / ip address is not set.
  *
- * @author Andrew Fiddian-Green - Initial contribution
+ * @author Hilbrand Bouwkamp - Initial contribution
  */
 @NonNullByDefault
-public enum DirectionType {
-    CLOCK_WISE,
-    COUNTER_CLOCK_WISE
+public class EnvoyNoHostnameException extends EnphaseException {
+
+    private static final long serialVersionUID = 1L;
+
+    public EnvoyNoHostnameException(final String message) {
+        super(message);
+    }
 }
