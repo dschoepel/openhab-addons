@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nadavr"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="C427">
+		<label>NAD C-427 AM FM Tuner Receiver</label>
+		<description>Serial RS-232 NAD AM/FM Tuner (requires IP to Serial converter)</description>
+
+		<channel-groups>
+			<channel-group typeId="c427Zone1Controls" id="zone1"/>
+			<channel-group typeId="c427TunerControls" id="tuner"/>
+		</channel-groups>
+
+		<config-description-ref uri="thing-type:nadavr:config"/>
+	</thing-type>
+
+</thing:thing-descriptions>

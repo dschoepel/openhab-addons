@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nadavr"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Zone specific channels -->
+	<channel-type id="power">
+		<item-type>Switch</item-type>
+		<label>Power</label>
+		<description>Power On/Off the Device</description>
+	</channel-type>
+
+	<channel-type id="model">
+		<item-type>String</item-type>
+		<label>Model</label>
+		<description>Device model</description>
+	</channel-type>
+
+	<channel-type id="source">
+		<item-type>String</item-type>
+		<label>Input Source</label>
+		<description>Select the input source for this zone</description>
+		<state>
+			<options>
+				<option value="1">Source 1</option>
+				<option value="2">Source 2</option>
+				<option value="3">Source 3</option>
+				<option value="4">Source 4</option>
+				<option value="5">Source 5</option>
+				<option value="6">Source 6</option>
+				<option value="7">Source 7</option>
+				<option value="8">Source 8</option>
+				<option value="9">Source 9</option>
+				<option value="10">Source 10</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="listeningMode" advanced="true">
+		<item-type>String</item-type>
+		<label>Main Listening Mode</label>
+		<description>Select the main listening mode for this AVR</description>
+		<state>
+			<options>
+				<option value="None">Direct</option>
+				<option value="PLIIMusic">Dolby Pro Logic IIx Music</option>
+				<option value="PLIIMovie">Dolby Pro Logic IIx Movie</option>
+				<option value="EnhancedStereo">Enhanced Stereo</option>
+				<option value="AnalogBypass">Analog Bypass</option>
+				<option value="ProLogic">Dolby Pro Logic IIx</option>
+				<option value="NEO6Cinema">DTS NEO:6 Cinema</option>
+				<option value="NEO6Music">DTS NEO:6 Music</option>
+				<option value="EARS">EARS</option>
+				<option value="SurroundEX">Surround EX</option>
+				<option value="StereoDownmix">Stereo Downmix</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="sleep">
+		<item-type>Dimmer</item-type>
+		<label>Sleep</label>
+		<description>Set the number of minutes for the sleep function</description>
+		<state min="0" max="90" step="1" pattern="%d'%'"/>
+	</channel-type>
+
+	<channel-type id="volume">
+		<item-type>Dimmer</item-type>
+		<label>Volume</label>
+		<description>Set the volume level of this zone</description>
+		<category>SoundVolume</category>
+		<state min="1" max="100" step="1" pattern="%d'%'"/>
+	</channel-type>
+
+
+	<channel-type id="volumeDB">
+		<item-type>Number</item-type>
+		<label>Volume (dB)</label>
+		<description>Set the volume level (dB).</description>
+		<category>SoundVolume</category>
+		<state min="-99" max="19" step="1" pattern="%d"/>
+
+	</channel-type>
+
+	<channel-type id="mute">
+		<item-type>Switch</item-type>
+		<label>Mute</label>
+		<description>Enable/Disable Mute on this zone</description>
+	</channel-type>
+
+	<channel-type id="volumeFixedDB">
+		<item-type>Number</item-type>
+		<label>Fixed Volume (dB)</label>
+		<description>Set the fixed volume level (dB).</description>
+		<category>SoundVolume</category>
+		<state min="-99" max="19" step="1" pattern="%d"/>
+	</channel-type>
+
+	<channel-type id="volumeFixed">
+		<item-type>Dimmer</item-type>
+		<label>Fixed Volume</label>
+		<description>Set the fixed volume level of this zone (%)</description>
+		<category>SoundVolume</category>
+		<state min="1" max="100" step="1" pattern="%d'%'"/>
+	</channel-type>
+
+	<channel-type id="volumeControl">
+		<item-type>String</item-type>
+		<label>Volume Control</label>
+		<description>Select the input source for this zone</description>
+		<state>
+			<options>
+				<option value="Fixed">Fixed Volume</option>
+				<option value="Variable">Variable Volume</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<!-- Tuner specific channels -->
+	<channel-type id="band">
+		<item-type>String</item-type>
+		<label>Tuner Band</label>
+		<description>Set tuner band</description>
+		<state>
+			<options>
+				<option value="FM">FM</option>
+				<option value="AM">AM</option>
+				<option value="DAB">DAB</option>
+				<option value="XM">XM</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="amFrequency">
+		<item-type>Number</item-type>
+		<label>AM Frequency</label>
+		<description>Tuner AM Frequency setting (e.g 1050)</description>
+		<state min="540" max="1700" step="10" pattern="%d kHz"/>
+	</channel-type>
+
+	<channel-type id="fmFrequency">
+		<item-type>Number</item-type>
+		<label>FM Frequency</label>
+		<description>Tuner FM Frequency setting (e.g 105.70)</description>
+		<state min="88.1" max="108.1" step=".2" pattern="%.1f MHz"/>
+	</channel-type>
+
+	<channel-type id="fmMute">
+		<item-type>Switch</item-type>
+		<label>FM Mute Mode</label>
+		<description>Tuner FM Mute mode filters weak signals when set to ON</description>
+	</channel-type>
+
+	<channel-type id="fmBlend">
+		<item-type>Switch</item-type>
+		<label>FM Blend</label>
+		<description>Tuner FM Blend reduces the amount of noise retains stereo separation when set to ON</description>
+	</channel-type>
+
+	<channel-type id="preset">
+		<item-type>String</item-type>
+		<label>Tuner Preset</label>
+		<description>Recall a tuner preset</description>
+		<state>
+			<options>
+				<option value="1">P01</option>
+				<option value="2">P02</option>
+				<option value="3">P03</option>
+				<option value="4">P04</option>
+				<option value="5">P05</option>
+				<option value="6">P06</option>
+				<option value="7">P07</option>
+				<option value="8">P08</option>
+				<option value="9">P09</option>
+				<option value="10">P10</option>
+				<option value="11">P11</option>
+				<option value="12">P12</option>
+				<option value="13">P13</option>
+				<option value="14">P14</option>
+				<option value="15">P15</option>
+				<option value="16">P16</option>
+				<option value="17">P17</option>
+				<option value="18">P18</option>
+				<option value="19">P19</option>
+				<option value="20">P20</option>
+				<option value="21">P21</option>
+				<option value="22">P22</option>
+				<option value="23">P23</option>
+				<option value="24">P24</option>
+				<option value="25">P25</option>
+				<option value="26">P26</option>
+				<option value="27">P27</option>
+				<option value="28">P28</option>
+				<option value="29">P29</option>
+				<option value="30">P30</option>
+				<option value="31">P31</option>
+				<option value="32">P32</option>
+				<option value="33">P33</option>
+				<option value="34">P34</option>
+				<option value="35">P35</option>
+				<option value="36">P36</option>
+				<option value="37">P37</option>
+				<option value="38">P38</option>
+				<option value="39">P39</option>
+				<option value="40">P40</option>
+			</options>
+		</state>
+
+	</channel-type>
+
+	<channel-type id="presetDetail">
+		<item-type>String</item-type>
+		<label>Tuner Preset Detail</label>
+		<description>Tuner preset details (requires user defined file to supply details)</description>
+	</channel-type>
+
+	<channel-type id="fmRdsText">
+		<item-type>String</item-type>
+		<label>FM RDS Text</label>
+		<description>Tuner FM Radio Data System Radio text readout</description>
+	</channel-type>
+
+	<channel-type id="fmRdsName">
+		<item-type>String</item-type>
+		<label>FM RDS Name</label>
+		<description>Tuner FM Radio Data System Radio stations name</description>
+	</channel-type>
+
+	<channel-type id="xmChannel" advanced="true">
+		<item-type>String</item-type>
+		<label>XM Channel</label>
+		<description>XM Channel number 0-255</description>
+	</channel-type>
+
+	<channel-type id="xmChannelName" advanced="true">
+		<item-type>String</item-type>
+		<label>XM Channel Name</label>
+		<description>XM Channel Name assigned to channel </description>
+	</channel-type>
+
+	<channel-type id="xmName" advanced="true">
+		<item-type>String</item-type>
+		<label>XM Performer Name</label>
+		<description>XM Performing Artist Name currently playing</description>
+	</channel-type>
+
+	<channel-type id="xmSongTitle" advanced="true">
+		<item-type>String</item-type>
+		<label>XM Song Title</label>
+		<description>XM Song Title currently playing</description>
+	</channel-type>
+
+	<channel-type id="dabServiceName" advanced="true">
+		<item-type>String</item-type>
+		<label>DAB Service Name</label>
+		<description>DAB Broadcast station service name or id</description>
+	</channel-type>
+
+	<channel-type id="dabDlsText" advanced="true">
+		<item-type>String</item-type>
+		<label>DAB DLS Text</label>
+		<description>Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station</description>
+	</channel-type>
+
+</thing:thing-descriptions>
