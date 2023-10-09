@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0
+		https://openhab.org/schemas/config-description-1.0.0.xsd">
+
+	<config-description uri="thing-type:nadavr:config">
+		<parameter-group name="receiverProperties">
+			<label>Receiver Properties</label>
+		</parameter-group>
+
+		<parameter-group name="connectionSettings">
+			<label>General Connection Settings</label>
+		</parameter-group>
+
+		<parameter-group name="telnetSettings">
+			<label>Telnet Settings</label>
+			<description>Settings for the Telnet port of the NAD Device</description>
+			<advanced>true</advanced>
+		</parameter-group>
+
+		<parameter-group name="presets">
+			<label>Tuner Preset Details</label>
+			<description>Settings for the Tuner preset details for the NAD Device</description>
+			<advanced>true</advanced>
+		</parameter-group>
+
+		<parameter name="refreshInterval" type="integer" min="0" groupName="receiverProperties">
+			<label>Refresh Interval</label>
+			<description>The refresh interval in seconds for polling the receiver settings (0=disabled) to update item details.</description>
+			<default>0</default>
+			<advanced>true</advanced>
+		</parameter>
+
+		<parameter name="zoneCount" type="integer" required="true" groupName="receiverProperties">
+			<label>Zone Count of the Receiver</label>
+			<description>Number of zones (including main zone), values 1-4 are supported. Check Thing Properties to see maximum
+				number of zones for this device.</description>
+			<default>1</default>
+		</parameter>
+		<parameter name="enableTunerSupport" type="boolean" required="true" groupName="receiverProperties">
+			<label>Enable Tuner Support</label>
+			<description>Indicates this AVR has a tuner.</description>
+			<default>false</default>
+		</parameter>
+		<parameter name="ipAddress" type="text" required="true" groupName="connectionSettings">
+			<context>network-address</context>
+			<label>IP Address</label>
+			<description>IPV4 address of the NAD A/V receiver</description>
+		</parameter>
+		<parameter name="telnetPort" type="integer" required="true" groupName="telnetSettings">
+			<default>23</default>
+			<label>Port</label>
+			<description>Telnet port used for AVR communication. Normally shouldn't be changed.</description>
+		</parameter>
+		<parameter name="enablePresetNames" type="boolean" required="false" groupName="presets">
+			<label>Enable Preset Detail</label>
+			<description>User defined tuner preset details are provided in an external file. (Follow instructions in the binding
+				description for creating this file.)
+			</description>
+			<default>false</default>
+			<advanced>true</advanced>
+		</parameter>
+		<parameter name="presetNamesFilePath" type="text" required="false" groupName="presets">
+			<label>Preset Names File</label>
+			<description>File Name containing preset name details including path e.g. /etc/openhab/scripts/Preset_Names.xml</description>
+			<default></default>
+			<advanced>true</advanced>
+		</parameter>
+	</config-description>
+
+</config-description:config-descriptions>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?xml-model href="NAD_Preset_Names.xsd"?>
+<tunerPresets>
+    <preset id="01">
+        <band>FM</band>
+        <frequency>105.70</frequency>
+        <name>WAPL</name>
+    </preset>
+    <preset id="02">
+        <band>FM</band>
+        <frequency>101.1</frequency>
+        <name>WIXX</name>
+    </preset>
+</tunerPresets>

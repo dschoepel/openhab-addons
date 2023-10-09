@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nadavr"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Generic NAD AVR Thing Type -->
+	<thing-type id="nadUnsupported" listed="false">
+		<label>Unsupported NAD AV Receiver</label>
+		<description>Ethernet enabled NAD AV Receiver for models that are not officially supported. You may experience some
+			odd behaviors.</description>
+
+		<channel-groups>
+			<channel-group typeId="zone1Controls" id="zone1"/>
+			<channel-group typeId="zone2Controls" id="zone2"/>
+		</channel-groups>
+
+		<config-description-ref uri="thing-type:nadavr:config"/>
+	</thing-type>
+
+</thing:thing-descriptions>
