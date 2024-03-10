@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nadavr"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Channel Groups -->
+	<channel-group-type id="zone1Controls">
+		<label>Zone 1 (Main Zone)</label>
+		<channels>
+			<channel id="power" typeId="system.power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="system.volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="system.mute"/>
+			<channel id="listeningMode" typeId="listeningMode"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone2Controls">
+		<label>Zone 2</label>
+		<channels>
+			<channel id="power" typeId="system.power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="system.volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="system.mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="system.volume"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone3Controls">
+		<label>Zone 3</label>
+		<channels>
+			<channel id="power" typeId="system.power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="system.volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="system.mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="system.volume"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="zone4Controls">
+		<label>Zone 4</label>
+		<channels>
+			<channel id="power" typeId="system.power"/>
+			<channel id="source" typeId="source"/>
+			<channel id="volume" typeId="system.volume"/>
+			<channel id="volumeDB" typeId="volumeDB"/>
+			<channel id="mute" typeId="system.mute"/>
+			<channel id="volumeFixedDB" typeId="volumeFixedDB"/>
+			<channel id="volumeFixed" typeId="system.volume"/>
+			<channel id="volumeControl" typeId="volumeControl"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="tunerControls">
+		<label>Tuner Controls</label>
+		<channels>
+			<channel id="band" typeId="band"/>
+			<channel id="amFrequency" typeId="amFrequency"/>
+			<channel id="fmFrequency" typeId="fmFrequency"/>
+			<channel id="fmMute" typeId="fmMute"/>
+			<channel id="preset" typeId="preset"/>
+			<channel id="presetDetail" typeId="presetDetail"/>
+			<channel id="fmRdsText" typeId="fmRdsText"/>
+			<channel id="xmChannel" typeId="xmChannel"/>
+			<channel id="xmChannelName" typeId="xmChannelName"/>
+			<channel id="xmName" typeId="xmName"/>
+			<channel id="xmSongTitle" typeId="xmSongTitle"/>
+			<channel id="dabServiceName" typeId="dabServiceName"/>
+			<channel id="dabDlsText" typeId="dabDlsText"/>
+		</channels>
+	</channel-group-type>
+
+	<!-- C427 AM/FM Receiver Channel Groups -->
+	<channel-group-type id="c427Zone1Controls">
+		<label>Zone 1 (Main Zone)</label>
+		<channels>
+			<channel id="power" typeId="system.power"/>
+			<channel id="model" typeId="model"/>
+			<channel id="sleep" typeId="sleep"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="c427TunerControls">
+		<label>C427 Tuner Controls</label>
+		<channels>
+			<channel id="band" typeId="band"/>
+			<channel id="amFrequency" typeId="amFrequency"/>
+			<channel id="fmFrequency" typeId="fmFrequency"/>
+			<channel id="fmMute" typeId="fmMute"/>
+			<channel id="preset" typeId="preset"/>
+			<channel id="presetDetail" typeId="presetDetail"/>
+			<channel id="fmRdsText" typeId="fmRdsText"/>
+			<channel id="fmRdsName" typeId="fmRdsName"/>
+			<channel id="fmBlend" typeId="fmBlend"/>
+
+		</channels>
+	</channel-group-type>
+
+</thing:thing-descriptions>
