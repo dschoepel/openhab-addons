@@ -1,6 +1,8 @@
-# tailwind Binding
+# TailWind Binding - Smart Garage Door Controller
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
+![TailWind logo](doc/Tailwind-logo-250x88.png)
+
+This binding integrates the TailWind iQ3 Smart Automatic Garage Controller's internal HTTP server via your local network. 
 
 _If possible, provide some resources like pictures (only PNG is supported currently), a video, etc. to give an impression of what can be done with this binding._
 _You can place such resources into a `doc` folder next to this README.md._
