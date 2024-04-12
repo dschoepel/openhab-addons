@@ -59,7 +59,7 @@
 
 	<!-- Door specific channels -->
 	<channel-type id="index">
-		<item-type>String</item-type>
+		<item-type>Number</item-type>
 		<label>Door Number</label>
 		<description>Door number index (0-2)</description>
 		<state>

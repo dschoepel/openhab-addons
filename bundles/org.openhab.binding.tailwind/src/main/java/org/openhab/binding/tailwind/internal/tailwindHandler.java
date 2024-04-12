@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.tailwind.internal;
 
-import static org.openhab.binding.tailwind.internal.tailwindBindingConstants.*;
+import static org.openhab.binding.tailwind.internal.tailwindBindingConstants.CHANNEL_DOOR_1_CONTROLS_INDEX;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,7 +44,7 @@ public class tailwindHandler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (CHANNEL_1.equals(channelUID.getId())) {
+        if (CHANNEL_DOOR_1_CONTROLS_INDEX.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 // TODO: handle data refresh
             }

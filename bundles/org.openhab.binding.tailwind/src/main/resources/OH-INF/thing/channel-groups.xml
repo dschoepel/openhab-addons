@@ -13,7 +13,7 @@
 	       <channel typeId="ledBrightness" id="ledBrightness"/>
 	       <channel typeId="routerRssi" id="routerRssi"/>
 	       <channel typeId="productID" id="productID"/>
-	       <channel typeId="devideID" id="deviceID"/>
+	       <channel typeId="deviceID" id="deviceID"/>
 	   </channels>
 	</channel-group-type>
 	
