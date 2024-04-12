@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="tailwind"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+    <!-- Controller specific channels -->
+    <channel-type id="doorNum">
+        <item-type>Number</item-type>
+        <label>Number of Doors</label>
+        <description>Number of garage doors being controlled</description>
+        <state min="1" max="3" step="1" pattern="%d"/>
+    </channel-type>
+
+    <channel-type id="nightModeEnabled">
+        <item-type>Number</item-type>
+        <label>Night Mode</label>
+        <description>Night mode enabled</description>
+        <state>
+            <options>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </options>
+        </state>        
+    </channel-type>
+
+    <channel-type id="ledBrightness">
+        <item-type>Number</item-type>
+        <label>LED Brightness</label>
+        <description>Controller LED brightness .</description>
+        <category>Light</category>
+        <state min="0" max="100" step="1" pattern="%d"/>
+    </channel-type>
+
+    <channel-type id="routerRssi">
+        <item-type>Number</item-type>
+        <label>WiFi RSSI</label>
+        <description>WiFi network received signal strength</description>
+        <category>Power</category>
+    </channel-type>
+
+    <channel-type id="productID">
+        <item-type>String</item-type>
+        <label>Model Number</label>
+        <description>Tailwind device model number</description>
+    </channel-type>
+
+    <channel-type id="deviceID">
+        <item-type>String</item-type>
+        <label>Device ID</label>
+        <description>Tailwind device id (MAC address)</description>
+    </channel-type>
+
+    <channel-type id="firmwareVersion">
+        <item-type>String</item-type>
+        <label>Firmware Version</label>
+        <description>Firmware version number</description>
+    </channel-type>
+
+	<!-- Door specific channels -->
+	<channel-type id="index">
+		<item-type>String</item-type>
+		<label>Door Number</label>
+		<description>Door number index (0-2)</description>
+		<state>
+		  <options>
+		      <option value="0">Door 1</option>
+		      <option value="1">Door 2</option>
+	          <option value="2">Door 3</option>
+		  </options>
+		</state>
+	</channel-type>
+
+	<channel-type id="status">
+		<item-type>String</item-type>
+		<label>Door Status</label>
+		<description>Door status (open, close, lock, enable, disable, reboot )</description>
+	</channel-type>
+
+	<channel-type id="lockup">
+		<item-type>Number</item-type>
+		<label>Door Locked Up Status</label>
+		<description>Door lockup (0 - not locked up, 1 - locked up)</description>
+		<state>
+			<options>
+				<option value="0">Un-locked</option>
+				<option value="1">Locked up</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="disabled">
+		<item-type>Number</item-type>
+		<label>Door Is Configured</label>
+		<description>Door is configured (0 - yes, 1 - no)</description>
+		<state>
+			<options>
+				<option value="0">Yes</option>
+				<option value="1">No</option>
+			</options>
+		</state>
+	</channel-type>
+
+</thing:thing-descriptions>

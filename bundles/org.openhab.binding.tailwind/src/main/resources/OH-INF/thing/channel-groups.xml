@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="tailwind"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Channel Groups -->
+	<channel-group-type id="controller">
+	   <label>Controller</label>
+	   <channels>
+	       <channel id="doorNum" typeId="doorNum"/>
+	       <channel id="nightModeEnabled" typeId="nightModeEnabled"/>
+	       <channel typeId="ledBrightness" id="ledBrightness"/>
+	       <channel typeId="routerRssi" id="routerRssi"/>
+	       <channel typeId="productID" id="productID"/>
+	       <channel typeId="devideID" id="deviceID"/>
+	   </channels>
+	</channel-group-type>
+	
+	<channel-group-type id="door1Controls">
+		<label>Door 1</label>
+		<channels>
+			<channel id="index" typeId="index"/>
+			<channel id="status" typeId="status"/>
+			<channel id="lockup" typeId="lockup"/>
+			<channel id="disabled" typeId="disabled"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="door2Controls">
+		<label>Door 2</label>
+		<channels>
+            <channel id="index" typeId="index"/>
+            <channel id="status" typeId="status"/>
+            <channel id="lockup" typeId="lockup"/>
+            <channel id="disabled" typeId="disabled"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="door3Controls">
+		<label>Door 3</label>
+		<channels>
+            <channel id="index" typeId="index"/>
+            <channel id="status" typeId="status"/>
+            <channel id="lockup" typeId="lockup"/>
+            <channel id="disabled" typeId="disabled"/>
+		</channels>
+	</channel-group-type>
+
+</thing:thing-descriptions>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="tailwind"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Sample Thing Type -->
+	<thing-type id="iQ3">
+		<label>Tailwind iQ3</label>
+		<description>Tailwind iQ3 Garage Door Opener</description>
+
+		<channels>
+			<channel id="door1" typeId="door1Controls"/>
+			<channel id="door2" typeId="door2Controls"/>
+            <channel id="door3" typeId="door3Controls"/>			
+		</channels>
+
+        <config-description-ref uri="thing-type:tailwind:config"/>		
+	</thing-type>
+
+</thing:thing-descriptions>
