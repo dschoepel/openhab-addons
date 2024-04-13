@@ -23,9 +23,32 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public class tailwindConfiguration {
 
     /**
-     * Sample configuration parameters. Replace with your own.
+     * The number of garage doors connected to the controller
      */
-    public String hostname = "";
-    public String password = "";
-    public int refreshInterval = 600;
+    public int doorCount = 1; // 1=default (can be 1-3)
+
+    /**
+     * Authorization token for the local API server on the controller
+     */
+    public String authToken = ""; // token from TailWind mobile application
+
+    /**
+     * @return doorCount to be used to dynamically configure the door channels
+     */
+    public int getDoorCount() {
+        return doorCount;
+    }
+
+    /**
+     * @return authToken to be used with the requests to the API server on the controller
+     */
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    @Override
+    public String toString() {
+        return "tailwindConfiguration [doorCount=" + doorCount + ", authToken=" + authToken + "]";
+    }
+
 }
