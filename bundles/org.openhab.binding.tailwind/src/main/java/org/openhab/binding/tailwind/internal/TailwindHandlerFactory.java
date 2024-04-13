@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.tailwind.internal;
 
-import static org.openhab.binding.tailwind.internal.tailwindBindingConstants.THING_TYPE_TAILWIND;
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.THING_TYPE_TAILWIND;
 
 import java.util.Set;
 
@@ -26,14 +26,14 @@ import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * The {@link tailwindHandlerFactory} is responsible for creating things and thing
+ * The {@link TailwindHandlerFactory} is responsible for creating things and thing
  * handlers.
  *
  * @author Dave J. Schoepel - Initial contribution
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.tailwind", service = ThingHandlerFactory.class)
-public class tailwindHandlerFactory extends BaseThingHandlerFactory {
+public class TailwindHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_TAILWIND);
 
@@ -47,7 +47,7 @@ public class tailwindHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_TAILWIND.equals(thingTypeUID)) {
-            return new tailwindHandler(thing);
+            return new TailwindHandler(thing);
         }
 
         return null;

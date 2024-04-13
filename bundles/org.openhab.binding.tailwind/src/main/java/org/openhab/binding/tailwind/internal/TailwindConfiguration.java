@@ -15,12 +15,12 @@ package org.openhab.binding.tailwind.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link tailwindConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link TailwindConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Dave J. Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class tailwindConfiguration {
+public class TailwindConfiguration {
 
     /**
      * The number of garage doors connected to the controller
@@ -48,7 +48,7 @@ public class tailwindConfiguration {
 
     @Override
     public String toString() {
-        return "tailwindConfiguration [doorCount=" + doorCount + ", authToken=" + authToken + "]";
+        return "TailwindConfiguration [doorCount=" + doorCount + ", authToken=" + authToken + "]";
     }
 
 }

@@ -22,13 +22,13 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
- * The {@link tailwindBindingConstants} class defines common constants, which are
+ * The {@link TailwindBindingConstants} class defines common constants, which are
  * used across the whole binding.
  *
  * @author Dave J. Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class tailwindBindingConstants {
+public class TailwindBindingConstants {
 
     private static final String BINDING_ID = "tailwind";
     private static final String SYSTEM_STATE_CHANNEL_TYPE = "system";

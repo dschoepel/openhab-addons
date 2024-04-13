@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.tailwind.internal;
 
-import static org.openhab.binding.tailwind.internal.tailwindBindingConstants.CHANNEL_DOOR_1_CONTROLS_INDEX;
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.CHANNEL_DOOR_1_CONTROLS_INDEX;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,19 +26,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link tailwindHandler} is responsible for handling commands, which are
+ * The {@link TailwindHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Dave J. Schoepel - Initial contribution
  */
 @NonNullByDefault
-public class tailwindHandler extends BaseThingHandler {
+public class TailwindHandler extends BaseThingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(tailwindHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(TailwindHandler.class);
 
-    private @Nullable tailwindConfiguration config;
+    private @Nullable TailwindConfiguration config;
 
-    public tailwindHandler(Thing thing) {
+    public TailwindHandler(Thing thing) {
         super(thing);
     }
 
@@ -60,7 +60,7 @@ public class tailwindHandler extends BaseThingHandler {
 
     @Override
     public void initialize() {
-        config = getConfigAs(tailwindConfiguration.class);
+        config = getConfigAs(TailwindConfiguration.class);
 
         // TODO: Initialize the handler.
         // The framework requires you to return from this method quickly, i.e. any network access must be done in
