@@ -12,9 +12,13 @@
  */
 package org.openhab.binding.tailwind.internal;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -35,6 +39,11 @@ public class TailwindBindingConstants {
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_TAILWIND = new ThingTypeUID(BINDING_ID, "tailwindPro");
+
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPE_UIDS = Stream
+            .concat(Stream.of(THING_TYPE_TAILWIND),
+                    Arrays.stream(TailwindModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
+            .collect(Collectors.toSet());
 
     // List of Controller ID's
     public static final String PARAMETER_DOOR_NUM = "doorNum";

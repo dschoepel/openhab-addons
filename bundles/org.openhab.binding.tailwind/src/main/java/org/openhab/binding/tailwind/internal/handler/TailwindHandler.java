@@ -10,12 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal;
+package org.openhab.binding.tailwind.internal.handler;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.CHANNEL_DOOR_1_CONTROLS_INDEX;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.tailwind.internal.TailwindConfiguration;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
