@@ -17,6 +17,7 @@ import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.SUP
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.jmdns.ServiceInfo;
 
@@ -43,6 +44,18 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
     private boolean isAutoDiscoveryEnabled;
     private Set<ThingTypeUID> supportedThingTypes;
+
+    /**
+     * Match the details of the discovered Tailwind controller.
+     * Input is like "NAD T787 (824F01F2)._telnet._tcp.local."
+     * Vendor is group 1, Model is group 2, and Serial number (last 8 digits of MAC address)
+     * Alternate: "^([a-zA-Z]+) (T[0-9]+) \\(([^)]*)\\)\\._telnet\\._tcp\\.local\\.$"
+     */
+
+    private static final Pattern TAILWIND_CONTROLLER_PATTERN = Pattern
+            .compile("^(Tailwind) (T[0-9]+) \\(([^)]*)\\)\\._telnet\\._tcp\\.local\\.$");
+
+    private static final Pattern TAILWIND_HOSTNAME_PATTERN = Pattern.compile("^([a-zA-Z0-9-]+)\\.local\\.$");
 
     public TailwindDiscoveryParticipant() {
         this.isAutoDiscoveryEnabled = true;
