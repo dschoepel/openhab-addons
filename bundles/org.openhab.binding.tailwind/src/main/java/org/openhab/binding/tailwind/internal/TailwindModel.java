@@ -62,5 +62,4 @@ public enum TailwindModel {
     public int getMaxDoors() {
         return maxDoors;
     }
-
 }

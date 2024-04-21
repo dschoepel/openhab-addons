@@ -44,5 +44,4 @@ public class TailwindException extends Exception {
     public TailwindException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

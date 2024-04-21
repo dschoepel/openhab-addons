@@ -50,5 +50,4 @@ public class TailwindConfiguration {
     public String toString() {
         return "TailwindConfiguration [doorCount=" + doorCount + ", authToken=" + authToken + "]";
     }
-
 }

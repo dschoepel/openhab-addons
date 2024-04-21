@@ -1704,6 +1704,11 @@
       <artifactId>org.openhab.binding.tankerkoenig</artifactId>
       <version>${project.version}</version>
     </dependency>
+	<dependency>
+	  <groupId>org.openhab.addons.bundles</groupId>
+	  <artifactId>org.openhab.binding.tailwind</artifactId>
+	  <version>${project.version}</version>
+	</dependency>
     <dependency>
       <groupId>org.openhab.addons.bundles</groupId>
       <artifactId>org.openhab.binding.tapocontrol</artifactId>

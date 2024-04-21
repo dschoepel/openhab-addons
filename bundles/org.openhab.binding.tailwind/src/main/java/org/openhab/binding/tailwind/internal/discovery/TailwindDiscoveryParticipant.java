@@ -116,5 +116,4 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

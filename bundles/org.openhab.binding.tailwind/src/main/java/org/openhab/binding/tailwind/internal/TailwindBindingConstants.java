@@ -29,7 +29,7 @@ import org.openhab.core.thing.type.ChannelTypeUID;
  * The {@link TailwindBindingConstants} class defines common constants, which are
  * used across the whole binding.
  *
- * @author Dave J. Schoepel - Initial contribution
+ * @author Dave J. Schoepel - Initial contributions
  */
 @NonNullByDefault
 public class TailwindBindingConstants {
