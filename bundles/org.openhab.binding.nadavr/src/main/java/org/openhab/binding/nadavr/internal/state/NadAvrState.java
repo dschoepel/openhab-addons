@@ -58,8 +58,6 @@ public class NadAvrState {
     private State tunerDABDlsText = StringType.EMPTY;
     private State tunerDABServiceName = StringType.EMPTY;
 
-    // TODO add model to state to track in case this is a c427 am fm tuner
-
     // ----- Main ------
     private State mainPower = UnDefType.UNDEF;
     private State mainModel = StringType.EMPTY;

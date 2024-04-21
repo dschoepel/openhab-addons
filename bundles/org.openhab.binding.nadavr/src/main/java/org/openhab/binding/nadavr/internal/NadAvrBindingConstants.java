@@ -186,7 +186,7 @@ public class NadAvrBindingConstants {
     }
 
     /**
-     * Static mapping of ChannelType-to-ItemType
+     * Static mapping of ChannelType-to-ItemLables
      */
     public static final Map<String, @Nullable String> CHANNEL_ITEM_LABELS = new HashMap<>();
     static {
