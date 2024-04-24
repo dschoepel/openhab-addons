@@ -28,7 +28,7 @@ public enum TailwindModel {
      * Format is model name, max number of doors for that specific model
      */
 
-    IC3("iC3", 3);
+    IC3("iQ3", 3);
 
     private final String id;
     private final int maxDoors;

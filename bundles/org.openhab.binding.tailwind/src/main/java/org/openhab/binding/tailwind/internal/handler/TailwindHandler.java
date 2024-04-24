@@ -39,6 +39,11 @@ public class TailwindHandler extends BaseThingHandler {
 
     private @Nullable TailwindConfiguration config;
 
+    /**
+     * Constructor for TailWind Device Handler
+     *
+     * @param thing - TailWind Controller
+     */
     public TailwindHandler(Thing thing) {
         super(thing);
     }
@@ -59,6 +64,16 @@ public class TailwindHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Method to initialize a TailWind thing.
+     * <ul>
+     * <li>Validate configuration settings</li>
+     * <li>Configure number of doors for the TailWind garage controller thing from 1 to up to max allowed for model</li>
+     * <li>Connect to device and start thread to check for failed connections</li>
+     * <li>Initialize channel states with settings retrieved from the controller</li>
+     * <li>Start threads to monitor for door notifications and status changes</li>
+     * </ul>
+     */
     @Override
     public void initialize() {
         config = getConfigAs(TailwindConfiguration.class);
@@ -75,6 +90,14 @@ public class TailwindHandler extends BaseThingHandler {
         // set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
         // the framework is then able to reuse the resources from the thing handler initialization.
         // we set this upfront to reliably check status updates in unit tests.
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Start initializing handler for thing {}", getThing().getUID());
+        }
+
+        // Get configuration settings
+        // config = getConfigAs(NadAvrConfiguration.class);
+
         updateStatus(ThingStatus.UNKNOWN);
 
         // Example for background initialization:

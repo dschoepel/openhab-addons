@@ -12,9 +12,7 @@
  */
 package org.openhab.binding.tailwind.internal.factory;
 
-import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.THING_TYPE_TAILWIND;
-
-import java.util.Set;
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.SUPPORTED_THING_TYPE_UIDS;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,6 +23,8 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link TailwindHandlerFactory} is responsible for creating things and thing
@@ -36,18 +36,29 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.tailwind", service = ThingHandlerFactory.class)
 public class TailwindHandlerFactory extends BaseThingHandlerFactory {
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_TAILWIND);
+    private final Logger logger = LoggerFactory.getLogger(TailwindHandlerFactory.class);
+    // private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_TAILWIND);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
+        logger.debug("supportsThingType is using thingTypeUID: {}", thingTypeUID);
+        if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("supportsThingType found thingTypeUID: {} in SUPPORTED_THING_TYPE_UIDS.", thingTypeUID);
+            } // If debug, log which thing type is used
+        }
+        return SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID);
     }
 
     @Override
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
+        if (logger.isDebugEnabled()) {
+            logger.debug("createHandler is comparing {} to list of supported thing types: {}", thingTypeUID,
+                    SUPPORTED_THING_TYPE_UIDS);
+        }
 
-        if (THING_TYPE_TAILWIND.equals(thingTypeUID)) {
+        if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
             return new TailwindHandler(thing);
         }
 

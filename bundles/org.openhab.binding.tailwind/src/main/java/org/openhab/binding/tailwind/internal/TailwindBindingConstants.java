@@ -37,8 +37,10 @@ public class TailwindBindingConstants {
     private static final String BINDING_ID = "tailwind";
     private static final String SYSTEM_STATE_CHANNEL_TYPE = "system";
 
-    // List of all Thing Type UIDs
+    // List of all Thing Type UIDs (TailwindPro may not be needed???)
     public static final ThingTypeUID THING_TYPE_TAILWIND = new ThingTypeUID(BINDING_ID, "tailwindPro");
+    public static final ThingTypeUID THING_TYPE_TAILWIND_UNSUPPORTED = new ThingTypeUID(BINDING_ID,
+            "tailwindUnsupported");
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPE_UIDS = Stream
             .concat(Stream.of(THING_TYPE_TAILWIND),
@@ -128,4 +130,11 @@ public class TailwindBindingConstants {
         CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, "Locked Up Status Door 3");
         CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, "Is Configured Door 3");
     }
+
+    /**
+     * Miscellaneous constants
+     */
+    public static final String TAILWIND_VENDOR_NAME = "tailwind";
+    public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
+
 }
