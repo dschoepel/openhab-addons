@@ -30,6 +30,7 @@ import javax.jmdns.ServiceInfo;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.tailwind.internal.TailwindModel;
+import org.openhab.binding.tailwind.internal.Utils.Utilites;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
@@ -51,6 +52,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
     // Service type for HTTP enabled TailWind garage controllers
     private static final String HTTP_SERVICE_TYPE = "_http._tcp.local.";
 
+    private Utilites utilities = new Utilites();
     private boolean isAutoDiscoveryEnabled;
     private Set<ThingTypeUID> supportedThingTypes;
 
@@ -99,6 +101,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                     String qualifiedName = serviceInfo.getQualifiedName(); // qualified name is in format like
                                                                            // "???._http._tcp.local."
                     String server = serviceInfo.getServer(); // Controller server URL
+                    String serverURL = utilities.getServerURL(server);
                     int port = serviceInfo.getPort(); // HTTP server listening port
                     String modelNumber = serviceInfo.getPropertyString("product"); // TailWind Model (iQ3,..)
                     String deviceId = serviceInfo.getPropertyString("device_id"); // Device ID (MAC)
@@ -125,10 +128,11 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         properties.put(Thing.PROPERTY_MODEL_ID, modelNumber);
                         properties.put(Thing.PROPERTY_VENDOR, vendor);
                         properties.put(Thing.PROPERTY_HARDWARE_VERSION, hardwareVersion);
-                        properties.put(PARAMETER_DOOR_NUM, getMaxDoorsForModel(modelNumber));
+                        properties.put(PARAMETER_DOOR_NUM, utilities.GetMaxDoors(modelNumber));
+                        properties.put(TAILWIND_HTTP_SERVER_URL, serverURL);
 
                         // Suggested name of discovered device (.e.g. "TailWind iQ3")
-                        String label = makeFirstLetterUpperCase(vendor) + " " + modelNumber;
+                        String label = utilities.makeFirstLetterUpperCase(vendor) + " " + modelNumber;
                         // Add discovered TailWind device to the In-box
                         DiscoveryResult result = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
                                 .withLabel(label).withRepresentationProperty(Thing.PROPERTY_MAC_ADDRESS).build();
@@ -144,7 +148,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                      */
                     String openHabHostIPAddress = "";
                     try {
-                        openHabHostIPAddress = getOHServerIP();
+                        openHabHostIPAddress = utilities.getOHServerIP();
                     } catch (UnknownHostException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -238,12 +242,12 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
         return isSupported;
     }
 
-    private String getOHServerIP() throws UnknownHostException {
-        InetAddress address1 = InetAddress.getLocalHost();
-        // String hostName = address1.getHostName();
-        String hostAddress = address1.getHostAddress();
-        return hostAddress;
-    }
+    // private String getOHServerIP() throws UnknownHostException {
+    // InetAddress address1 = InetAddress.getLocalHost();
+    // // String hostName = address1.getHostName();
+    // String hostAddress = address1.getHostAddress();
+    // return hostAddress;
+    // }
 
     /**
      * Method to retrieve the maximum zone count for the model to bused in the thing properties
@@ -252,15 +256,15 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
      * @param model - validated from the mDNS discovery
      * @return maxZones for the device
      */
-    private int getMaxDoorsForModel(String model) {
-        int maxDoors = 1;
-        for (TailwindModel supportedModel : TailwindModel.values()) {
-            if (supportedModel.getId().equals(model)) {
-                maxDoors = supportedModel.getMaxDoors();
-            }
-        }
-        return maxDoors;
-    }
+    // private int getMaxDoorsForModel(String model) {
+    // int maxDoors = 1;
+    // for (TailwindModel supportedModel : TailwindModel.values()) {
+    // if (supportedModel.getId().equals(model)) {
+    // maxDoors = supportedModel.getMaxDoors();
+    // }
+    // }
+    // return maxDoors;
+    // }
 
     /**
      * Method to make first letter of a string upper case
@@ -268,10 +272,10 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
      * @param name
      * @return Converted string
      */
-    private String makeFirstLetterUpperCase(String name) {
-        String str1 = name.substring(0, 1).toUpperCase();
-        String str2 = name.substring(1);
-        String result = str1 + str2;
-        return result;
-    }
+    // private String makeFirstLetterUpperCase(String name) {
+    // String str1 = name.substring(0, 1).toUpperCase();
+    // String str2 = name.substring(1);
+    // String result = str1 + str2;
+    // return result;
+    // }
 }

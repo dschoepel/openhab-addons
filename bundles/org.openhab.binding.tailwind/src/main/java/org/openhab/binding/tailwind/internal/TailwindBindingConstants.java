@@ -48,28 +48,29 @@ public class TailwindBindingConstants {
             .collect(Collectors.toSet());
 
     // List of Controller ID's
-    public static final String PARAMETER_DOOR_NUM = "doorNum";
+    public static final String PARAMETER_DOOR_NUM = "numberOfDoorSupported";
     public static final String PARAMETER_NIGHT_MODE_ENABLED = "nightModeEnabled";
     public static final String PARAMETER_LED_BRIGHTNESS = "ledBrightness";
     public static final String PARAMETER_ROUTER_RSSI = "routerRssi";
     public static final String PARAMETER_PRODUCT_ID = "productID";
     public static final String PARAMETER_DEVICE_ID = "deviceID";
+    public static final String PARAMETER_DOOR_NUM_CONNECTED = "numberOfDoorsConnected";
 
     // List of all Channel ID's
-    public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "door1Controls#index";
-    public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "door1Controls#status";
-    public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "door1Controls#lockup";
-    public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "door1Controls#disabled";
+    public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "door1#index";
+    public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "door1#status";
+    public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "door1#lockup";
+    public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "door1#disabled";
 
-    public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "door2Controls#index";
-    public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "door2Controls#status";
-    public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "door2Controls#lockup";
-    public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "door2Controls#disabled";
+    public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "door2#index";
+    public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "door2#status";
+    public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "door2#lockup";
+    public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "door2#disabled";
 
-    public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "door3Controls#index";
-    public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "door3Controls#status";
-    public static final String CHANNEL_DOOR_3_CONTROLS_LOCKUP = "door3Controls#lockup";
-    public static final String CHANNEL_DOOR_3_CONTROLS_DISABLED = "door3Controls#disabled";
+    public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "door3#index";
+    public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "door3#status";
+    public static final String CHANNEL_DOOR_3_CONTROLS_LOCKUP = "door3#lockup";
+    public static final String CHANNEL_DOOR_3_CONTROLS_DISABLED = "door3#disabled";
 
     // Map of Door 2 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> DOOR_2_CHANNEL_TYPES = new LinkedHashMap<>();
@@ -100,7 +101,6 @@ public class TailwindBindingConstants {
     /**
      * Static mapping of ChannelType-to-ItemType
      * The following items belong to the core:
-     * Switch, Rollershutter, Contact, String, Number, Dimmer, DateTime, Color, Image, Location, Player, Call.
      */
     public static final Map<String, String> CHANNEL_ITEM_TYPES = new HashMap<>();
     static {
@@ -136,5 +136,64 @@ public class TailwindBindingConstants {
      */
     public static final String TAILWIND_VENDOR_NAME = "tailwind";
     public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
+    public static final String TAILWIND_HTTP_SERVER_URL = "http Server Url";
+    public static final String TAILWIND_BASE_URL_PART_1 = "http://";
+    public static final String TAILWIND_BASE_URL_PART_2 = "/json";
+    public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";
 
+    /**
+     * TailWind device commands. To be parsed into JSON object and modified to reflect
+     * the command that is to be sent to the TailWind controller HTTP server API.
+     */
+
+    /* ------- Keys for JSON values ----------------- */
+    public static String TAILWIND_JSON_KEY_VERSION = "version";
+    public static String TAILWIND_JSON_KEY_PRODUCT = "product";
+    public static String TAILWIND_JSON_KEY_DATA = "data";
+    public static String TAILWIND_JSON_KEY_TYPE = "type";
+    public static String TAILWIND_JSON_KEY_NAME = "name";
+    public static String TAILWIND_JSON_KEY_VALUE = "value";
+    public static String TAILWIND_JSON_KEY_URL = "url";
+    public static String TAILWIND_JSON_KEY_PROTO = "proto";
+    public static String TAILWIND_JSON_KEY_ENABLE = "enable";
+    public static String TAILWIND_JSON_KEY_DOOR_IDX = "door_idx";
+    public static String TAILWIND_JSON_KEY_CMD = "cmd";
+    public static String TAILWIND_JSON_KEY_BRIGHTNESS = "brightness";
+
+    /* ------- Values for JSON keys ----------------- */
+    public static String TAILWIND_JSON_VALUE_PRODUCT = "iQ3";
+    public static String TAILWIND_JSON_VALUE_VER_01 = "0.1";
+    public static String TAILWIND_JSON_VALUE_VER_02 = "0.2";
+    public static String TAILWIND_JSON_VALUE_TYPE_GET = "get";
+    public static String TAILWIND_JSON_VALUE_TYPE_SET = "set";
+    public static String TAILWIND_JSON_VALUE_NAME_DEV_ST = "dev_st";
+    public static String TAILWIND_JSON_VALUE_NAME_NOTIFY_URL = "notify_url";
+    public static String TAILWIND_JSON_VALUE_NAME_DOOR_OP = "door_op";
+    public static String TAILWIND_JSON_VALUE_NAME_STATUS_LED = "status_led";
+    public static String TAILWIND_JSON_VALUE_NAME_IDENTIFY = "identify";
+    public static String TAILWIND_JSON_VALUE_NAME_REBOOT = "reboot";
+    public static String TAILWIND_JSON_VALUE_NAME_PROTO_HTTP = "http";
+    public static String TAILWIND_JSON_VALUE_NAME_PROTPO_UDP = "udp";
+    public static int TAILWIND_JSON_VALUE_ENABLE_ON = 1;
+    public static int TAILWIND_JSON_VALUE_ENABLE_OFF = 0;
+    public static String TAILWIND_JSON_VALUE_CMD_OPEN = "open";
+    public static String TAILWIND_JSON_VALUE_CMD_CLOSE = "close";
+
+    public static String TAILWIND_CMD_DEVICE_STATUS_1 = "{\"version\": \"0.1\",\"data\": {\"type\": \"get\",\"name\": \"dev_st\"}}";
+    public static String TAILWIND_CMD_SET_STATUS_REPORT = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"notify_url\",\"value\": {\"url\": \"http://192.168.1.1:8888/report\",\"proto\": \"http\",\"enable\": 1}}}";
+    public static String TAILWIND_CMD_DOOR_OPEN_OR_CLOSE = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"door_op\",\"value\": {\"door_idx\": 1,\"cmd\": \"open\",}}}";
+    public static String TAILWIND_CMD_SET_LED_BRIGHTNESS = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"status_led\",\"value\": {\"brightness\": 100}}}";
+    public static String TAILWIND_CMD_IDENTIFY_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"identify\"}}";
+    public static String TAILWIND_CMD_REBOOT_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"reboot\"}}";
+
+    public static final Map<String, Object> TAILWIND_CMD_DEVICE_STATUS = new LinkedHashMap<>();
+    static {
+        TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
+        /*---- Nested Data object ------------*/
+        Map<String, Object> TAILWIND_CMD_DEVICE_STATUS_DATA = new LinkedHashMap<String, Object>();
+        TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_GET);
+        TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DEV_ST);
+        /*---- Status JSON object with nested data object ------------*/
+        TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_STATUS_DATA);
+    }
 }

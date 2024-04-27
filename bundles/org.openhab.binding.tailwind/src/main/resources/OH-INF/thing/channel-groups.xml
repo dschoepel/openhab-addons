@@ -17,7 +17,7 @@
 		</channels>
 	</channel-group-type>
 
-	<channel-group-type id="door1Controls">
+	<channel-group-type id="door1">
 		<label>Door 1</label>
 		<channels>
 			<channel id="index" typeId="index"/>
@@ -27,7 +27,7 @@
 		</channels>
 	</channel-group-type>
 
-	<channel-group-type id="door2Controls">
+	<channel-group-type id="door2">
 		<label>Door 2</label>
 		<channels>
 			<channel id="index" typeId="index"/>
@@ -37,7 +37,7 @@
 		</channels>
 	</channel-group-type>
 
-	<channel-group-type id="door3Controls">
+	<channel-group-type id="door3">
 		<label>Door 3</label>
 		<channels>
 			<channel id="index" typeId="index"/>
