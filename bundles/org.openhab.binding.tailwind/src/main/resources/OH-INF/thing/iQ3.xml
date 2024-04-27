@@ -6,14 +6,14 @@
 
 	<!-- Sample Thing Type -->
 	<thing-type id="iQ3">
-		<label>Tailwind iQ3</label>
-		<description>Tailwind iQ3 Garage Door Opener</description>
+		<label>TailWind iQ3</label>
+		<description>TailWind iQ3 Garage Door Opener</description>
 
 		<channel-groups>
-			<channel-group typeId="controller" id="controller"/>
-			<channel-group id="door1" typeId="door1"/>
-			<channel-group id="door2" typeId="door2"/>
-			<channel-group id="door3" typeId="door3"/>
+			<channel-group typeId="tailwindController" id="controller"/>
+			<channel-group id="doorOne" typeId="doorOneControls"/>
+			<channel-group id="doorTwo" typeId="doorTwoControls"/>
+			<channel-group id="doorThree" typeId="doorThreeControls"/>
 		</channel-groups>
 
 		<config-description-ref uri="thing-type:tailwind:config"/>

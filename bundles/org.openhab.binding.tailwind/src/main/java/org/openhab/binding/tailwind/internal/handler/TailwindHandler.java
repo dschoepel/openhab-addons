@@ -132,6 +132,14 @@ public class TailwindHandler extends BaseThingHandler {
         /* Set up number of garage doors specified for this thing in the configuration */
         configureZoneChannels(config);
 
+        /**
+         * TODO: Send command to TaiWind controller to set the status report URL
+         * Also update the controller and configured door states from the response
+         * from sending this command to the controller.
+         */
+
+        /* TODO: Scheduled job to listen for UDP messages from the TailWind controller */
+
         updateStatus(ThingStatus.UNKNOWN);
 
         // Example for background initialization:
@@ -194,6 +202,7 @@ public class TailwindHandler extends BaseThingHandler {
             String body = tailwindCommandString.toString();
 
             TailwindControllerData response = tailwindHttpRequest.postJson(url, body, config.authToken);
+            /* TODO: Use response from OK device status set initial states for this thing */
             if (response != null) {
                 if (!response.getResult().contentEquals("OK")) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -261,7 +270,7 @@ public class TailwindHandler extends BaseThingHandler {
         Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
         // Process of adding or removing garage doors based on number set in the thing configuration
         if (doorCount > 1) {
-            // add channels for zone 2
+            // add channels for Door 2
             List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(DOOR_2_CHANNEL_TYPES.entrySet());
             if (doorCount > 2) {
                 // add channels for door 3
@@ -282,7 +291,7 @@ public class TailwindHandler extends BaseThingHandler {
                                 .withType(entry.getValue()).withLabel(itemLabel).build();
                         channels.add(channel);
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Door channel has been added: " + itemLabel);
+                            logger.debug("Door channel has been added: {} and label {}", entry.getKey(), itemLabel);
                         }
                     }
                 }

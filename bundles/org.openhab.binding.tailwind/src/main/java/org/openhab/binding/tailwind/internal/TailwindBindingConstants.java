@@ -47,55 +47,48 @@ public class TailwindBindingConstants {
                     Arrays.stream(TailwindModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
             .collect(Collectors.toSet());
 
-    // List of Controller ID's
-    public static final String PARAMETER_DOOR_NUM = "numberOfDoorSupported";
-    public static final String PARAMETER_NIGHT_MODE_ENABLED = "nightModeEnabled";
-    public static final String PARAMETER_LED_BRIGHTNESS = "ledBrightness";
-    public static final String PARAMETER_ROUTER_RSSI = "routerRssi";
-    public static final String PARAMETER_PRODUCT_ID = "productID";
-    public static final String PARAMETER_DEVICE_ID = "deviceID";
+    // List of Controller Channel ID's
+    public static final String CHANNEL_DOOR_NUM = "numberOfDoorSupported";
+    public static final String CHANNEL_NIGHT_MODE_ENABLED = "nightModeEnabled";
+    public static final String CHANNEL_LED_BRIGHTNESS = "ledBrightness";
+    public static final String CHANNEL_ROUTER_RSSI = "routerRssi";
+    public static final String CHANNEL_PRODUCT_ID = "productID";
+    public static final String CHANNEL_DEVICE_ID = "deviceID";
+    public static final String CHANNEL_FIRMWARE_VERSION = "firmwareVersion";
     public static final String PARAMETER_DOOR_NUM_CONNECTED = "numberOfDoorsConnected";
 
     // List of all Channel ID's
-    public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "door1#index";
-    public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "door1#status";
-    public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "door1#lockup";
-    public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "door1#disabled";
+    public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "doorOne#index";
+    public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "doorOne#status";
+    public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "doorOne#lockup";
+    public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "doorOne#disabled";
 
-    public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "door2#index";
-    public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "door2#status";
-    public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "door2#lockup";
-    public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "door2#disabled";
+    public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "doorTwo#index";
+    public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "doorTwo#status";
+    public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "doorTwo#lockup";
+    public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "doorTwo#disabled";
 
-    public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "door3#index";
-    public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "door3#status";
-    public static final String CHANNEL_DOOR_3_CONTROLS_LOCKUP = "door3#lockup";
-    public static final String CHANNEL_DOOR_3_CONTROLS_DISABLED = "door3#disabled";
+    public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "doorThree#index";
+    public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "doorThree#status";
+    public static final String CHANNEL_DOOR_3_CONTROLS_LOCKUP = "doorThree#lockup";
+    public static final String CHANNEL_DOOR_3_CONTROLS_DISABLED = "doorThree#disabled";
 
     // Map of Door 2 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> DOOR_2_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_INDEX,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
-        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_STATUS,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "string"));
-        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
-        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_DISABLED,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
+        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_INDEX, new ChannelTypeUID(BINDING_ID, "index"));
+        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_STATUS, new ChannelTypeUID(BINDING_ID, "status"));
+        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, new ChannelTypeUID(BINDING_ID, "lockup"));
+        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, new ChannelTypeUID(BINDING_ID, "disabled"));
     }
 
     // Map of Door 3 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> DOOR_3_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
-        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_INDEX,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
-        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_STATUS,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "string"));
-        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
-        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_DISABLED,
-                new ChannelTypeUID(SYSTEM_STATE_CHANNEL_TYPE, "number"));
+        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_INDEX, new ChannelTypeUID(BINDING_ID, "index"));
+        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_STATUS, new ChannelTypeUID(BINDING_ID, "status"));
+        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, new ChannelTypeUID(BINDING_ID, "lockup"));
+        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, new ChannelTypeUID(BINDING_ID, "disabled"));
     }
 
     /**
@@ -136,7 +129,7 @@ public class TailwindBindingConstants {
      */
     public static final String TAILWIND_VENDOR_NAME = "tailwind";
     public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
-    public static final String TAILWIND_HTTP_SERVER_URL = "http Server Url";
+    public static final String TAILWIND_HTTP_SERVER_URL = "httpServerUrl";
     public static final String TAILWIND_BASE_URL_PART_1 = "http://";
     public static final String TAILWIND_BASE_URL_PART_2 = "/json";
     public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";

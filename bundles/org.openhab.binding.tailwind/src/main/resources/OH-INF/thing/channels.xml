@@ -9,7 +9,7 @@
 		<item-type>Number</item-type>
 		<label>Number of Doors</label>
 		<description>Number of garage doors being controlled</description>
-		<state min="1" max="3" step="1" pattern="%d"/>
+		<state min="1" max="3" step="1" pattern="%d" />
 	</channel-type>
 
 	<channel-type id="nightModeEnabled">
@@ -29,7 +29,7 @@
 		<label>LED Brightness</label>
 		<description>Controller LED brightness .</description>
 		<category>Light</category>
-		<state min="0" max="100" step="1" pattern="%d"/>
+		<state min="0" max="100" step="1" pattern="%d" />
 	</channel-type>
 
 	<channel-type id="routerRssi">
@@ -75,6 +75,16 @@
 		<item-type>String</item-type>
 		<label>Door Status</label>
 		<description>Door status (open, close, lock, enable, disable, reboot )</description>
+		<state>
+			<options>
+				<option value="open">Open</option>
+				<option value="close">Closed</option>
+				<option value="lock">Locked</option>
+				<option value="enable">Door is Enabled</option>
+				<option value="disable">Door is Disabled</option>
+				<option value="reboot">Controller rebooted after receiving a reboot command</option>
+			</options>
+		</state>
 	</channel-type>
 
 	<channel-type id="lockup">

@@ -128,7 +128,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         properties.put(Thing.PROPERTY_MODEL_ID, modelNumber);
                         properties.put(Thing.PROPERTY_VENDOR, vendor);
                         properties.put(Thing.PROPERTY_HARDWARE_VERSION, hardwareVersion);
-                        properties.put(PARAMETER_DOOR_NUM, utilities.GetMaxDoors(modelNumber));
+                        properties.put(CHANNEL_DOOR_NUM, utilities.GetMaxDoors(modelNumber));
                         properties.put(TAILWIND_HTTP_SERVER_URL, serverURL);
 
                         // Suggested name of discovered device (.e.g. "TailWind iQ3")

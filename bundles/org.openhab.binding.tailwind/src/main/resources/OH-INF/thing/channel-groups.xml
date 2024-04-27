@@ -5,45 +5,55 @@
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<!-- Channel Groups -->
-	<channel-group-type id="controller">
-		<label>Controller</label>
+	<channel-group-type id="tailwindController">
+		<label>TailWind Controller</label>
 		<channels>
-			<channel id="doorNum" typeId="doorNum"/>
-			<channel id="nightModeEnabled" typeId="nightModeEnabled"/>
-			<channel typeId="ledBrightness" id="ledBrightness"/>
-			<channel typeId="routerRssi" id="routerRssi"/>
-			<channel typeId="productID" id="productID"/>
-			<channel typeId="deviceID" id="deviceID"/>
+			<channel id="doorNum" typeId="doorNum" />
+			<channel id="nightModeEnabled" typeId="nightModeEnabled" />
+			<channel typeId="ledBrightness" id="ledBrightness" />
+			<channel typeId="routerRssi" id="routerRssi" />
+			<channel typeId="productID" id="productID" />
+			<channel typeId="deviceID" id="deviceID" />
 		</channels>
 	</channel-group-type>
 
-	<channel-group-type id="door1">
-		<label>Door 1</label>
+	<channel-group-type id="doorOneControls">
+		<label>Door One</label>
 		<channels>
-			<channel id="index" typeId="index"/>
-			<channel id="status" typeId="status"/>
-			<channel id="lockup" typeId="lockup"/>
-			<channel id="disabled" typeId="disabled"/>
+			<channel id="index" typeId="index" />
+			<channel id="status" typeId="status" />
+			<channel id="lockup" typeId="lockup" />
+			<channel id="disabled" typeId="disabled" />
 		</channels>
 	</channel-group-type>
 
-	<channel-group-type id="door2">
+	<channel-group-type id="door2Controls">
 		<label>Door 2</label>
 		<channels>
-			<channel id="index" typeId="index"/>
-			<channel id="status" typeId="status"/>
-			<channel id="lockup" typeId="lockup"/>
-			<channel id="disabled" typeId="disabled"/>
+			<channel id="index" typeId="index" />
+			<channel id="status" typeId="status" />
+			<channel id="lockup" typeId="lockup" />
+			<channel id="disabled" typeId="disabled" />
 		</channels>
 	</channel-group-type>
-
-	<channel-group-type id="door3">
-		<label>Door 3</label>
+	<channel-group-type id="doorTwoControls">
+		<label>Door Two</label>
 		<channels>
-			<channel id="index" typeId="index"/>
-			<channel id="status" typeId="status"/>
-			<channel id="lockup" typeId="lockup"/>
-			<channel id="disabled" typeId="disabled"/>
+			<channel id="index" typeId="index" />
+			<channel id="status" typeId="status" />
+			<channel id="lockup" typeId="lockup" />
+			<channel id="disabled" typeId="disabled" />
+		</channels>
+
+	</channel-group-type>
+
+	<channel-group-type id="doorThreeControls">
+		<label>Door Three</label>
+		<channels>
+			<channel id="index" typeId="index" />
+			<channel id="status" typeId="status" />
+			<channel id="lockup" typeId="lockup" />
+			<channel id="disabled" typeId="disabled" />
 		</channels>
 	</channel-group-type>
 
