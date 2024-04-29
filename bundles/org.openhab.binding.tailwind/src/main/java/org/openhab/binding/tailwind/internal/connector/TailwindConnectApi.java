@@ -14,10 +14,12 @@ package org.openhab.binding.tailwind.internal.connector;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -25,8 +27,10 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
-import org.json.JSONObject;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
+import org.openhab.core.thing.Thing;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonSyntaxException;
 
@@ -34,14 +38,18 @@ import com.google.gson.JsonSyntaxException;
  *
  */
 public class TailwindConnectApi extends TailwindApi {
+    private final Logger logger = LoggerFactory.getLogger(TailwindConnectApi.class);
 
     /**
-     * Constructor for handler connections to the TailWind HTTP API
+     * Constructor for handling connections to the TailWind HTTP API
      *
      * @param httpClient common client to use for the TailWind rest API requests
      */
     public TailwindConnectApi(HttpClient httpClient) {
         super(httpClient);
+        if (httpClient.isRunning()) {
+            logger.debug("---- > Connect APi constructor - http client is running");
+        }
     }
 
     /**
@@ -56,17 +64,17 @@ public class TailwindConnectApi extends TailwindApi {
      * @return JSON parsed response if connection was successful
      * @throws TailwindCommunicationException if connection to TailWind API failed
      */
-    public TailwindControllerData getTailwindControllerData(String authToken, String body)
+    public TailwindControllerData getTailwindControllerData(Thing thing, String authToken, String body)
             throws TailwindCommunicationException {
 
-        JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
-        tailwindCommandString.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_02);
-        String server = "tailwind-08d1f91202ec.local";
-        String url = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
-        final Request request = getHttpClient().newRequest(url);
-        request.header(TAILWIND_HTTP_HEADER_TOKEN, authToken);
-        request.content(new StringContentProvider(body), "appplication/json");
+        // JSONObject tailwindCommandString = new JSONObject(body);
+        // tailwindCommandString.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_02);
+        // String server = "tailwind-08d1f91202ec.local";
+        // String url = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
+        final Request request = getHttpClient().newRequest(getTailwindServerUrl(thing));
         request.method(HttpMethod.POST);
+        request.header(TAILWIND_HTTP_HEADER_TOKEN, authToken);
+        request.content(new StringContentProvider(body));
 
         ContentResponse response = executeRequest(request);
 
@@ -74,7 +82,7 @@ public class TailwindConnectApi extends TailwindApi {
     }
 
     /**
-     * Method executes the call to the BloomSky rest API Key is obtained from the BloomSky Device Owner portal
+     * Method executes the call to the TailWind rest API. Key is obtained from the TailWind mobile app
      * found here <a href="http://dashboard.bloomsky.com">Device Owner Portal</a>.
      * <ul>
      * <li>Sets the headers including the API key needed to authorize the request</li>
@@ -82,16 +90,13 @@ public class TailwindConnectApi extends TailwindApi {
      * {@link BloomSkyJsonSensorData} format (i.e. DTO).</li>
      * </ul>
      *
-     * @param apiKey found in the Bridge configuration
      * @param request is the URL to use with additional request parameters added (e.g. Imperial or International units)
      * @return response (result) from a successful BloomSKy API request
      * @throws BloomSkyCommunicationException
      */
     private ContentResponse executeRequest(final Request request) throws TailwindCommunicationException {
         request.timeout(10, TimeUnit.SECONDS);
-
         request.header(HttpHeader.ACCEPT, "application/json");
-        // request.header(HttpHeader.AUTHORIZATION, apiKey);
         request.header(HttpHeader.ACCEPT_ENCODING, "gzip");
 
         ContentResponse response;
@@ -152,6 +157,24 @@ public class TailwindConnectApi extends TailwindApi {
             default:
                 throw new TailwindCommunicationException(statusCode, response.getContentAsString());
         }
+    }
+
+    private String getTailwindServerUrl(Thing thing) throws TailwindCommunicationException {
+        String serverURL = "";
+        Map<@NonNull String, @NonNull String> thingPropertiesMap = thing.getProperties();
+        if (thingPropertiesMap.containsKey(TAILWIND_HTTP_SERVER_URL)) {
+            String server = thingPropertiesMap.get(TAILWIND_HTTP_SERVER_URL);
+            if (server != null && !server.isBlank()) {
+                serverURL = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
+            } else {
+                serverURL = NOT_FOUND_ERROR;
+                throw new TailwindCommunicationException("The Tailwind Thing URL for the Http server was " + serverURL
+                        + ". Check thing properties for a valid httpServerUrl!!");
+            } // If server URL has a value
+        } // If server URL was found in the properties for this thing
+
+        ;
+        return serverURL;
     }
 
 }

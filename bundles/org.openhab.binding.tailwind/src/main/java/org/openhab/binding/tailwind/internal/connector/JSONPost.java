@@ -12,11 +12,15 @@
  */
 package org.openhab.binding.tailwind.internal.connector;
 
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
+
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -25,6 +29,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
+import org.openhab.core.thing.Thing;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -37,9 +42,9 @@ public class JSONPost {
     private Gson gson = new Gson();
 
     /**
-     * Posts a JSON string to a specified HTTP endpoint.
+     * Posts a JSON string to a specified HTTP end point.
      *
-     * @param uriString The URI of the endpoint as a String.
+     * @param thing The TailWind device thing to retrieve properties from.
      * @param jsonBody The JSON string to post.
      * @return The response body as a String.
      * @throws Exception
@@ -48,19 +53,18 @@ public class JSONPost {
      * @throws ExecutionException
      * @throws TimeoutException
      */
-    public TailwindControllerData postJson(String uriString, String jsonBody, String authToken) throws Exception {
+    public TailwindControllerData postJson(Thing thing, String jsonBody, String authToken) throws Exception {
 
         // @NonNull
         // ContentResponse response = null;
         HttpClient httpClient = new HttpClient();
         httpClient.start();
         // String stringResponse = "";
-        Request request = httpClient.newRequest(uriString);
+        Request request = httpClient.newRequest(getTailwindServerUrl(thing));
         request.method(HttpMethod.POST);
         request.header("TOKEN", authToken);
         request.content(new StringContentProvider(jsonBody));
         request.header(HttpHeader.CONTENT_TYPE, "application/json");
-        request.header("TOKEN", authToken);
         request.method(HttpMethod.POST);
         request.timeout(10, TimeUnit.SECONDS);
 
@@ -115,6 +119,24 @@ public class JSONPost {
             default:
                 throw new TailwindCommunicationException(statusCode, response.getContentAsString());
         }
+    }
+
+    private String getTailwindServerUrl(Thing thing) throws TailwindCommunicationException {
+        String serverURL = "";
+        Map<@NonNull String, @NonNull String> thingPropertiesMap = thing.getProperties();
+        if (thingPropertiesMap.containsKey(TAILWIND_HTTP_SERVER_URL)) {
+            String server = thingPropertiesMap.get(TAILWIND_HTTP_SERVER_URL);
+            if (server != null && !server.isBlank()) {
+                serverURL = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
+            } else {
+                serverURL = NOT_FOUND_ERROR;
+                throw new TailwindCommunicationException("The Tailwind Thing URL for the Http server was " + serverURL
+                        + ". Check thing properties for a valid httpServerUrl!!");
+            } // If server URL has a value
+        } // If server URL was found in the properties for this thing
+
+        ;
+        return serverURL;
     }
 
 }

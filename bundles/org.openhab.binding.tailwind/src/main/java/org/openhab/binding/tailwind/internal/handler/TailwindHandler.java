@@ -14,6 +14,8 @@ package org.openhab.binding.tailwind.internal.handler;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,11 +23,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jetty.client.HttpClient;
 import org.json.JSONObject;
 import org.openhab.binding.tailwind.internal.TailwindConfiguration;
 import org.openhab.binding.tailwind.internal.Utils.Utilites;
-import org.openhab.binding.tailwind.internal.connector.JSONPost;
+//import org.openhab.binding.tailwind.internal.connector.JSONPost;
 import org.openhab.binding.tailwind.internal.connector.TailwindCommunicationException;
+import org.openhab.binding.tailwind.internal.connector.TailwindConnectApi;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -54,16 +58,25 @@ public class TailwindHandler extends BaseThingHandler {
     private TailwindConfiguration config = new TailwindConfiguration();
     // private TailwindHttpResponse response = new TailwindHttpResponse();
     // private HttpClient httpClient = new HttpClient();
-    private JSONPost tailwindHttpRequest = new JSONPost();
+    // private HttpClient httpClient;
+    private TailwindControllerData response = new TailwindControllerData();
+    // private JSONPost tailwindHttpRequest = new JSONPost();
+    private TailwindConnectApi tailwindApi;
     private Utilites utilities = new Utilites();
 
     /**
      * Constructor for TailWind Device Handler
      *
      * @param thing - TailWind Controller
+     * @param httpClient
      */
-    public TailwindHandler(Thing thing) {
+    public TailwindHandler(Thing thing, HttpClient httpClient) {
         super(thing);
+        // this.httpClient = httpClient;
+        this.tailwindApi = new TailwindConnectApi(httpClient);
+        // if (httpClient.isRunning()) {
+        // logger.debug("Http client is running");
+        // }
     }
 
     @Override
@@ -92,7 +105,6 @@ public class TailwindHandler extends BaseThingHandler {
      * <li>Start threads to monitor for door notifications and status changes</li>
      * </ul>
      */
-    @SuppressWarnings("null")
     @Override
     public void initialize() {
         // TODO: Initialize the handler.
@@ -133,11 +145,11 @@ public class TailwindHandler extends BaseThingHandler {
         configureZoneChannels(config);
 
         /**
-         * TODO: Send command to TaiWind controller to set the status report URL
-         * Also update the controller and configured door states from the response
+         * TODO:
+         * update the controller and configured door states from the response
          * from sending this command to the controller.
          */
-
+        logger.debug("Tailwind last response was: {}", response.toString());
         /* TODO: Scheduled job to listen for UDP messages from the TailWind controller */
 
         updateStatus(ThingStatus.UNKNOWN);
@@ -182,53 +194,45 @@ public class TailwindHandler extends BaseThingHandler {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "This binding supports 1 to " + maxDoors + " garage doors. Please update the door count.");
             return false;
-        }
+        } // If the configured number of doors is out of range
 
-        // Check for a valid Authorization token
+        /**
+         * Check for a valid Authorization token
+         */
         if (logger.isDebugEnabled()) {
             logger.debug("Authorization Token is {}", config.authToken);
         }
-        // Token must be 6 characters long, TailWind HTTP server responds with {"result":"OK"} when used
-        // to request a status.
+        // Token must be 6 characters long, TailWind HTTP server responds with {"result":"OK"}
         if (config.getAuthToken().length() == 6) {
             // Check for a valid authorization token. HTTP response code should be 200 and response contains
             // {"result": "OK"} vs. {"result":"token fail"}
-            // String response = "";
-            String server = "tailwind-08d1f91202ec.local";
-            String url = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
-
             JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
-            // tailwindCommandString.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_02);
             String body = tailwindCommandString.toString();
+            response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
 
-            TailwindControllerData response = tailwindHttpRequest.postJson(url, body, config.authToken);
             /* TODO: Use response from OK device status set initial states for this thing */
-            if (response != null) {
-                if (!response.getResult().contentEquals("OK")) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                            "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
-                    return false;
-                } else {
-                    // Update thing properties to include number of doors connected
-                    thing.setProperty(PARAMETER_DOOR_NUM_CONNECTED, String.valueOf(response.getDoorNum()));
-                }
-            }
-            // TailwindControllerData responseData = parseResponse(response, TailwindControllerData.class);
+            if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
+                return false;
+            } else {
+                // Update thing properties to include number of doors connected
+                thing.setProperty(PARAMETER_DOOR_NUM_CONNECTED, String.valueOf(response.getDoorNum()));
+            } // If result was OK
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Response to validate token {} is: {}", config.authToken, response);
             }
-            if (response != null) {
+            // Ensure configured doors does not exceed the number of doors connected
+            int connectedDoors = (int) response.getDoorNum();
+            if (config.getDoorCount() > connectedDoors) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "This garage controller has " + connectedDoors
+                                + " doors connected. The number of controlled doors can be 1-" + connectedDoors
+                                + "!  Please update the door count.");
+                return false;
+            } // If configured doors > connected doors
 
-                int connectedDoors = (int) response.getDoorNum();
-                if (config.getDoorCount() > connectedDoors) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                            "This garage controller has " + connectedDoors
-                                    + " doors connected. The number of controlled doors can be 1-" + connectedDoors
-                                    + "!  Please update the door count.");
-                    return false;
-                }
-            }
         } else {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "The authorization token should be 6 charactes long, its " + config.getAuthToken().length()
@@ -236,11 +240,44 @@ public class TailwindHandler extends BaseThingHandler {
             return false;
         } // If the authorization token length is equal to 6
 
+        /**
+         * Update controller with the UDP host address to receive notifications of changes to the controller
+         */
+        String serverUDPReportingUrl = buildOpenHabUdpUrl();
+        if (logger.isDebugEnabled()) {
+            logger.debug("UDP server URL is: {}", serverUDPReportingUrl);
+        } // If logger enabled
+          // Update the command string map with the actual URL to use....
+        JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT_URL);
+        String urlKeyFound = tailwindCommandString.getJSONObject(TAILWIND_JSON_KEY_DATA)
+                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
+        if (urlKeyFound != null) {
+            tailwindCommandString.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+                    .put(TAILWIND_JSON_KEY_URL, serverUDPReportingUrl);
+            String body = tailwindCommandString.toString();
+            response = tailwindApi.getTailwindControllerData(thing, config.authToken,
+                    body); /* TODO: Use response from OK device status set initial states for this thing */
+            if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
+                return false;
+            } // If result was OK
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Key for UDP server URL is missing from the body string used to set the URL: {}",
+                        TAILWIND_CMD_SET_STATUS_REPORT_URL);
+            } // If logger enabled
+        } // If urlKeyFount is not null
+
+        tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
+        String body = tailwindCommandString.toString();
+        response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
+
         return true;
     }
 
     /**
-     * Method to shutdown and remove Tailwind thing.
+     * Method to shutdown and remove TailWind thing.
      * <ul>
      * <li>Remove handler</li>
      * </ul>
@@ -330,5 +367,18 @@ public class TailwindHandler extends BaseThingHandler {
         if (channelsUpdated) {
             updateThing(editThing().withChannels(channels).build());
         }
+    }
+
+    /**
+     * Method to set the URL used by the TailWind controller to send notifications
+     *
+     * @return urlString - OpenHab host IP:Port to use for set status report URL command
+     * @throws IOException
+     */
+    private String buildOpenHabUdpUrl() throws IOException {
+        InetAddress address1 = InetAddress.getLocalHost();
+        String hostAddress = address1.getHostAddress();
+        String urlString = hostAddress + ":" + TAILWIND_OPENHAB_HOST_UDP_PORT;
+        return urlString;
     }
 }

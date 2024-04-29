@@ -34,8 +34,8 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 @NonNullByDefault
 public class TailwindBindingConstants {
 
-    private static final String BINDING_ID = "tailwind";
-    private static final String SYSTEM_STATE_CHANNEL_TYPE = "system";
+    public static final String BINDING_ID = "tailwind";
+    // private static final String SYSTEM_STATE_CHANNEL_TYPE = "system";
 
     // List of all Thing Type UIDs (TailwindPro may not be needed???)
     public static final ThingTypeUID THING_TYPE_TAILWIND = new ThingTypeUID(BINDING_ID, "tailwindPro");
@@ -133,6 +133,9 @@ public class TailwindBindingConstants {
     public static final String TAILWIND_BASE_URL_PART_1 = "http://";
     public static final String TAILWIND_BASE_URL_PART_2 = "/json";
     public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";
+    public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
+    public static final String NOT_FOUND_ERROR = "Not_Found";
+    public static final String JSON_RESPONSE_RESULT_OK = "OK";
 
     /**
      * TailWind device commands. To be parsed into JSON object and modified to reflect
@@ -188,5 +191,26 @@ public class TailwindBindingConstants {
         TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DEV_ST);
         /*---- Status JSON object with nested data object ------------*/
         TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_STATUS_DATA);
+    }
+
+    public static final Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_URL = new LinkedHashMap<>();
+    static {
+        TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_PRODUCT, TAILWIND_JSON_VALUE_PRODUCT);
+        TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
+        /*---- Nested Data object ------------*/
+        Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_DATA = new LinkedHashMap<String, Object>();
+        TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_SET);
+        TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_NOTIFY_URL);
+
+        /*---- Nested Value object ------------*/
+        Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_VALUE = new LinkedHashMap<String, Object>();
+        TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_PROTO, TAILWIND_JSON_VALUE_NAME_PROTPO_UDP);
+        TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_ENABLE, TAILWIND_JSON_VALUE_ENABLE_ON);
+        TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_URL, "http://openHabServerURL");
+
+        /*---- Status JSON data object with nested value object ------------*/
+        TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_VALUE, TAILWIND_CMD_SET_STATUS_REPORT_VALUE);
+        /*---- Status JSON object with nested data object ------------*/
+        TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_SET_STATUS_REPORT_DATA);
     }
 }
