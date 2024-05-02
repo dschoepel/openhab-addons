@@ -33,8 +33,8 @@ public class TailwindState {
     private final Logger logger = LoggerFactory.getLogger(TailwindState.class);
 
     // ----- General (Controller Specific) -----
-    private State doorNum = DecimalType.ZERO;
-    private State nightModeEnabled = DecimalType.ZERO;
+    private State doorNum = DecimalType.valueOf("99");
+    private State nightModeEnabled = DecimalType.valueOf("99");
     private State ledBrightness = DecimalType.ZERO;
     private State routerRSSI = DecimalType.ZERO;
     private State productID = StringType.EMPTY;
@@ -42,22 +42,22 @@ public class TailwindState {
     private State firmwareVersion = StringType.EMPTY;
 
     // ----- Door One Specific Channels -----
-    private State doorOneIndex = DecimalType.ZERO;
+    private State doorOneIndex = DecimalType.valueOf("99");
     private State doorOneStatus = StringType.EMPTY;
-    private State doorOneLockup = DecimalType.ZERO;
-    private State doorOneDisabled = DecimalType.ZERO;
+    private State doorOneLockup = DecimalType.valueOf("99");
+    private State doorOneDisabled = DecimalType.valueOf("99");
 
     // ----- Door Two Specific Channels -----
-    private State doorTwoIndex = DecimalType.ZERO;
+    private State doorTwoIndex = DecimalType.valueOf("99");
     private State doorTwoStatus = StringType.EMPTY;
-    private State doorTwoLockup = DecimalType.ZERO;
-    private State doorTwoDisabled = DecimalType.ZERO;
+    private State doorTwoLockup = DecimalType.valueOf("99");
+    private State doorTwoDisabled = DecimalType.valueOf("99");
 
     // ----- Door Three Specific Channels -----
-    private State doorThreeIndex = DecimalType.ZERO;
+    private State doorThreeIndex = DecimalType.valueOf("99");
     private State doorThreeStatus = StringType.EMPTY;
-    private State doorThreeLockup = DecimalType.ZERO;
-    private State doorThreeDisabled = DecimalType.ZERO;
+    private State doorThreeLockup = DecimalType.valueOf("99");
+    private State doorThreeDisabled = DecimalType.valueOf("99");
 
     private TailwindStateChangedListener handler;
 
@@ -145,8 +145,8 @@ public class TailwindState {
      *
      * @param doorNum - number of doors being controlled to be set (1-3)
      */
-    public void setDoorNum(String doorNum) {
-        DecimalType newVal = DecimalType.valueOf(doorNum);
+    public void setDoorNum(long doorNum) {
+        DecimalType newVal = new DecimalType(doorNum);
         if (!newVal.equals(this.doorNum)) {
             this.doorNum = newVal;
             handler.stateChanged(CHANNEL_DOOR_NUM, this.doorNum);
@@ -159,12 +159,13 @@ public class TailwindState {
      *
      * @param nightModeEnabled - when set to on (1, off=0) ensures door is closed between time range set in app
      */
-    public void setNightModeEnabled(String nightModeEnabled) {
-        DecimalType newVal = DecimalType.valueOf(nightModeEnabled);
+    public void setNightModeEnabled(long nightModeEnabled) {
+        DecimalType newVal = new DecimalType(nightModeEnabled);
         if (!newVal.equals(this.nightModeEnabled)) {
             this.nightModeEnabled = newVal;
-            handler.stateChanged(CHANNEL_DOOR_NUM, this.nightModeEnabled);
-
+            handler.stateChanged(CHANNEL_NIGHT_MODE_ENABLED, this.nightModeEnabled);
+            // } else {
+            // handler.stateChanged(CHANNEL_NIGHT_MODE_ENABLED, this.nightModeEnabled);
         } // If nightModeEnabled changed
     }
 
@@ -173,8 +174,8 @@ public class TailwindState {
      *
      * @param ledBrightness - brightness of the controller's led lamp ranges from 0 - 100,
      */
-    public void setLedBrighness(String ledBrightness) {
-        DecimalType newVal = DecimalType.valueOf(ledBrightness);
+    public void setLedBrighness(long ledBrightness) {
+        DecimalType newVal = new DecimalType(ledBrightness);
         if (!newVal.equals(this.ledBrightness)) {
             this.ledBrightness = newVal;
             handler.stateChanged(CHANNEL_LED_BRIGHTNESS, this.ledBrightness);
@@ -187,8 +188,8 @@ public class TailwindState {
      *
      * @param routerRSSI - network Wi-Fi signal strength near TailWind controller (negative decimal)
      */
-    public void setRouterRSSI(String routerRSSI) {
-        DecimalType newVal = DecimalType.valueOf(routerRSSI);
+    public void setRouterRSSI(long routerRSSI) {
+        DecimalType newVal = new DecimalType(routerRSSI);
         if (!newVal.equals(this.routerRSSI)) {
             this.routerRSSI = newVal;
             handler.stateChanged(CHANNEL_ROUTER_RSSI, this.routerRSSI);
@@ -239,6 +240,38 @@ public class TailwindState {
     }
 
     /**
+     * Method to set the Door index state for the TailWind controller doors
+     *
+     * @param prefix - door index (0=Door 1, 1=Door 2, 2=Door 3)
+     * @param status - value indicating index 0 - 2
+     */
+    public void setDoorIndex(Integer index, long doorIndex) {
+        DecimalType newVal = new DecimalType(doorIndex);
+        switch (index) {
+            case 0:
+                if (!newVal.equals(this.doorOneIndex)) {
+                    this.doorOneIndex = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_1_CONTROLS_INDEX, this.doorOneIndex);
+                }
+                break;
+            case 1:
+                if (!newVal.equals(this.doorTwoIndex)) {
+                    this.doorTwoIndex = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_2_CONTROLS_INDEX, this.doorTwoIndex);
+                }
+                break;
+            case 2:
+                if (!newVal.equals(this.doorThreeIndex)) {
+                    this.doorThreeIndex = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_3_CONTROLS_INDEX, this.doorThreeIndex);
+                }
+                break;
+            default:
+                break;
+        }
+    } // If door (index) Lockup changed
+
+    /**
      * Method to set the Door status state for the TailWind controller
      *
      * @param prefix - door index (0=Door 1, 1=Door 2, 2=Door 3)
@@ -276,8 +309,8 @@ public class TailwindState {
      * @param prefix - door index (0=Door 1, 1=Door 2, 2=Door 3)
      * @param status - value indicating locked (1) or un-locked (0) status
      */
-    public void setLockup(Integer index, String doorLockup) {
-        DecimalType newVal = DecimalType.valueOf(doorLockup);
+    public void setLockup(Integer index, long doorLockup) {
+        DecimalType newVal = new DecimalType(doorLockup);
         switch (index) {
             case 0:
                 if (!newVal.equals(this.doorOneLockup)) {
@@ -308,8 +341,8 @@ public class TailwindState {
      * @param prefix - door index (0=Door 1, 1=Door 2, 2=Door 3)
      * @param status - value indicating door is disabled (1) or not disabled (0) status
      */
-    public void setDisabled(Integer index, String doorDisabled) {
-        DecimalType newVal = DecimalType.valueOf(doorDisabled);
+    public void setDisabled(Integer index, long doorDisabled) {
+        DecimalType newVal = new DecimalType(doorDisabled);
         switch (index) {
             case 0:
                 if (!newVal.equals(this.doorOneDisabled)) {

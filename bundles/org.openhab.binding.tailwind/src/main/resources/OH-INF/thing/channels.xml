@@ -16,12 +16,6 @@
 		<item-type>Number</item-type>
 		<label>Night Mode</label>
 		<description>Night mode enabled</description>
-		<state>
-			<options>
-				<option value="0">No</option>
-				<option value="1">Yes</option>
-			</options>
-		</state>
 	</channel-type>
 
 	<channel-type id="ledBrightness">

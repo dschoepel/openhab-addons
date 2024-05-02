@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.tailwind.internal.state;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.types.State;
 
 /**
@@ -24,7 +25,7 @@ public interface TailwindStateChangedListener {
      * @param channelID the channel for which its state changed
      * @param state the new state of the channel
      */
-    void stateChanged(String channelID, State state);
+    void stateChanged(@NonNull String channelID, @NonNull State state);
 
     /**
      * A connection error occurred

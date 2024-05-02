@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
 /**
  * <p>
  * A robust class for establishing a UDP server and manipulating
- * its listening port and optionally a multicast groups to join.
+ * its listening port and optionally multi-cast groups to join.
  * The {@link Event}s and property change events make
  * it an appropriate tool in a threaded, GUI application.
  * It is almost identical in design to the TcpServer class that
@@ -37,11 +38,11 @@ import java.util.logging.Logger;
  * </p>
  *
  * <p>
- * To start a UDP server, create a new UdpServer and call start():
+ * To start a UDP server, create a new TailwindUdpServer and call start():
  * </p>
  *
  * <pre>
- * UdpServer server = new UdpServer();
+ * TailwindUdpServer server = new TailwindUdpServer();
  * server.start();
  * </pre>
  *
@@ -53,8 +54,8 @@ import java.util.logging.Logger;
  *
  * <pre>
  *  server.setPort(1234);
- *  server.addUdpServerListener( new UdpServer.Adapter(){
- *     public void udpServerPacketReceived( UdpServer.Event evt ){
+ *  server.addUdpServerListener( new TailwindUdpServer.Adapter(){
+ *     public void udpServerPacketReceived( TailwindUdpServer.Event evt ){
  *         DatagramPacket packet = evt.getPacket();
  *         ...
  *     }   // end packet received
@@ -83,7 +84,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * It's often handy to have your own class extend this one rather than
- * making an instance field to hold a UdpServer where you'd have to
+ * making an instance field to hold a TailwindUdpServer where you'd have to
  * pass along all the setPort(...) methods and so forth.
  * </p>
  *
@@ -94,7 +95,7 @@ import java.util.logging.Logger;
  * </p>
  *
  * <p>
- * Since the TcpServer.java, UdpServer.java, and NioServer.java are
+ * Since the TcpServer.java, TailwindUdpServer.java, and NioServer.java are
  * so similar, and since lots of copying and pasting was going on among them,
  * you may find some comments that refer to TCP instead of UDP or vice versa.
  * Please feel free to let me know, so I can correct that.
@@ -103,30 +104,30 @@ import java.util.logging.Logger;
  * <p>
  * This code is released into the Public Domain.
  * Since this is Public Domain, you don't need to worry about
- * licensing, and you can simply copy this UdpServer.java file
+ * licensing, and you can simply copy this TailwindUdpServer.java file
  * to your own package and use it as you like. Enjoy.
  * Please consider leaving the following statement here in this code:
  * </p>
  *
  * <p>
- * <em>This <tt>UdpServer</tt> class was copied to this project from its source as
+ * <em>This <tt>TailwindUdpServer</tt> class was copied to this project from its source as
  * found at <a href="http://iharder.net" target="_blank">iHarder.net</a>.</em>
  * </p>
  *
  * <a href=
- * "https://bitbucket.org/hww3/org.openhab.binding.weatherflowsmartweather/src/master/src/main/java/org/openhab/binding/weatherflowsmartweather/util/UdpServer.java"
+ * "https://bitbucket.org/hww3/org.openhab.binding.weatherflowsmartweather/src/master/src/main/java/org/openhab/binding/weatherflowsmartweather/util/TailwindUdpServer.java"
  * target="_blank">Bill Welliver Repository</a>
  *
  * @author Robert Harder
  * @author rharder@users.sourceforge.net
  * @version 0.1
- * @see UdpServer
+ * @see TailwindUdpServer
  * @see Event
  * @see Listener
  */
-public class UdpServer {
+public class TailwindUdpServer {
 
-    private final static Logger LOGGER = Logger.getLogger(UdpServer.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(TailwindUdpServer.class.getName());
 
     /**
      * The port property <tt>port</tt> used with
@@ -169,11 +170,12 @@ public class UdpServer {
     private State currentState = State.STOPPED;
     public final static String STATE_PROP = "state";
 
-    private Collection<UdpServer.Listener> listeners = new LinkedList<UdpServer.Listener>(); // Event listeners
-    private UdpServer.Event event = new UdpServer.Event(this); // Shared event
+    private Collection<TailwindUdpServer.Listener> listeners = new LinkedList<TailwindUdpServer.Listener>(); // Event
+                                                                                                                     // listeners
+    private TailwindUdpServer.Event event = new TailwindUdpServer.Event(this); // Shared event
     private PropertyChangeSupport propSupport = new PropertyChangeSupport(this); // Properties
 
-    private final UdpServer This = this; // To aid in synchronizing
+    private final TailwindUdpServer This = this; // To aid in synchronizing
     private ThreadFactory threadFactory; // Optional thread factory
     private Thread ioThread; // Performs IO
     private MulticastSocket mSocket; // The server
@@ -185,33 +187,33 @@ public class UdpServer {
     /* ******** C O N S T R U C T O R S ******** */
 
     /**
-     * Constructs a new UdpServer that will listen on the default port 8000
+     * Constructs a new TailwindUdpServer that will listen on the default port 8000
      * (but not until {@link #start} is called).
      * The I/O thread will not be in daemon mode.
      */
-    public UdpServer() {
+    public TailwindUdpServer() {
     }
 
     /**
-     * Constructs a new UdpServer that will listen on the given port
+     * Constructs a new TailwindUdpServer that will listen on the given port
      * (but not until {@link #start} is called).
      * The I/O thread will not be in daemon mode.
      *
      * @param port The initial port on which to listen
      */
-    public UdpServer(int port) {
+    public TailwindUdpServer(int port) {
         this.port = port;
     }
 
     /**
-     * Constructs a new UdpServer that will listen on the given port
+     * Constructs a new TailwindUdpServer that will listen on the given port
      * (but not until {@link #start} is called). The provided
      * ThreadFactory will be used when starting and running the server.
      *
      * @param port The initial port on which to listen
      * @param factory The thread factory used to generate a thread to run the server
      */
-    public UdpServer(int port, ThreadFactory factory) {
+    public TailwindUdpServer(int port, ThreadFactory factory) {
         this.port = port;
         this.threadFactory = factory;
     }
@@ -226,7 +228,7 @@ public class UdpServer {
      * @see Listener
      */
     public synchronized void start() {
-        if (this.currentState == UdpServer.State.STOPPED) { // Only if we're stopped now
+        if (this.currentState == TailwindUdpServer.State.STOPPED) { // Only if we're stopped now
             assert ioThread == null : ioThread; // Shouldn't have a thread
 
             Runnable run = new Runnable() {
@@ -234,7 +236,7 @@ public class UdpServer {
                 public void run() {
                     runServer(); // This runs for a long time
                     ioThread = null;
-                    setState(UdpServer.State.STOPPED); // Clear thread
+                    setState(TailwindUdpServer.State.STOPPED); // Clear thread
                 } // end run
             }; // end runnable
 
@@ -245,7 +247,7 @@ public class UdpServer {
                 this.ioThread = new Thread(run, this.getClass().getName()); // Named
             }
 
-            setState(UdpServer.State.STARTING); // Update state
+            setState(TailwindUdpServer.State.STARTING); // Update state
             this.ioThread.start(); // Start thread
         } // end if: currently stopped
     } // end start
@@ -259,8 +261,8 @@ public class UdpServer {
      * @see Listener
      */
     public synchronized void stop() {
-        if (this.currentState == UdpServer.State.STARTED) { // Only if already STARTED
-            setState(UdpServer.State.STOPPING); // Mark as STOPPING
+        if (this.currentState == TailwindUdpServer.State.STARTED) { // Only if already STARTED
+            setState(TailwindUdpServer.State.STOPPING); // Mark as STOPPING
             if (this.mSocket != null) {
                 this.mSocket.close();
             } // end if: not null
@@ -273,7 +275,7 @@ public class UdpServer {
      *
      * @return state of the server
      */
-    public synchronized UdpServer.State getState() {
+    public synchronized TailwindUdpServer.State getState() {
         return this.currentState;
     }
 
@@ -284,7 +286,7 @@ public class UdpServer {
      *
      * @param state The new state of the server
      */
-    protected synchronized void setState(UdpServer.State state) {
+    protected synchronized void setState(TailwindUdpServer.State state) {
         State oldVal = this.currentState;
         this.currentState = state;
         firePropertyChange(STATE_PROP, oldVal, state);
@@ -305,13 +307,15 @@ public class UdpServer {
                     public void propertyChange(PropertyChangeEvent evt) {
                         State newState = (State) evt.getNewValue();
                         if (newState == State.STOPPED) {
-                            UdpServer server = (UdpServer) evt.getSource();
+                            TailwindUdpServer server = (TailwindUdpServer) evt.getSource();
                             server.removePropertyChangeListener(STATE_PROP, this);
                             server.start();
                         } // end if: stopped
                     } // end prop change
                 });
                 stop();
+                break;
+            default:
                 break;
         } // end switch
     }
@@ -342,7 +346,10 @@ public class UdpServer {
                 String[] proposed = gg.split("[\\s,]+"); // Split along whitespace
                 for (String p : proposed) { // See which ones are valid
                     try {
-                        this.mSocket.joinGroup(InetAddress.getByName(p));
+
+                        InetAddress localHost = InetAddress.getLocalHost();
+                        NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+                        this.mSocket.joinGroup(mSocket.getLocalSocketAddress(), ni);
                         LOGGER.info("UDP Server joined multicast group " + p);
                     } catch (IOException exc) {
                         LOGGER.warning("Could not join " + p + " as a multicast group: " + exc.getMessage());
@@ -534,18 +541,18 @@ public class UdpServer {
     /**
      * Adds a {@link Listener}.
      *
-     * @param l the UdpServer.Listener
+     * @param l the TailwindUdpServer.Listener
      */
-    public synchronized void addUdpServerListener(UdpServer.Listener l) {
+    public synchronized void addUdpServerListener(TailwindUdpServer.Listener l) {
         listeners.add(l);
     }
 
     /**
      * Removes a {@link Listener}.
      *
-     * @param l the UdpServer.Listener
+     * @param l the TailwindUdpServer.Listener
      */
-    public synchronized void removeUdpServerListener(UdpServer.Listener l) {
+    public synchronized void removeUdpServerListener(TailwindUdpServer.Listener l) {
         listeners.remove(l);
     }
 
@@ -554,12 +561,12 @@ public class UdpServer {
      */
     protected synchronized void fireUdpServerPacketReceived() {
 
-        UdpServer.Listener[] ll = listeners.toArray(new UdpServer.Listener[listeners.size()]);
-        for (UdpServer.Listener l : ll) {
+        TailwindUdpServer.Listener[] ll = listeners.toArray(new TailwindUdpServer.Listener[listeners.size()]);
+        for (TailwindUdpServer.Listener l : ll) {
             try {
                 l.packetReceived(event);
             } catch (Exception exc) {
-                LOGGER.warning("UdpServer.Listener " + l + " threw an exception: " + exc.getMessage());
+                LOGGER.warning("TailwindUdpServer.Listener " + l + " threw an exception: " + exc.getMessage());
                 fireExceptionNotification(exc);
             } // end catch
         } // end for: each listener
@@ -568,7 +575,7 @@ public class UdpServer {
     /* ******** P R O P E R T Y C H A N G E ******** */
 
     /**
-     * Fires property chagne events for all current values
+     * Fires property change events for all current values
      * setting the old value to null and new value to the current.
      */
     public synchronized void fireProperties() {
@@ -659,7 +666,7 @@ public class UdpServer {
     /**
      * Static method to set the logging level using Java's
      * <tt>java.util.logging</tt> package. Example:
-     * <code>UdpServer.setLoggingLevel(Level.OFF);</code>.
+     * <code>TailwindUdpServer.setLoggingLevel(Level.OFF);</code>.
      *
      * @param level the new logging level
      */
@@ -684,27 +691,27 @@ public class UdpServer {
     /* ******** ******** */
 
     /**
-     * An interface for listening to events from a {@link UdpServer}.
+     * An interface for listening to events from a {@link TailwindUdpServer}.
      * A single {@link Event} is shared for all invocations
      * of these methods.
      *
      * <p>
      * This code is released into the Public Domain.
      * Since this is Public Domain, you don't need to worry about
-     * licensing, and you can simply copy this UdpServer.java file
+     * licensing, and you can simply copy this TailwindUdpServer.java file
      * to your own package and use it as you like. Enjoy.
      * Please consider leaving the following statement here in this code:
      * </p>
      *
      * <p>
-     * <em>This <tt>UdpServer</tt> class was copied to this project from its source as
+     * <em>This <tt>TailwindUdpServer</tt> class was copied to this project from its source as
      * found at <a href="http://iharder.net" target="_blank">iHarder.net</a>.</em>
      * </p>
      *
      * @author Robert Harder
      * @author rharder@users.sourceforge.net
      * @version 0.1
-     * @see UdpServer
+     * @see TailwindUdpServer
      * @see Event
      */
     public static interface Listener extends java.util.EventListener {
@@ -718,7 +725,7 @@ public class UdpServer {
          * @param evt the event
          * @see Event#getPacket
          */
-        public abstract void packetReceived(UdpServer.Event evt);
+        public abstract void packetReceived(TailwindUdpServer.Event evt);
     } // end inner static class Listener
 
     /* ******** ******** */
@@ -729,39 +736,43 @@ public class UdpServer {
 
     /**
      * A helper class that implements all methods of the
-     * {@link UdpServer.Listener} interface with empty methods.
+     * {@link TailwindUdpServer.Listener} interface with empty methods.
      *
      * <p>
      * This code is released into the Public Domain.
      * Since this is Public Domain, you don't need to worry about
-     * licensing, and you can simply copy this UdpServer.java file
+     * licensing, and you can simply copy this TailwindUdpServer.java file
      * to your own package and use it as you like. Enjoy.
      * Please consider leaving the following statement here in this code:
      * </p>
      *
      * <p>
-     * <em>This <tt>UdpServer</tt> class was copied to this project from its source as
+     * <em>This <tt>TailwindUdpServer</tt> class was copied to this project from its source as
      * found at <a href="http://iharder.net" target="_blank">iHarder.net</a>.</em>
      * </p>
      *
      * @author Robert Harder
      * @author rharder@users.sourceforge.net
      * @version 0.1
-     * @see UdpServer
+     * @see TailwindUdpServer
      * @see Listener
      * @see Event
      */
-    // public class Adapter implements UdpServer.Listener {
+    public class Adapter implements TailwindUdpServer.Listener {
+        /**
+         * Empty call for {@link TailwindUdpServer.Listener#udpServerPacketReceived}.
+         *
+         * @param evt the event
+         */
+        @Override
+        public void packetReceived(TailwindUdpServer.Event evt) {
+            // TODO Auto-generated method stub
 
-    /**
-     * Empty call for {@link UdpServer.Listener#udpServerPacketReceived}.
-     *
-     * @param evt the event
-     */
-    // @Override
-    // public void udpServerPacketReceived( UdpServer.Event evt ) {}
+        }
+        // @Override
+        // public void udpServerPacketReceived( TailwindUdpServer.Event evt ) {}
 
-    // } // end static inner class Adapter
+    } // end static inner class Adapter
 
     /* ******** ******** */
     /* ******** ******** */
@@ -770,25 +781,25 @@ public class UdpServer {
     /* ******** ******** */
 
     /**
-     * An event representing activity by a {@link UdpServer}.
+     * An event representing activity by a {@link TailwindUdpServer}.
      *
      * <p>
      * This code is released into the Public Domain.
      * Since this is Public Domain, you don't need to worry about
-     * licensing, and you can simply copy this UdpServer.java file
+     * licensing, and you can simply copy this TailwindUdpServer.java file
      * to your own package and use it as you like. Enjoy.
      * Please consider leaving the following statement here in this code:
      * </p>
      *
      * <p>
-     * <em>This <tt>UdpServer</tt> class was copied to this project from its source as
+     * <em>This <tt>TailwindUdpServer</tt> class was copied to this project from its source as
      * found at <a href="http://iharder.net" target="_blank">iHarder.net</a>.</em>
      * </p>
      *
      * @author Robert Harder
      * @author rharder@users.sourceforge.net
      * @version 0.1
-     * @see UdpServer
+     * @see TailwindUdpServer
      * @see Listener
      */
     public static class Event extends java.util.EventObject {
@@ -796,37 +807,37 @@ public class UdpServer {
         private final static long serialVersionUID = 1;
 
         /**
-         * Creates a Event based on the given {@link UdpServer}.
+         * Creates a Event based on the given {@link TailwindUdpServer}.
          *
          * @param src the source of the event
          */
-        public Event(UdpServer src) {
+        public Event(TailwindUdpServer src) {
             super(src);
         }
 
         /**
-         * Returns the source of the event, a {@link UdpServer}.
-         * Shorthand for <tt>(UdpServer)getSource()</tt>.
+         * Returns the source of the event, a {@link TailwindUdpServer}.
+         * Shorthand for <tt>(TailwindUdpServer)getSource()</tt>.
          *
          * @return the server
          */
-        public UdpServer getUdpServer() {
-            return (UdpServer) getSource();
+        public TailwindUdpServer getUdpServer() {
+            return (TailwindUdpServer) getSource();
         }
 
         /**
          * Shorthand for <tt>getUdpServer().getState()</tt>.
          *
          * @return the state of the server
-         * @see UdpServer.State
+         * @see TailwindUdpServer.State
          */
-        public UdpServer.State getState() {
+        public TailwindUdpServer.State getState() {
             return getUdpServer().getState();
         }
 
         /**
          * Returns the most recent datagram packet received
-         * by the {@link UdpServer}. Shorthand for
+         * by the {@link TailwindUdpServer}. Shorthand for
          * <tt>getUdpServer().getPacket()</tt>.
          *
          * @return the most recent datagram
@@ -884,4 +895,4 @@ public class UdpServer {
             this.getUdpServer().send(packet);
         }
     } // end static inner class Event
-} // end class UdpServer
+} // end class TailwindUdpServer

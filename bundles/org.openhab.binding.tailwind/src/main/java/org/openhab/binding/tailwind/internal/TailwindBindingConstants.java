@@ -29,7 +29,7 @@ import org.openhab.core.thing.type.ChannelTypeUID;
  * The {@link TailwindBindingConstants} class defines common constants, which are
  * used across the whole binding.
  *
- * @author Dave J. Schoepel - Initial contributions
+ * @author Dave J. Schoepel - Initial contribution
  */
 @NonNullByDefault
 public class TailwindBindingConstants {
@@ -47,26 +47,37 @@ public class TailwindBindingConstants {
                     Arrays.stream(TailwindModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
             .collect(Collectors.toSet());
 
+    // Channel Group TailWind Controller
+    public static final String CHANNEL_GROUP_CONTROLLER = "controller";
+
     // List of Controller Channel ID's
-    public static final String CHANNEL_DOOR_NUM = "numberOfDoorSupported";
-    public static final String CHANNEL_NIGHT_MODE_ENABLED = "nightModeEnabled";
-    public static final String CHANNEL_LED_BRIGHTNESS = "ledBrightness";
-    public static final String CHANNEL_ROUTER_RSSI = "routerRssi";
-    public static final String CHANNEL_PRODUCT_ID = "productID";
-    public static final String CHANNEL_DEVICE_ID = "deviceID";
-    public static final String CHANNEL_FIRMWARE_VERSION = "firmwareVersion";
+    public static final String CHANNEL_DOOR_NUM = "controller#doorNum";
+    public static final String CHANNEL_NIGHT_MODE_ENABLED = "controller#nightModeEnabled";
+    public static final String CHANNEL_LED_BRIGHTNESS = "controller#ledBrightness";
+    public static final String CHANNEL_ROUTER_RSSI = "controller#routerRssi";
+    public static final String CHANNEL_PRODUCT_ID = "controller#productID";
+    public static final String CHANNEL_DEVICE_ID = "controller#deviceID";
+    public static final String CHANNEL_FIRMWARE_VERSION = "controller#firmwareVersion";
     public static final String PARAMETER_DOOR_NUM_CONNECTED = "numberOfDoorsConnected";
 
-    // List of all Channel ID's
+    // Channel Group Door One Controls
+    public static final String CHANNEL_GROUP_DOOR_ONE = "doorOne";
+
     public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "doorOne#index";
     public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "doorOne#status";
     public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "doorOne#lockup";
     public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "doorOne#disabled";
 
+    // Channel Group Door One Controls
+    public static final String CHANNEL_GROUP_DOOR_TWO = "doorTwo";
+
     public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "doorTwo#index";
     public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "doorTwo#status";
     public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "doorTwo#lockup";
     public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "doorTwo#disabled";
+
+    // Channel Group Door One Controls
+    public static final String CHANNEL_GROUP_DOOR_THREE = "doorThree";
 
     public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "doorThree#index";
     public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "doorThree#status";
@@ -136,6 +147,10 @@ public class TailwindBindingConstants {
     public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
     public static final String NOT_FOUND_ERROR = "Not_Found";
     public static final String JSON_RESPONSE_RESULT_OK = "OK";
+    /** Thing is set OFFLINE after so many communication errors. */
+    public static final int ATTEMPTS_WITH_COMMUNICATION_ERRORS = 3;
+    /** Name for thread running UDP Connection */
+    public static final String TAILWIND_UDP_CONNECTOR_THREAD_NAME = BINDING_ID + "_UDP_Connector";
 
     /**
      * TailWind device commands. To be parsed into JSON object and modified to reflect
