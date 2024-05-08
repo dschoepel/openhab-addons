@@ -14,6 +14,21 @@
 			<label>General Connection Settings</label>
 		</parameter-group>
 
+		<parameter-group name="doorOneSettings">
+			<label>Door One Specific Settings</label>
+			<advanced>true</advanced>
+		</parameter-group>
+
+		<parameter-group name="doorTwoSettings">
+			<label>Door Two Specific Settings</label>
+			<advanced>true</advanced>
+		</parameter-group>
+
+		<parameter-group name="doorThreeSettings">
+			<label>Door Three Specific Settings</label>
+			<advanced>true</advanced>
+		</parameter-group>
+
 		<!-- Include if there is a need to refresh states periodically <parameter name="refreshInterval" type="integer" min="0" 
 			groupName="controllerProperties"> <label>Refresh Interval</label> <description>The refresh interval in seconds for polling 
 			the controller settings (0=disabled) to update item details.</description> <default>0</default> <advanced>true</advanced> 
@@ -35,6 +50,59 @@
 			<context>network-address</context> <label>IP Address</label> <description>IPV4 address of the NAD A/V receiver</description> 
 			</parameter> <parameter name="telnetPort" type="integer" required="true" groupName="telnetSettings"> <default>23</default> 
 			<label>Port</label> <description>Telnet port used for AVR communication. Normally shouldn't be changed.</description> </parameter> -->
+
+		<!-- Door 1 specific configuration parameters -->
+		<parameter name="doorOnePartialOpen" type="decimal" min="0.5" max="15" step="0.1"
+			groupName="doorOneSettings">
+			<label>Door 1 Partial Open</label>
+			<description>Door 1: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
+			<default>2.5</default>
+			<advanced>true</advanced>
+		</parameter>
+
+		<parameter name="doorOneName" type="text" groupName="doorOneSettings">
+			<label>Door 1 Name</label>
+			<description>Door 1: Specify a more descriptive name for the garage door.</description>
+			<default>Door 1</default>
+			<advanced>true</advanced>
+		</parameter>
+
+		<!-- Door 2 specific configuration parameters -->
+		<parameter name="doorTwoPartialOpen" type="decimal" min="0.5" max="15" step="0.1"
+			groupName="doorTwoSettings">
+			<label>Door 2 Partial Open</label>
+			<description>Door 2: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
+			<default>2.5</default>
+			<required>true</required>
+			<advanced>true</advanced>
+		</parameter>
+
+		<parameter name="doorTwoName" type="text" groupName="doorTwoSettings">
+			<label>Door 2 Name</label>
+			<description>Door 2: Specify a more descriptive name for the garage door.</description>
+			<default>Door 2</default>
+			<required>true</required>
+			<advanced>true</advanced>
+		</parameter>
+
+
+		<!-- Door 3 specific configuration parameters -->
+		<parameter name="doorThreePartialOpen" type="decimal" min="0.5" max="15" step="0.1"
+			groupName="doorThreeSettings">
+			<label>Door 3 Partial Open</label>
+			<description>Door 3: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
+			<default>2.5</default>
+			<advanced>true</advanced>
+		</parameter>
+
+		<parameter name="doorThreeName" type="text" groupName="doorThreeSettings">
+			<label>Door 3 Name</label>
+			<description>Door 3: Specify a more descriptive name for the garage door.</description>
+			<default>Door 3</default>
+			<required>true</required>
+			<advanced>true</advanced>
+		</parameter>
+
 	</config-description>
 
 </config-description:config-descriptions>

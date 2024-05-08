@@ -17,6 +17,7 @@ import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +27,10 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openhab.binding.tailwind.internal.TailwindConfiguration;
+import org.openhab.binding.tailwind.internal.TailwindUnsupportedCommandTypeException;
 import org.openhab.binding.tailwind.internal.Utils.Utilites;
 //import org.openhab.binding.tailwind.internal.connector.JSONPost;
 import org.openhab.binding.tailwind.internal.connector.TailwindCommunicationException;
@@ -65,20 +68,12 @@ public class TailwindHandler extends BaseThingHandler
         implements TailwindStateChangedListener, TailwindUdpEventListener {
 
     private final Logger logger = LoggerFactory.getLogger(TailwindHandler.class);
-
     private TailwindConfiguration config = new TailwindConfiguration();
-    // private TailwindHttpResponse response = new TailwindHttpResponse();
-    // private HttpClient httpClient = new HttpClient();
-    // private HttpClient httpClient;
     private TailwindControllerData response = new TailwindControllerData();
-
     private TailwindState tailwindState = new TailwindState(this);
-
     private TailwindConnectApi tailwindApi;
-    // private TailwindState state;
     private @Nullable TailwindUdpConnector udpConnector;
     private Utilites utilities = new Utilites();
-
     private int updateStateFailures = 0;
     private Gson gson = new Gson();
 
@@ -99,17 +94,56 @@ public class TailwindHandler extends BaseThingHandler
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (CHANNEL_DOOR_1_CONTROLS_INDEX.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) {
-                // TODO: handle data refresh
+
+        if (command instanceof RefreshType) {
+            // response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
+            updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
+        }
+
+        try {
+            String cmdBody = "";
+            switch (channelUID.getId()) {
+                /**
+                 * Door 1 Channels
+                 */
+                case CHANNEL_DOOR_1_CONTROLS_STATUS:
+                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 0);
+                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                    // tailwindState.setDoorStatus(0, response.getDoorData().getDoor1().getStatus());
+                case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
+                    tailwindState.setPartialOpen(0, config.getDoorOnePartialOpen());
+                    break;
+                /**
+                 * Door 2 Channels
+                 */
+                case CHANNEL_DOOR_2_CONTROLS_STATUS:
+                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 1);
+                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                    // tailwindState.setDoorStatus(1, response.getDoorData().getDoor2().getStatus());
+                case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
+                    tailwindState.setPartialOpen(1, config.getDoorTwoPartialOpen());
+                    break;
+                /**
+                 * Door 3 Channels
+                 */
+                case CHANNEL_DOOR_3_CONTROLS_STATUS:
+                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 2);
+                    // tailwindState.setDoorStatus(2, response.getDoorData().getDoor3().getStatus());
+                case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
+                    tailwindState.setPartialOpen(2, config.getDoorThreePartialOpen());
+                    break;
+                default:
+                    throw new TailwindUnsupportedCommandTypeException();
             }
-
-            // TODO: handle command
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
+        } catch (TailwindUnsupportedCommandTypeException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Unsupported Command {} for channel {}", command.toString(), channelUID.getId());
+            }
+        } catch (TailwindCommunicationException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("TailWindAPI connection error sending command {} for channel {}", command.toString(),
+                        channelUID.getId());
+            }
         }
     }
 
@@ -142,6 +176,8 @@ public class TailwindHandler extends BaseThingHandler
             logger.debug("Start initializing handler for thing {}", getThing().getUID());
         }
 
+        // Initialize partialOpenDoorStates
+        initializePartialOpenStates();
         // Get configuration settings
         config = getConfigAs(TailwindConfiguration.class);
         // Validate configuration settings
@@ -160,20 +196,10 @@ public class TailwindHandler extends BaseThingHandler
         }
 
         /* Set up number of garage doors specified for this thing in the configuration */
-        configureZoneChannels(config);
+        configureDoorChannels(config);
 
-        /**
-         * TODO
-         * update the controller and configured door states from the response
-         * from sending this command to the controller.
-         */
+        /* Schedule job to listen for UDP messages from the TailWind controller */
         scheduler.execute(this::initializeConnection);
-        // logger.debug("Tailwind last response was: {}", response.toString());
-        /* TODO: Scheduled job to listen for UDP messages from the TailWind controller */
-        // TailwindUdpServer receiver = new TailwindUdpServer(Integer.parseInt(TAILWIND_OPENHAB_HOST_UDP_PORT));
-        // receiver.start();
-        //
-        // logger.debug("UdpServer State: {}", receiver.getState().toString());
 
         updateStatus(ThingStatus.UNKNOWN);
 
@@ -248,9 +274,10 @@ public class TailwindHandler extends BaseThingHandler
         if (config.getAuthToken().length() == 6) {
             // Check for a valid authorization token. HTTP response code should be 200 and response contains
             // {"result": "OK"} vs. {"result":"token fail"}
-            JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
-            String body = tailwindCommandString.toString();
-            response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
+            // JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
+            // String body = tailwindCommandString.toString();
+            response = sendCommand(TAILWIND_CMD_DEVICE_STATUS);
+            // response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
 
             /* TODO: Use response from OK device status set initial states for this thing */
             if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
@@ -285,40 +312,54 @@ public class TailwindHandler extends BaseThingHandler
         /**
          * Update controller with the UDP host address to receive notifications of changes to the controller
          */
-        String serverUDPReportingUrl = buildOpenHabUdpUrl();
-        if (logger.isDebugEnabled()) {
-            logger.debug("UDP server URL is: {}", serverUDPReportingUrl);
-        } // If logger enabled
-          // Update the command string map with the actual URL to use....
-        JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT_URL);
-        String urlKeyFound = tailwindCommandString.getJSONObject(TAILWIND_JSON_KEY_DATA)
-                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
-        if (urlKeyFound != null) {
-            tailwindCommandString.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
-                    .put(TAILWIND_JSON_KEY_URL, serverUDPReportingUrl);
-            String body = tailwindCommandString.toString();
-            response = tailwindApi.getTailwindControllerData(thing, config.authToken,
-                    body); /* TODO: Use response from OK device status set initial states for this thing */
-            if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                        "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
-                return false;
-
-            } // If result was OK
-        } else {
+        response = sendCommand(buildStatusReportCommand());
+        if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
             if (logger.isDebugEnabled()) {
-                logger.debug("Key for UDP server URL is missing from the body string used to set the URL: {}",
-                        TAILWIND_CMD_SET_STATUS_REPORT_URL);
-            } // If logger enabled
-        } // If urlKeyFound is not null
+                logger.debug("Command to set status report URL failed with result code: {}", response.getResult());
+            }
+            return false;
+        } // If command response result was not "OK"
 
-        tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
-        String body = tailwindCommandString.toString();
-        response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
-        // TailwindControllerData tailwindControllerData = gson.fromJson(response, TailwindControllerData.class);
+        /**
+         * Check for duplicate door names
+         */
+        String doorResult = duplicateNameFound(config);
+        if (doorResult != "") {
+            logger.debug("Duplicate door name found. The value '{}' was used more than once!", doorResult);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "Duplicate door name found. The value '" + doorResult + "' was used more than once!");
+            return false;
+        } // If duplicate doorName was found
 
-        updateTailwindDetails(response);
+        logger.debug("Tailwind door open close command string: {}", TAILWIND_CMD_DOOR_OPEN_CLOSE);
+
+        updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
         return true;
+    }
+
+    /**
+     * Method to send a command to the TailWind controller
+     *
+     * @param commandString - JSON formated command string
+     * @return TailwindControllerData object response from the TailWind controller
+     */
+    private TailwindControllerData sendCommand(String commandString) {
+        JSONObject tailwindCommandString = new JSONObject(commandString);
+        String body = tailwindCommandString.toString();
+        try {
+            response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
+        } catch (TailwindCommunicationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+            logger.debug("Get Status request was: {}", response.getResult());
+        } else {
+            logger.debug("Get Status request failed with result: {}", response.getResult());
+        }
+        return response;
     }
 
     /**
@@ -345,37 +386,86 @@ public class TailwindHandler extends BaseThingHandler
         super.dispose();
     }
 
-    private void configureZoneChannels(TailwindConfiguration config) {
-        logger.debug("Configuring garage door groups/channels");
-        Integer doorCount = config.getDoorCount();
-        // current door channels
-        ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
+    /**
+     * Method to configure the door group/channels associated with this TailWind device
+     * <ul>
+     * <li>Get current list of channels and remove existing door channels</li>
+     * <li>Use configuration "door...Name" to build labels for door channels</li>
+     * <li>Use configuration "doorCount" to build list of door group/channels to add</li>
+     * <li>Update TailWind thing with door group/channels to be added</li>
+     * </ul>
+     *
+     * @param config - TailWind thing configuration settings
+     */
+    private void configureDoorChannels(TailwindConfiguration config) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Configuring garage door groups/channels");
+        }
         boolean channelsUpdated = false;
-        // construct a set with the existing channel type UIDs, to quickly check
-        Set<String> currentChannels = new HashSet<>();
-        channels.forEach(channel -> currentChannels.add(channel.getUID().getId()));
-        // Make sure list of channels is clean by removing and adding them
+        // Get a list of current configured channels
+        ArrayList<Channel> channels = new ArrayList<>(this.getThing().getChannels());
+
+        // Construct a backup of the existing channel type UIDs prior to making changes
+        Set<String> currentChannelsBackup = new HashSet<>();
+        channels.forEach(channel -> currentChannelsBackup.add(channel.getUID().getId()));
+
+        // Clear out the door channels from the thing, keep remaining channels
+        ArrayList<Channel> channelsToKeep = new ArrayList<Channel>();
+        for (Channel channel : channels) {
+            String cGroup = channel.getUID().getGroupId();
+            if (cGroup != null && cGroup.equals(CHANNEL_GROUP_CONTROLLER)) {
+                channelsToKeep.add(channel);
+            } // If channel belongs to controller group
+        } // Loop to find controller group channels
+
+        /*
+         * Make sure the list of channels is clean by removing and
+         * adding just the controller channels
+         */
         editThing().withoutChannels(channels);
-        editThing().withChannels(channels);
-        // Initialize empty List to hold channels to be removed
-        Set<Entry<String, ChannelTypeUID>> channelsToRemove = new HashSet<>();
-        // Process of adding or removing garage doors based on number set in the thing configuration
-        if (doorCount > 1) {
-            // add channels for Door 2
-            List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>(DOOR_2_CHANNEL_TYPES.entrySet());
-            if (doorCount > 2) {
-                // add channels for door 3
+        editThing().withChannels(channelsToKeep);
+        channels.clear();
+        channels.addAll(channelsToKeep);
+
+        // Create a list to hold door channels to be added to the TailWind thing
+        List<Entry<String, ChannelTypeUID>> channelsToAdd = new ArrayList<>();
+
+        /*
+         * Create a list of channel item labels using the garage door names from the
+         * TailWind thing configuration
+         */
+        Map<String, @Nullable String> channelItemLabelsNew = buildChannelLabels();
+
+        // Add garage doors channels based on doorCount set in the TailWind configuration
+        Integer doorCount = config.getDoorCount();
+        switch (doorCount) {
+            case 1: // 1 door
+                channelsToAdd.addAll(DOOR_1_CHANNEL_TYPES.entrySet());
+                break;
+            case 2: // 2 doors
+                channelsToAdd.addAll(DOOR_1_CHANNEL_TYPES.entrySet());
+                channelsToAdd.addAll(DOOR_2_CHANNEL_TYPES.entrySet());
+                break;
+            case 3: // 3 doors
+                channelsToAdd.addAll(DOOR_1_CHANNEL_TYPES.entrySet());
+                channelsToAdd.addAll(DOOR_2_CHANNEL_TYPES.entrySet());
                 channelsToAdd.addAll(DOOR_3_CHANNEL_TYPES.entrySet());
-            } else {
-                channelsToRemove.addAll(DOOR_3_CHANNEL_TYPES.entrySet());
-            }
-            // filter out the already existing channels
-            channelsToAdd.removeIf(c -> currentChannels.contains(c.getKey()));
-            // add the channels that were not yet added
+                break;
+        }
+
+        /*
+         * Process the list of channels to add. Create a new channel using the
+         * channel UID from the channel entry in the list. Retrieve the channel type and label
+         * using the channel Id (i.e doorOne#Index) from the lists:
+         * -> CHANNEL_ITEM_TYPES - defines type (Number, String..) for each of the door group channels
+         * -> channelItemLabelsNew - holds labels created using the doorName for each of door group channels
+         */
+        if (doorCount >= 1) {
+            // Add the door channels to the TailWind thing
             if (!channelsToAdd.isEmpty()) {
                 for (Entry<String, ChannelTypeUID> entry : channelsToAdd) {
                     String itemType = CHANNEL_ITEM_TYPES.get(entry.getKey());
-                    String itemLabel = CHANNEL_ITEM_LABELS.get(entry.getKey());
+                    String itemLabel = channelItemLabelsNew.get(entry.getKey());
                     if (itemLabel != null) {
                         Channel channel = ChannelBuilder
                                 .create(new ChannelUID(this.getThing().getUID(), entry.getKey()), itemType)
@@ -392,32 +482,8 @@ public class TailwindHandler extends BaseThingHandler
                     logger.debug("No door channels have been added");
                 }
             }
-        } else {
-            channelsToRemove.addAll(DOOR_2_CHANNEL_TYPES.entrySet());
-            channelsToRemove.addAll(DOOR_3_CHANNEL_TYPES.entrySet());
         }
-        // filter out the non-existing channels
-        channelsToRemove.removeIf(c -> !currentChannels.contains(c.getKey()));
-        // remove the channels that were not yet added
-        if (!channelsToRemove.isEmpty()) {
-            for (Entry<String, ChannelTypeUID> entry : channelsToRemove) {
-                if (channels.removeIf(c -> (entry.getKey()).equals(c.getUID().getId()))) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Removed channel {}", entry.getKey());
-                    }
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Could NOT remove channel {}", entry.getKey());
-                    }
-                }
-            }
-            channelsUpdated = true;
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No door channels have been removed");
-            }
-        }
-        // update Thing if channels changed
+        // Update the TailWind thing with the correct number of doors/channels
         if (channelsUpdated) {
             updateThing(editThing().withChannels(channels).build());
         }
@@ -470,7 +536,9 @@ public class TailwindHandler extends BaseThingHandler
     }
 
     private void updateTailwindDetails(TailwindControllerData tailwindControllerData) {
-
+        //
+        // TODO: Check notify event message in response for items to update
+        //
         // for (TailwindControllerData channelState : tailwindControllerData) {
         for (Channel channel : getThing().getChannels()) {
             ChannelUID channelUID = channel.getUID();
@@ -479,11 +547,10 @@ public class TailwindHandler extends BaseThingHandler
                 updateTailwindChannel(channelUID, tailwindControllerData);
             } // end if channel is linked, update its state
         }
-        // }
     }
 
     private void updateTailwindChannel(ChannelUID channelUID, TailwindControllerData channelState) {
-        logger.debug("Update requested for channel: {}, channelState: {}", channelUID, channelState);
+        // logger.debug("Update requested for channel: {}, channelState: {}", channelUID, channelState);
         String channelGroupId = channelUID.getGroupId();
         if (channelGroupId == null) {
             logger.error("Channel group Id is null, unable to update TailWind controller channel");
@@ -497,6 +564,9 @@ public class TailwindHandler extends BaseThingHandler
                     break;
                 case CHANNEL_GROUP_DOOR_TWO:
                     updateTailwindDoorTwoStates(channelUID, channelState);
+                    break;
+                case CHANNEL_GROUP_DOOR_THREE:
+                    updateTailwindDoorThreeStates(channelUID, channelState);
                     break;
             }
         }
@@ -554,6 +624,8 @@ public class TailwindHandler extends BaseThingHandler
             default:
                 break;
         }
+        // Always update the partialOpen setting from the configuration settings
+        tailwindState.setPartialOpen(doorIndex, config.getDoorOnePartialOpen());
     }
 
     public void updateTailwindDoorTwoStates(ChannelUID channelUID, TailwindControllerData channelState) {
@@ -577,6 +649,33 @@ public class TailwindHandler extends BaseThingHandler
             default:
                 break;
         }
+        // Always update the partialOpen setting from the configuration settings
+        tailwindState.setPartialOpen(doorIndex, config.getDoorTwoPartialOpen());
+    }
+
+    public void updateTailwindDoorThreeStates(ChannelUID channelUID, TailwindControllerData channelState) {
+        String channelId = channelUID.getIdWithoutGroup();
+        String channelGroup = channelUID.getGroupId();
+        String switchCase = channelGroup + "#" + channelId;
+        int doorIndex = (int) channelState.getDoorData().getDoor3().getIndex();
+        switch (switchCase) {
+            case CHANNEL_DOOR_3_CONTROLS_INDEX:
+                tailwindState.setDoorIndex(doorIndex, channelState.getDoorData().getDoor3().getIndex());
+                break;
+            case CHANNEL_DOOR_3_CONTROLS_STATUS:
+                tailwindState.setDoorStatus(doorIndex, channelState.getDoorData().getDoor3().getStatus());
+                break;
+            case CHANNEL_DOOR_3_CONTROLS_LOCKUP:
+                tailwindState.setLockup(doorIndex, channelState.getDoorData().getDoor3().getLockup());
+                break;
+            case CHANNEL_DOOR_3_CONTROLS_DISABLED:
+                tailwindState.setDisabled(doorIndex, channelState.getDoorData().getDoor3().getDisabled());
+                break;
+            default:
+                break;
+        }
+        // Always update the partialOpen setting from the configuration settings
+        tailwindState.setPartialOpen(doorIndex, config.getDoorThreePartialOpen());
     }
 
     @Override
@@ -606,5 +705,123 @@ public class TailwindHandler extends BaseThingHandler
         // } else {
         // logger.debug("Tried to update State but channel {} is not linked!", channelID);
         // }
+    }
+
+    private String duplicateNameFound(TailwindConfiguration config) {
+        String result = "";
+        List<String> doorNames = new ArrayList<String>();
+        for (int i = 1; i <= 3; i++) {
+            switch (i) {
+                case 1:
+                    doorNames.add(config.getDoorOneName());
+                    break;
+                case 2:
+                    doorNames.add(config.getDoorTwoName());
+                    break;
+                case 3:
+                    doorNames.add(config.getDoorThreeName());
+                    break;
+            }
+        } // For loop to build doorNames set
+          // Find the value that is duplicate
+        Object[] nameArray = doorNames.toArray();
+        int length = doorNames.size();
+        for (int i = 0; i < length - 1; i++) {
+            for (int j = i + 1; j < length; j++) {
+                // Check if two string elements are equal and not the same element.
+                if ((nameArray[i].equals(nameArray[j])) && (i != j)) {
+                    // If a duplicate is found, print the duplicate element.
+                    result = nameArray[j].toString();
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Map<String, @Nullable String> buildChannelLabels() {
+        Map<String, @Nullable String> channelLabels = new HashMap<>();
+        // Set door labels based on key value containing Id for each door
+        String doorName = "";
+        for (Map.Entry<String, String> entry : CHANNEL_ITEM_LABELS.entrySet()) {
+            String key = entry.getKey();
+            if (key.contains("doorOne")) {
+                doorName = config.getDoorOneName();
+            } else if (key.contains("doorTwo")) {
+                doorName = config.getDoorTwoName();
+            } else if (key.contains("doorThree")) {
+                doorName = config.getDoorThreeName();
+            } else {
+                // TODO: handle key name not found.
+                doorName = "";
+            }
+            if (!doorName.isBlank()) {
+                channelLabels.put(entry.getKey(), String.join(" ", entry.getValue(), doorName));
+            } // If the doorName was not blank
+        }
+
+        return channelLabels;
+    }
+
+    private String buildStatusReportCommand() throws JSONException, IOException {
+        JSONObject cmdToSetStatusReportURL = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT);
+        String urlKeyFound = cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA)
+                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
+        if (urlKeyFound != null) {
+            cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+                    .put(TAILWIND_JSON_KEY_URL, buildOpenHabUdpUrl());
+        }
+        return cmdToSetStatusReportURL.toString();
+    }
+
+    /**
+     * @param command - String value of "open" or "close" the door
+     * @param index - Integer door index value (0=Door 1, 1=Door 2, 2=Door 3)
+     * @return Body string for command to send to TailWind controller
+     */
+    private String buildDoorOpenCloseCommand(String command, long index) {
+        JSONObject cmdToOpenOrClose = new JSONObject(TAILWIND_CMD_DOOR_OPEN_OR_CLOSE);
+        String cmdKeyFound = cmdToOpenOrClose.getJSONObject(TAILWIND_JSON_KEY_DATA)
+                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_CMD);
+        if (cmdKeyFound != null) {
+            if (command.equalsIgnoreCase(TAILWIND_JSON_VALUE_CMD_PARTIAL_TIME)) {
+                cmdToOpenOrClose.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+                        .put(TAILWIND_JSON_KEY_DOOR_IDX, index).put(TAILWIND_JSON_KEY_CMD, TAILWIND_JSON_VALUE_CMD_OPEN)
+                        .put(TAILWIND_JSON_KEY_PARTIAL, getPartialOpenValue((int) index));
+            } else {
+                cmdToOpenOrClose.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+                        .put(TAILWIND_JSON_KEY_DOOR_IDX, index).put(TAILWIND_JSON_KEY_CMD, command);
+            }
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Command to open or close door was not formatted correctly for door index: {}, command: {}",
+                        index, cmdToOpenOrClose);
+            }
+        }
+
+        return cmdToOpenOrClose.toString();
+    }
+
+    private Long getPartialOpenValue(Integer doorIndex) {
+        Long partialOpenValue = 0l;
+        switch (doorIndex) {
+            case 0:
+                partialOpenValue = utilities.getSecondsToMilliseconds(config.getDoorOnePartialOpen());
+                break;
+            case 1:
+                partialOpenValue = utilities.getSecondsToMilliseconds(config.getDoorTwoPartialOpen());
+                break;
+            case 2:
+                partialOpenValue = utilities.getSecondsToMilliseconds(config.getDoorThreePartialOpen());
+                break;
+        }
+        return partialOpenValue;
+    }
+
+    private void initializePartialOpenStates() {
+        for (int doorIndex = 0; doorIndex <= 2; doorIndex++) {
+            tailwindState.setPartialOpen(doorIndex, 0);
+        }
     }
 }

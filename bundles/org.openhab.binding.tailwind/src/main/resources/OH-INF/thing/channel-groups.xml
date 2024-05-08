@@ -7,13 +7,14 @@
 	<!-- Channel Groups -->
 	<channel-group-type id="tailwindController">
 		<label>TailWind Controller</label>
+		<description>Attributes associated with the TailWind controller.</description>
 		<channels>
 			<channel id="doorNum" typeId="doorNum" />
 			<channel id="nightModeEnabled" typeId="nightModeEnabled" />
-			<channel typeId="ledBrightness" id="ledBrightness" />
-			<channel typeId="routerRssi" id="routerRssi" />
-			<channel typeId="productID" id="productID" />
-			<channel typeId="deviceID" id="deviceID" />
+			<channel id="ledBrightness" typeId="ledBrightness" />
+			<channel id="routerRssi" typeId="system.signal-strength" />
+			<channel id="productID" typeId="productID" />
+			<channel id="deviceID" typeId="deviceID" />
 		</channels>
 	</channel-group-type>
 
@@ -22,6 +23,7 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
 		</channels>
@@ -32,6 +34,7 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
 		</channels>
@@ -43,9 +46,11 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
 		</channels>
 	</channel-group-type>
+	
 
 </thing:thing-descriptions>

@@ -71,4 +71,15 @@ public class Utilites {
             return server;
         }
     }
+
+    /**
+     * Method to convert a float value in seconds to milliseconds and return
+     * as a string value.
+     *
+     * @param seconds - value in seconds
+     * @return - seconds converted to milliseconds as a string value
+     */
+    public long getSecondsToMilliseconds(float seconds) {
+        return (long) (seconds * 1000);
+    }
 }

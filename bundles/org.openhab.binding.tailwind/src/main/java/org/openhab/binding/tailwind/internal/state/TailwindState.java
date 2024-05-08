@@ -44,18 +44,21 @@ public class TailwindState {
     // ----- Door One Specific Channels -----
     private State doorOneIndex = DecimalType.valueOf("99");
     private State doorOneStatus = StringType.EMPTY;
+    private State doorOnePartialOpen = UnDefType.UNDEF;
     private State doorOneLockup = DecimalType.valueOf("99");
     private State doorOneDisabled = DecimalType.valueOf("99");
 
     // ----- Door Two Specific Channels -----
     private State doorTwoIndex = DecimalType.valueOf("99");
     private State doorTwoStatus = StringType.EMPTY;
+    private State doorTwoPartialOpen = DecimalType.valueOf("2.5");
     private State doorTwoLockup = DecimalType.valueOf("99");
     private State doorTwoDisabled = DecimalType.valueOf("99");
 
     // ----- Door Three Specific Channels -----
     private State doorThreeIndex = DecimalType.valueOf("99");
     private State doorThreeStatus = StringType.EMPTY;
+    private State doorThreePartialOpen = DecimalType.valueOf("2.5");
     private State doorThreeLockup = DecimalType.valueOf("99");
     private State doorThreeDisabled = DecimalType.valueOf("99");
 
@@ -109,6 +112,8 @@ public class TailwindState {
                 return doorOneIndex;
             case CHANNEL_DOOR_1_CONTROLS_STATUS:
                 return doorOneStatus;
+            case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
+                return doorOnePartialOpen;
             case CHANNEL_DOOR_1_CONTROLS_LOCKUP:
                 return doorOneLockup;
             case CHANNEL_DOOR_1_CONTROLS_DISABLED:
@@ -120,6 +125,8 @@ public class TailwindState {
                 return doorTwoIndex;
             case CHANNEL_DOOR_2_CONTROLS_STATUS:
                 return doorTwoStatus;
+            case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
+                return doorTwoPartialOpen;
             case CHANNEL_DOOR_2_CONTROLS_LOCKUP:
                 return doorTwoLockup;
             case CHANNEL_DOOR_2_CONTROLS_DISABLED:
@@ -131,6 +138,8 @@ public class TailwindState {
                 return doorThreeIndex;
             case CHANNEL_DOOR_3_CONTROLS_STATUS:
                 return doorThreeStatus;
+            case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
+                return doorThreePartialOpen;
             case CHANNEL_DOOR_3_CONTROLS_LOCKUP:
                 return doorThreeLockup;
             case CHANNEL_DOOR_3_CONTROLS_DISABLED:
@@ -302,6 +311,38 @@ public class TailwindState {
                 break;
         }
     } // If door (index) status changed
+
+    /**
+     * Method to set the Door partial open state for the TailWind controller
+     *
+     * @param index
+     * @param command
+     */
+    public void setPartialOpen(Integer index, float partialOpenSeconds) {
+        DecimalType newVal = new DecimalType(partialOpenSeconds);
+        switch (index) {
+            case 0:
+                if (!newVal.equals(this.doorOnePartialOpen)) {
+                    this.doorOnePartialOpen = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN, this.doorOnePartialOpen);
+                }
+                break;
+            case 1:
+                if (!newVal.equals(this.doorTwoPartialOpen)) {
+                    this.doorTwoPartialOpen = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN, this.doorTwoPartialOpen);
+                }
+                break;
+            case 2:
+                if (!newVal.equals(this.doorThreePartialOpen)) {
+                    this.doorThreePartialOpen = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN, this.doorThreePartialOpen);
+                }
+                break;
+            default:
+                break;
+        }
+    } // If door (index) partial open changed
 
     /**
      * Method to set the Door locked state for the TailWind controller

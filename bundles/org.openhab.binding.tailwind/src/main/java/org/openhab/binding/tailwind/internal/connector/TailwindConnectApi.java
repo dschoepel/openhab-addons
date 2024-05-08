@@ -142,9 +142,9 @@ public class TailwindConnectApi extends TailwindApi {
      */
     private void checkForError(ContentResponse response, int statusCode) throws TailwindCommunicationException {
         if (statusCode >= 200 && statusCode < 300) {
+            // TODO: Check for result OK or error message...
             return;
         }
-
         switch (statusCode) {
             case HttpStatus.NOT_FOUND_404:
                 throw new TailwindCommunicationException(statusCode, "Target '" + response.getRequest().getURI()

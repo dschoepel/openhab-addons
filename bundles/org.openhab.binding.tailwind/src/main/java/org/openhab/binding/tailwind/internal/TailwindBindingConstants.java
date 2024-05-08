@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
@@ -65,6 +64,7 @@ public class TailwindBindingConstants {
 
     public static final String CHANNEL_DOOR_1_CONTROLS_INDEX = "doorOne#index";
     public static final String CHANNEL_DOOR_1_CONTROLS_STATUS = "doorOne#status";
+    public static final String CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN = "doorOne#partialOpen";
     public static final String CHANNEL_DOOR_1_CONTROLS_LOCKUP = "doorOne#lockup";
     public static final String CHANNEL_DOOR_1_CONTROLS_DISABLED = "doorOne#disabled";
 
@@ -73,6 +73,7 @@ public class TailwindBindingConstants {
 
     public static final String CHANNEL_DOOR_2_CONTROLS_INDEX = "doorTwo#index";
     public static final String CHANNEL_DOOR_2_CONTROLS_STATUS = "doorTwo#status";
+    public static final String CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN = "doorTwo#partialOpen";
     public static final String CHANNEL_DOOR_2_CONTROLS_LOCKUP = "doorTwo#lockup";
     public static final String CHANNEL_DOOR_2_CONTROLS_DISABLED = "doorTwo#disabled";
 
@@ -81,14 +82,26 @@ public class TailwindBindingConstants {
 
     public static final String CHANNEL_DOOR_3_CONTROLS_INDEX = "doorThree#index";
     public static final String CHANNEL_DOOR_3_CONTROLS_STATUS = "doorThree#status";
+    public static final String CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN = "doorThree#partialOpen";
     public static final String CHANNEL_DOOR_3_CONTROLS_LOCKUP = "doorThree#lockup";
     public static final String CHANNEL_DOOR_3_CONTROLS_DISABLED = "doorThree#disabled";
+
+    // Map of Door 2 Channel Type UIDs (to be added to Thing later when needed)
+    public static final Map<String, ChannelTypeUID> DOOR_1_CHANNEL_TYPES = new LinkedHashMap<>();
+    static {
+        DOOR_1_CHANNEL_TYPES.put(CHANNEL_DOOR_1_CONTROLS_INDEX, new ChannelTypeUID(BINDING_ID, "index"));
+        DOOR_1_CHANNEL_TYPES.put(CHANNEL_DOOR_1_CONTROLS_STATUS, new ChannelTypeUID(BINDING_ID, "status"));
+        DOOR_1_CHANNEL_TYPES.put(CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN, new ChannelTypeUID(BINDING_ID, "partialOpen"));
+        DOOR_1_CHANNEL_TYPES.put(CHANNEL_DOOR_1_CONTROLS_LOCKUP, new ChannelTypeUID(BINDING_ID, "lockup"));
+        DOOR_1_CHANNEL_TYPES.put(CHANNEL_DOOR_1_CONTROLS_DISABLED, new ChannelTypeUID(BINDING_ID, "disabled"));
+    }
 
     // Map of Door 2 Channel Type UIDs (to be added to Thing later when needed)
     public static final Map<String, ChannelTypeUID> DOOR_2_CHANNEL_TYPES = new LinkedHashMap<>();
     static {
         DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_INDEX, new ChannelTypeUID(BINDING_ID, "index"));
         DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_STATUS, new ChannelTypeUID(BINDING_ID, "status"));
+        DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN, new ChannelTypeUID(BINDING_ID, "partialOpen"));
         DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, new ChannelTypeUID(BINDING_ID, "lockup"));
         DOOR_2_CHANNEL_TYPES.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, new ChannelTypeUID(BINDING_ID, "disabled"));
     }
@@ -98,6 +111,7 @@ public class TailwindBindingConstants {
     static {
         DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_INDEX, new ChannelTypeUID(BINDING_ID, "index"));
         DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_STATUS, new ChannelTypeUID(BINDING_ID, "status"));
+        DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN, new ChannelTypeUID(BINDING_ID, "partialOpen"));
         DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, new ChannelTypeUID(BINDING_ID, "lockup"));
         DOOR_3_CHANNEL_TYPES.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, new ChannelTypeUID(BINDING_ID, "disabled"));
     }
@@ -108,13 +122,21 @@ public class TailwindBindingConstants {
      */
     public static final Map<String, String> CHANNEL_ITEM_TYPES = new HashMap<>();
     static {
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_1_CONTROLS_INDEX, "Number");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_1_CONTROLS_STATUS, "String");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN, "Number");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_1_CONTROLS_LOCKUP, "Number");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_1_CONTROLS_DISABLED, "Number");
+
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_2_CONTROLS_INDEX, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_2_CONTROLS_STATUS, "String");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, "Number");
 
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_3_CONTROLS_INDEX, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_3_CONTROLS_STATUS, "String");
+        CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, "Number");
         CHANNEL_ITEM_TYPES.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, "Number");
     }
@@ -122,17 +144,25 @@ public class TailwindBindingConstants {
     /**
      * Static mapping of ChannelType-to-ItemLables
      */
-    public static final Map<String, @Nullable String> CHANNEL_ITEM_LABELS = new HashMap<>();
+    public static final Map<String, String> CHANNEL_ITEM_LABELS = new HashMap<>();
     static {
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_INDEX, "Index Door 2");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_STATUS, "Status Door 2");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, "Locked Up Status Door 2");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, "Is Configured Door 2");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_1_CONTROLS_INDEX, "Index");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_1_CONTROLS_STATUS, "Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN, "Partial Open Time");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_1_CONTROLS_LOCKUP, "Locked Up Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_1_CONTROLS_DISABLED, "Is Configured");
 
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_INDEX, "Index Door 3");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_STATUS, "Status Door 3");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, "Locked Up Status Door 3");
-        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, "Is Configured Door 3");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_INDEX, "Index");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_STATUS, "Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN, "Partial Open Time");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, "Locked Up Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, "Is Configured");
+
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_INDEX, "Index");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_STATUS, "Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN, "Partial Open Time");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, "Locked Up Status");
+        CHANNEL_ITEM_LABELS.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, "Is Configured");
     }
 
     /**
@@ -147,6 +177,7 @@ public class TailwindBindingConstants {
     public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
     public static final String NOT_FOUND_ERROR = "Not_Found";
     public static final String JSON_RESPONSE_RESULT_OK = "OK";
+    public static final double PARTIAL_OPEN_DEFAULT_SETTING = 2.5d;
     /** Thing is set OFFLINE after so many communication errors. */
     public static final int ATTEMPTS_WITH_COMMUNICATION_ERRORS = 3;
     /** Name for thread running UDP Connection */
@@ -169,6 +200,7 @@ public class TailwindBindingConstants {
     public static String TAILWIND_JSON_KEY_ENABLE = "enable";
     public static String TAILWIND_JSON_KEY_DOOR_IDX = "door_idx";
     public static String TAILWIND_JSON_KEY_CMD = "cmd";
+    public static String TAILWIND_JSON_KEY_PARTIAL = "partial_time";
     public static String TAILWIND_JSON_KEY_BRIGHTNESS = "brightness";
 
     /* ------- Values for JSON keys ----------------- */
@@ -189,23 +221,46 @@ public class TailwindBindingConstants {
     public static int TAILWIND_JSON_VALUE_ENABLE_OFF = 0;
     public static String TAILWIND_JSON_VALUE_CMD_OPEN = "open";
     public static String TAILWIND_JSON_VALUE_CMD_CLOSE = "close";
+    public static String TAILWIND_JSON_VALUE_CMD_PARTIAL_TIME = "partial";
+    public static int TAILWIND_JSON_VALUE_DOOR_ONE_INDEX = 0;
 
-    public static String TAILWIND_CMD_DEVICE_STATUS_1 = "{\"version\": \"0.1\",\"data\": {\"type\": \"get\",\"name\": \"dev_st\"}}";
-    public static String TAILWIND_CMD_SET_STATUS_REPORT = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"notify_url\",\"value\": {\"url\": \"http://192.168.1.1:8888/report\",\"proto\": \"http\",\"enable\": 1}}}";
-    public static String TAILWIND_CMD_DOOR_OPEN_OR_CLOSE = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"door_op\",\"value\": {\"door_idx\": 1,\"cmd\": \"open\",}}}";
+    public static String TAILWIND_CMD_DEVICE_STATUS = "{\"version\": \"0.1\",\"data\": {\"type\": \"get\",\"name\": \"dev_st\"}}";
+    public static String TAILWIND_CMD_SET_STATUS_REPORT = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"notify_url\",\"value\": {\"url\": \"http://192.168.1.1:8888/report\",\"proto\": \"udp\",\"enable\": 1}}}";
+    public static String TAILWIND_CMD_DOOR_OPEN_OR_CLOSE = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"door_op\",\"value\": {\"door_idx\": 0,\"cmd\": \"open\",}}}";
     public static String TAILWIND_CMD_SET_LED_BRIGHTNESS = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"status_led\",\"value\": {\"brightness\": 100}}}";
     public static String TAILWIND_CMD_IDENTIFY_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"identify\"}}";
     public static String TAILWIND_CMD_REBOOT_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"reboot\"}}";
 
-    public static final Map<String, Object> TAILWIND_CMD_DEVICE_STATUS = new LinkedHashMap<>();
+    // public static final Map<String, Object> TAILWIND_CMD_DEVICE_STATUS = new LinkedHashMap<>();
+    // static {
+    // TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
+    // /*---- Nested Data object ------------*/
+    // Map<String, Object> TAILWIND_CMD_DEVICE_STATUS_DATA = new LinkedHashMap<String, Object>();
+    // TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_GET);
+    // TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DEV_ST);
+    // /*---- Status JSON object with nested data object ------------*/
+    // TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_STATUS_DATA);
+    // }
+
+    public static final Map<String, Object> TAILWIND_CMD_DOOR_OPEN_CLOSE = new LinkedHashMap<>();
     static {
-        TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
+        TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_PRODUCT, TAILWIND_JSON_VALUE_PRODUCT);
+        TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
         /*---- Nested Data object ------------*/
-        Map<String, Object> TAILWIND_CMD_DEVICE_STATUS_DATA = new LinkedHashMap<String, Object>();
-        TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_GET);
-        TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DEV_ST);
+        Map<String, Object> TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA = new LinkedHashMap<String, Object>();
+        TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_SET);
+        TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DOOR_OP);
+
+        /*---- Nested Value object ------------*/
+        Map<String, Object> TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE = new LinkedHashMap<String, Object>();
+        TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE.put(TAILWIND_JSON_KEY_DOOR_IDX, TAILWIND_JSON_VALUE_DOOR_ONE_INDEX);
+        TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE.put(TAILWIND_JSON_KEY_CMD, TAILWIND_JSON_VALUE_CMD_OPEN);
+
+        /*---- Status JSON data object with nested value object ------------*/
+        TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_VALUE, TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE);
         /*---- Status JSON object with nested data object ------------*/
-        TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_STATUS_DATA);
+        TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA);
+
     }
 
     public static final Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_URL = new LinkedHashMap<>();

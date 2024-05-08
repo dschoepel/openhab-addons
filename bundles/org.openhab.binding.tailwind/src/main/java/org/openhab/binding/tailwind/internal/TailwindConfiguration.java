@@ -33,6 +33,36 @@ public class TailwindConfiguration {
     public String authToken = ""; // token from TailWind mobile application
 
     /**
+     * Door one partial open time in seconds
+     */
+    public float doorOnePartialOpen = 2.5f; // 2.5 is default (can be 0.5-15)
+
+    /**
+     * Door one name - allows user to provide a more meaningful name
+     */
+    public String doorOneName = "Door 1"; // Door 1 is default (must not be blank or duplicate)
+
+    /**
+     * Door one partial open time in seconds
+     */
+    public float doorTwoPartialOpen = 2.5f; // 2.5 is default (can be 0.5-15)
+
+    /**
+     * Door one name - allows user to provide a more meaningful name
+     */
+    public String doorTwoName = "Door 2"; // Door 1 is default (must not be blank or duplicate)
+
+    /**
+     * Door one partial open time in seconds
+     */
+    public float doorThreePartialOpen = 2.5f; // 2.5 is default (can be 0.5-15)
+
+    /**
+     * Door one name - allows user to provide a more meaningful name
+     */
+    public String doorThreeName = "Door 3"; // Door 1 is default (must not be blank or duplicate)
+
+    /**
      * @return doorCount to be used to dynamically configure the door channels
      */
     public int getDoorCount() {
@@ -44,6 +74,48 @@ public class TailwindConfiguration {
      */
     public String getAuthToken() {
         return authToken;
+    }
+
+    /**
+     * @return the doorOnePartialOpen
+     */
+    public float getDoorOnePartialOpen() {
+        return doorOnePartialOpen;
+    }
+
+    /**
+     * @return the doorOneName
+     */
+    public String getDoorOneName() {
+        return doorOneName;
+    }
+
+    /**
+     * @return the doorTwoPartialOpen
+     */
+    public float getDoorTwoPartialOpen() {
+        return doorTwoPartialOpen;
+    }
+
+    /**
+     * @return the doorTwoName
+     */
+    public String getDoorTwoName() {
+        return doorTwoName;
+    }
+
+    /**
+     * @return the doorThreePartialOpen
+     */
+    public float getDoorThreePartialOpen() {
+        return doorThreePartialOpen;
+    }
+
+    /**
+     * @return the doorThreeName
+     */
+    public String getDoorThreeName() {
+        return doorThreeName;
     }
 
     @Override
