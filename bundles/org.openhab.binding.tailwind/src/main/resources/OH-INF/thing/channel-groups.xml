@@ -23,6 +23,7 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="openClose" typeId="openClose" />
 			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
@@ -34,6 +35,7 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="openClose" typeId="openClose" />
 			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
@@ -46,11 +48,12 @@
 		<channels>
 			<channel id="index" typeId="index" />
 			<channel id="status" typeId="status" />
+			<channel id="openClose" typeId="openClose" />
 			<channel id="partialOpen" typeId="partialOpen" />
 			<channel id="lockup" typeId="lockup" />
 			<channel id="disabled" typeId="disabled" />
 		</channels>
 	</channel-group-type>
-	
+
 
 </thing:thing-descriptions>

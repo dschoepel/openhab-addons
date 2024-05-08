@@ -1,5 +1,7 @@
 package org.openhab.binding.tailwind.internal.dto;
 
+import java.io.Serializable;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -8,7 +10,12 @@ import com.google.gson.annotations.SerializedName;
  * @author dschoepel - Initial contribution
  *
  */
-public class TailwindControllerData {
+public class TailwindControllerData implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
     /* --------- Controller information follows, then door data ------------------ */
     @SerializedName("result")
     private String result; // Result status "OK", "xxxx fail"

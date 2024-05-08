@@ -107,9 +107,11 @@ public class TailwindHandler extends BaseThingHandler
                  * Door 1 Channels
                  */
                 case CHANNEL_DOOR_1_CONTROLS_STATUS:
+                    tailwindState.setDoorStatus(0, response.getDoorData().getDoor1().getStatus());
+                case CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE:
                     cmdBody = buildDoorOpenCloseCommand(command.toString(), 0);
                     response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
-                    // tailwindState.setDoorStatus(0, response.getDoorData().getDoor1().getStatus());
+                    tailwindState.setDoorOpenClose(0, command.toString());
                 case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
                     tailwindState.setPartialOpen(0, config.getDoorOnePartialOpen());
                     break;
@@ -117,9 +119,11 @@ public class TailwindHandler extends BaseThingHandler
                  * Door 2 Channels
                  */
                 case CHANNEL_DOOR_2_CONTROLS_STATUS:
+                    tailwindState.setDoorStatus(1, response.getDoorData().getDoor2().getStatus());
+                case CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE:
                     cmdBody = buildDoorOpenCloseCommand(command.toString(), 1);
                     response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
-                    // tailwindState.setDoorStatus(1, response.getDoorData().getDoor2().getStatus());
+                    tailwindState.setDoorOpenClose(1, command.toString());
                 case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
                     tailwindState.setPartialOpen(1, config.getDoorTwoPartialOpen());
                     break;
@@ -127,8 +131,11 @@ public class TailwindHandler extends BaseThingHandler
                  * Door 3 Channels
                  */
                 case CHANNEL_DOOR_3_CONTROLS_STATUS:
+                    tailwindState.setDoorStatus(2, response.getDoorData().getDoor3().getStatus());
+                case CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE:
                     cmdBody = buildDoorOpenCloseCommand(command.toString(), 2);
-                    // tailwindState.setDoorStatus(2, response.getDoorData().getDoor3().getStatus());
+                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                    tailwindState.setDoorOpenClose(2, command.toString());
                 case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
                     tailwindState.setPartialOpen(2, config.getDoorThreePartialOpen());
                     break;
@@ -274,10 +281,7 @@ public class TailwindHandler extends BaseThingHandler
         if (config.getAuthToken().length() == 6) {
             // Check for a valid authorization token. HTTP response code should be 200 and response contains
             // {"result": "OK"} vs. {"result":"token fail"}
-            // JSONObject tailwindCommandString = new JSONObject(TAILWIND_CMD_DEVICE_STATUS);
-            // String body = tailwindCommandString.toString();
             response = sendCommand(TAILWIND_CMD_DEVICE_STATUS);
-            // response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
 
             /* TODO: Use response from OK device status set initial states for this thing */
             if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
@@ -292,7 +296,7 @@ public class TailwindHandler extends BaseThingHandler
             if (logger.isDebugEnabled()) {
                 logger.debug("Response to validate token {} is: {}", config.authToken, response);
             }
-            // Ensure configured doors does not exceed the number of doors connected
+            // Ensure configured doors do not exceed the number of doors connected
             int connectedDoors = (int) response.getDoorNum();
             if (config.getDoorCount() > connectedDoors) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -333,8 +337,7 @@ public class TailwindHandler extends BaseThingHandler
             return false;
         } // If duplicate doorName was found
 
-        logger.debug("Tailwind door open close command string: {}", TAILWIND_CMD_DOOR_OPEN_CLOSE);
-
+        // Refresh the states for items linked to the channels
         updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
         return true;
     }
@@ -615,6 +618,9 @@ public class TailwindHandler extends BaseThingHandler
             case CHANNEL_DOOR_1_CONTROLS_STATUS:
                 tailwindState.setDoorStatus(doorIndex, channelState.getDoorData().getDoor1().getStatus());
                 break;
+            case CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE:
+                tailwindState.setDoorOpenClose(doorIndex, channelState.getDoorData().getDoor1().getStatus());
+                break;
             case CHANNEL_DOOR_1_CONTROLS_LOCKUP:
                 tailwindState.setLockup(doorIndex, channelState.getDoorData().getDoor1().getLockup());
                 break;
@@ -640,6 +646,9 @@ public class TailwindHandler extends BaseThingHandler
             case CHANNEL_DOOR_2_CONTROLS_STATUS:
                 tailwindState.setDoorStatus(doorIndex, channelState.getDoorData().getDoor2().getStatus());
                 break;
+            case CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE:
+                tailwindState.setDoorOpenClose(doorIndex, channelState.getDoorData().getDoor2().getStatus());
+                break;
             case CHANNEL_DOOR_2_CONTROLS_LOCKUP:
                 tailwindState.setLockup(doorIndex, channelState.getDoorData().getDoor2().getLockup());
                 break;
@@ -664,6 +673,9 @@ public class TailwindHandler extends BaseThingHandler
                 break;
             case CHANNEL_DOOR_3_CONTROLS_STATUS:
                 tailwindState.setDoorStatus(doorIndex, channelState.getDoorData().getDoor3().getStatus());
+                break;
+            case CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE:
+                tailwindState.setDoorOpenClose(doorIndex, channelState.getDoorData().getDoor3().getStatus());
                 break;
             case CHANNEL_DOOR_3_CONTROLS_LOCKUP:
                 tailwindState.setLockup(doorIndex, channelState.getDoorData().getDoor3().getLockup());
@@ -698,13 +710,13 @@ public class TailwindHandler extends BaseThingHandler
     public void stateChanged(String channelID, State state) {
         /* Only update channels if they are linked to an item */
 
-        ChannelUID channelUID = new ChannelUID(this.getThing().getUID(), channelID);
-        updateState(channelID, state);
-        // if (isLinked(channelID)) {
+        // ChannelUID channelUID = new ChannelUID(this.getThing().getUID(), channelID);
         // updateState(channelID, state);
-        // } else {
-        // logger.debug("Tried to update State but channel {} is not linked!", channelID);
-        // }
+        if (isLinked(channelID)) {
+            updateState(channelID, state);
+        } else {
+            logger.debug("Tried to update State but channel {} is not linked!", channelID);
+        }
     }
 
     private String duplicateNameFound(TailwindConfiguration config) {

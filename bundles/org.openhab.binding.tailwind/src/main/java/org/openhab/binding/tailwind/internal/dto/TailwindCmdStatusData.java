@@ -21,12 +21,16 @@ import com.google.gson.annotations.SerializedName;
  */
 public class TailwindCmdStatusData implements Serializable {
 
+    /**
+    * 
+    */
+    private static final long serialVersionUID = 6824360494931987690L;
+
     @SerializedName("type")
     private String type;
 
     @SerializedName("name")
     private String name;
-    private final static long serialVersionUID = -2437170596984146348L;
 
     public String getType() {
         return type;

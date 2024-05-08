@@ -1,8 +1,15 @@
 package org.openhab.binding.tailwind.internal.dto;
 
+import java.io.Serializable;
+
 import com.google.gson.annotations.SerializedName;
 
-public class TailwindDoor {
+public class TailwindDoor implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 4331180371949634469L;
+
     @SerializedName("index")
     private long index; // Door index number (0-door1, 1-door2, 2-door3)
 

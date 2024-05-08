@@ -44,6 +44,7 @@ public class TailwindState {
     // ----- Door One Specific Channels -----
     private State doorOneIndex = DecimalType.valueOf("99");
     private State doorOneStatus = StringType.EMPTY;
+    private State doorOneOpenClose = StringType.EMPTY;
     private State doorOnePartialOpen = UnDefType.UNDEF;
     private State doorOneLockup = DecimalType.valueOf("99");
     private State doorOneDisabled = DecimalType.valueOf("99");
@@ -51,6 +52,7 @@ public class TailwindState {
     // ----- Door Two Specific Channels -----
     private State doorTwoIndex = DecimalType.valueOf("99");
     private State doorTwoStatus = StringType.EMPTY;
+    private State doorTwoOpenClose = StringType.EMPTY;
     private State doorTwoPartialOpen = DecimalType.valueOf("2.5");
     private State doorTwoLockup = DecimalType.valueOf("99");
     private State doorTwoDisabled = DecimalType.valueOf("99");
@@ -58,6 +60,7 @@ public class TailwindState {
     // ----- Door Three Specific Channels -----
     private State doorThreeIndex = DecimalType.valueOf("99");
     private State doorThreeStatus = StringType.EMPTY;
+    private State doorThreeOpenClose = StringType.EMPTY;
     private State doorThreePartialOpen = DecimalType.valueOf("2.5");
     private State doorThreeLockup = DecimalType.valueOf("99");
     private State doorThreeDisabled = DecimalType.valueOf("99");
@@ -112,6 +115,8 @@ public class TailwindState {
                 return doorOneIndex;
             case CHANNEL_DOOR_1_CONTROLS_STATUS:
                 return doorOneStatus;
+            case CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE:
+                return doorOneOpenClose;
             case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
                 return doorOnePartialOpen;
             case CHANNEL_DOOR_1_CONTROLS_LOCKUP:
@@ -125,6 +130,8 @@ public class TailwindState {
                 return doorTwoIndex;
             case CHANNEL_DOOR_2_CONTROLS_STATUS:
                 return doorTwoStatus;
+            case CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE:
+                return doorTwoOpenClose;
             case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
                 return doorTwoPartialOpen;
             case CHANNEL_DOOR_2_CONTROLS_LOCKUP:
@@ -138,6 +145,8 @@ public class TailwindState {
                 return doorThreeIndex;
             case CHANNEL_DOOR_3_CONTROLS_STATUS:
                 return doorThreeStatus;
+            case CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE:
+                return doorThreeOpenClose;
             case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
                 return doorThreePartialOpen;
             case CHANNEL_DOOR_3_CONTROLS_LOCKUP:
@@ -305,6 +314,38 @@ public class TailwindState {
                 if (!newVal.equals(this.doorThreeStatus)) {
                     this.doorThreeStatus = newVal;
                     handler.stateChanged(CHANNEL_DOOR_3_CONTROLS_STATUS, this.doorThreeStatus);
+                }
+                break;
+            default:
+                break;
+        }
+    } // If door (index) status changed
+
+    /**
+     * Method to set the Door open/close state for the TailWind controller
+     *
+     * @param prefix - door index (0=Door 1, 1=Door 2, 2=Door 3)
+     * @param status - string indicating status (open, close, lock, enable, disable, reboot)
+     */
+    public void setDoorOpenClose(Integer index, String doorOpenClose) {
+        StringType newVal = StringType.valueOf(doorOpenClose);
+        switch (index) {
+            case 0:
+                if (!newVal.equals(this.doorOneOpenClose)) {
+                    this.doorOneOpenClose = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE, this.doorOneOpenClose);
+                }
+                break;
+            case 1:
+                if (!newVal.equals(this.doorTwoOpenClose)) {
+                    this.doorTwoOpenClose = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE, this.doorTwoOpenClose);
+                }
+                break;
+            case 2:
+                if (!newVal.equals(this.doorThreeOpenClose)) {
+                    this.doorThreeOpenClose = newVal;
+                    handler.stateChanged(CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE, this.doorThreeOpenClose);
                 }
                 break;
             default:

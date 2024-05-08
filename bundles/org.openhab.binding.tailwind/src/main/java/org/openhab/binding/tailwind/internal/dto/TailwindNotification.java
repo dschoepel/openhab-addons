@@ -1,8 +1,15 @@
 package org.openhab.binding.tailwind.internal.dto;
 
+import java.io.Serializable;
+
 import com.google.gson.annotations.SerializedName;
 
-public class TailwindNotification {
+public class TailwindNotification implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = -7087921117659647215L;
+
     /* ----- Notification details follow --------- */
     @SerializedName("door_idx")
     private Integer doorIdx; // Door index number (0-door1, 1-door2, 2-door3)
