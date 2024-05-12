@@ -12,7 +12,10 @@
  */
 package org.openhab.binding.tailwind.internal.factory;
 
-import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.SUPPORTED_THING_TYPE_UIDS;
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -79,6 +82,22 @@ public class TailwindHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
+            Map<String, String> properties = new HashMap<>(2);
+            properties = thing.getProperties();
+            logger.debug("Properties size is: {}", properties.size());
+            if (properties.size() == 0) {
+                Map<String, String> defaultProperties = new HashMap<>(2);
+                // Store the properties of the mDNS query in the thing
+                defaultProperties.put(Thing.PROPERTY_MAC_ADDRESS, "000000000000");
+                defaultProperties.put(Thing.PROPERTY_MODEL_ID, "iQ3");
+                defaultProperties.put(Thing.PROPERTY_VENDOR, "tailwind");
+                defaultProperties.put(Thing.PROPERTY_HARDWARE_VERSION, "");
+                defaultProperties.put(Thing.PROPERTY_FIRMWARE_VERSION, "");
+                defaultProperties.put(TAILWIND_PROPERTY_MAX_DOORS, "3");
+                defaultProperties.put(TAILWIND_HTTP_SERVER_URL, "");
+                thing.setProperties(defaultProperties);
+            }
+
             return new TailwindHandler(thing, httpClient);
         }
 

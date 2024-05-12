@@ -46,6 +46,30 @@ public class TailwindBindingConstants {
                     Arrays.stream(TailwindModel.values()).map(model -> new ThingTypeUID(BINDING_ID, model.getId())))
             .collect(Collectors.toSet());
 
+    /**
+     * Miscellaneous constants
+     */
+    public static final String TAILWIND_VENDOR_NAME = "tailwind";
+    public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
+    public static final String TAILWIND_HTTP_SERVER_URL = "httpServerUrl";
+    public static final String TAILWIND_PROPERTY_MAC_ADDRESS = "macAddress";
+    public static final String TAILWIND_PROPERTY_HARDWARE_VERSION = "hardwareVersion";
+    public static final String TAILWIND_PROPERTY_SOFTWARE_VERSION = "firmwareVersion";
+    public static final String TAILWIND_PROPERTY_MODEL_ID = "modelId";
+    public static final String TAILWIND_PROPERTY_MAX_DOORS = "maxDoors";
+    public static final String TAILWIND_BASE_URL_PART_1 = "http://";
+    public static final String TAILWIND_BASE_URL_PART_2 = "/json";
+    public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";
+    public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
+    public static final String NOT_FOUND_ERROR = "Not_Found";
+    public static final String JSON_RESPONSE_RESULT_OK = "OK";
+    public static final String TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY = "webServerAddress";
+    public static final double PARTIAL_OPEN_DEFAULT_SETTING = 2.5d;
+    /** Thing is set OFFLINE after so many communication errors. */
+    public static final int ATTEMPTS_WITH_COMMUNICATION_ERRORS = 3;
+    /** Name for thread running UDP Connection */
+    public static final String TAILWIND_UDP_CONNECTOR_THREAD_NAME = BINDING_ID + "_UDP_Connector";
+
     // Channel Group TailWind Controller
     public static final String CHANNEL_GROUP_CONTROLLER = "controller";
 
@@ -178,24 +202,6 @@ public class TailwindBindingConstants {
     }
 
     /**
-     * Miscellaneous constants
-     */
-    public static final String TAILWIND_VENDOR_NAME = "tailwind";
-    public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
-    public static final String TAILWIND_HTTP_SERVER_URL = "httpServerUrl";
-    public static final String TAILWIND_BASE_URL_PART_1 = "http://";
-    public static final String TAILWIND_BASE_URL_PART_2 = "/json";
-    public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";
-    public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
-    public static final String NOT_FOUND_ERROR = "Not_Found";
-    public static final String JSON_RESPONSE_RESULT_OK = "OK";
-    public static final double PARTIAL_OPEN_DEFAULT_SETTING = 2.5d;
-    /** Thing is set OFFLINE after so many communication errors. */
-    public static final int ATTEMPTS_WITH_COMMUNICATION_ERRORS = 3;
-    /** Name for thread running UDP Connection */
-    public static final String TAILWIND_UDP_CONNECTOR_THREAD_NAME = BINDING_ID + "_UDP_Connector";
-
-    /**
      * TailWind device commands. To be parsed into JSON object and modified to reflect
      * the command that is to be sent to the TailWind controller's HTTP server API.
      */
@@ -215,7 +221,7 @@ public class TailwindBindingConstants {
     public static String TAILWIND_JSON_KEY_PARTIAL = "partial_time";
     public static String TAILWIND_JSON_KEY_BRIGHTNESS = "brightness";
 
-    /* ------- Values for JSON keys ----------------- */
+    /* ------- JSON key values ----------------- */
     public static String TAILWIND_JSON_VALUE_PRODUCT = "iQ3";
     public static String TAILWIND_JSON_VALUE_VER_01 = "0.1";
     public static String TAILWIND_JSON_VALUE_VER_02 = "0.2";
@@ -244,56 +250,4 @@ public class TailwindBindingConstants {
     public static String TAILWIND_CMD_IDENTIFY_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"identify\"}}";
     public static String TAILWIND_CMD_REBOOT_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"reboot\"}}";
 
-    // public static final Map<String, Object> TAILWIND_CMD_DEVICE_STATUS = new LinkedHashMap<>();
-    // static {
-    // TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
-    // /*---- Nested Data object ------------*/
-    // Map<String, Object> TAILWIND_CMD_DEVICE_STATUS_DATA = new LinkedHashMap<String, Object>();
-    // TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_GET);
-    // TAILWIND_CMD_DEVICE_STATUS_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DEV_ST);
-    // /*---- Status JSON object with nested data object ------------*/
-    // TAILWIND_CMD_DEVICE_STATUS.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_STATUS_DATA);
-    // }
-
-    // public static final Map<String, Object> TAILWIND_CMD_DOOR_OPEN_CLOSE = new LinkedHashMap<>();
-    // static {
-    // TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_PRODUCT, TAILWIND_JSON_VALUE_PRODUCT);
-    // TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
-    // /*---- Nested Data object ------------*/
-    // Map<String, Object> TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA = new LinkedHashMap<String, Object>();
-    // TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_SET);
-    // TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_DOOR_OP);
-    //
-    // /*---- Nested Value object ------------*/
-    // Map<String, Object> TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE = new LinkedHashMap<String, Object>();
-    // TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE.put(TAILWIND_JSON_KEY_DOOR_IDX, TAILWIND_JSON_VALUE_DOOR_ONE_INDEX);
-    // TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE.put(TAILWIND_JSON_KEY_CMD, TAILWIND_JSON_VALUE_CMD_OPEN);
-    //
-    // /*---- Status JSON data object with nested value object ------------*/
-    // TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA.put(TAILWIND_JSON_KEY_VALUE, TAILWIND_CMD_SET_DOOR_OPEN_CLOSE_VALUE);
-    // /*---- Status JSON object with nested data object ------------*/
-    // TAILWIND_CMD_DOOR_OPEN_CLOSE.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_DEVICE_DOOR_OPEN_CLOSE_DATA);
-    //
-    // }
-
-    // public static final Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_URL = new LinkedHashMap<>();
-    // static {
-    // TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_PRODUCT, TAILWIND_JSON_VALUE_PRODUCT);
-    // TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_01);
-    // /*---- Nested Data object ------------*/
-    // Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_DATA = new LinkedHashMap<String, Object>();
-    // TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_TYPE, TAILWIND_JSON_VALUE_TYPE_SET);
-    // TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_NAME, TAILWIND_JSON_VALUE_NAME_NOTIFY_URL);
-    //
-    // /*---- Nested Value object ------------*/
-    // Map<String, Object> TAILWIND_CMD_SET_STATUS_REPORT_VALUE = new LinkedHashMap<String, Object>();
-    // TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_PROTO, TAILWIND_JSON_VALUE_NAME_PROTPO_UDP);
-    // TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_ENABLE, TAILWIND_JSON_VALUE_ENABLE_ON);
-    // TAILWIND_CMD_SET_STATUS_REPORT_VALUE.put(TAILWIND_JSON_KEY_URL, "http://openHabServerURL");
-    //
-    // /*---- Status JSON data object with nested value object ------------*/
-    // TAILWIND_CMD_SET_STATUS_REPORT_DATA.put(TAILWIND_JSON_KEY_VALUE, TAILWIND_CMD_SET_STATUS_REPORT_VALUE);
-    // /*---- Status JSON object with nested data object ------------*/
-    // TAILWIND_CMD_SET_STATUS_REPORT_URL.put(TAILWIND_JSON_KEY_DATA, TAILWIND_CMD_SET_STATUS_REPORT_DATA);
-    // }
 }

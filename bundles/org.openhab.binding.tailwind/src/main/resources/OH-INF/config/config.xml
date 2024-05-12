@@ -40,6 +40,13 @@
 			<default>1</default>
 		</parameter>
 
+		<parameter name="webServerAddress" type="text" required="true" groupName="connectionSettings">
+			<label>API Web Server Address/URL</label>
+			<description>TailWind web service address. Either HTTP URL of web service (preferred) or IP address of controller.</description>
+			<required></required>
+			<default></default>
+		</parameter>
+
 		<parameter name="authToken" type="text" required="true" groupName="connectionSettings">
 			<label>Authentication Token</label>
 			<description>Authentication token (Local Control Key) obtained from the TailWind mobile app.</description>
@@ -52,6 +59,13 @@
 			<label>Port</label> <description>Telnet port used for AVR communication. Normally shouldn't be changed.</description> </parameter> -->
 
 		<!-- Door 1 specific configuration parameters -->
+		<parameter name="doorOneName" type="text" groupName="doorOneSettings">
+			<label>Door 1 Name</label>
+			<description>Door 1: Specify a more descriptive name for the garage door.</description>
+			<default>Door 1</default>
+			<advanced>true</advanced>
+		</parameter>
+
 		<parameter name="doorOnePartialOpen" type="decimal" min="0.5" max="15" step="0.1"
 			groupName="doorOneSettings">
 			<label>Door 1 Partial Open</label>
@@ -60,23 +74,7 @@
 			<advanced>true</advanced>
 		</parameter>
 
-		<parameter name="doorOneName" type="text" groupName="doorOneSettings">
-			<label>Door 1 Name</label>
-			<description>Door 1: Specify a more descriptive name for the garage door.</description>
-			<default>Door 1</default>
-			<advanced>true</advanced>
-		</parameter>
-
 		<!-- Door 2 specific configuration parameters -->
-		<parameter name="doorTwoPartialOpen" type="decimal" min="0.5" max="15" step="0.1"
-			groupName="doorTwoSettings">
-			<label>Door 2 Partial Open</label>
-			<description>Door 2: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
-			<default>2.5</default>
-			<required>true</required>
-			<advanced>true</advanced>
-		</parameter>
-
 		<parameter name="doorTwoName" type="text" groupName="doorTwoSettings">
 			<label>Door 2 Name</label>
 			<description>Door 2: Specify a more descriptive name for the garage door.</description>
@@ -85,16 +83,18 @@
 			<advanced>true</advanced>
 		</parameter>
 
+        <parameter name="doorTwoPartialOpen" type="decimal" min="0.5" max="15" step="0.1"
+            groupName="doorTwoSettings">
+            <label>Door 2 Partial Open</label>
+            <description>Door 2: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
+            <default>2.5</default>
+            <required>true</required>
+            <advanced>true</advanced>
+        </parameter>
+
+
 
 		<!-- Door 3 specific configuration parameters -->
-		<parameter name="doorThreePartialOpen" type="decimal" min="0.5" max="15" step="0.1"
-			groupName="doorThreeSettings">
-			<label>Door 3 Partial Open</label>
-			<description>Door 3: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
-			<default>2.5</default>
-			<advanced>true</advanced>
-		</parameter>
-
 		<parameter name="doorThreeName" type="text" groupName="doorThreeSettings">
 			<label>Door 3 Name</label>
 			<description>Door 3: Specify a more descriptive name for the garage door.</description>
@@ -102,6 +102,15 @@
 			<required>true</required>
 			<advanced>true</advanced>
 		</parameter>
+
+        <parameter name="doorThreePartialOpen" type="decimal" min="0.5" max="15" step="0.1"
+            groupName="doorThreeSettings">
+            <label>Door 3 Partial Open</label>
+            <description>Door 3: Seconds to use for partially opening the garage door (0.5 - 15 seconds), only valid if door is being controlled.</description>
+            <default>2.5</default>
+            <advanced>true</advanced>
+        </parameter>
+
 
 	</config-description>
 

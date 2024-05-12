@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import javax.swing.text.Utilities;
 
 import org.openhab.binding.tailwind.internal.TailwindModel;
+import org.openhab.core.thing.Thing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,11 @@ public class Utilites {
         }
     }
 
+    public String getServerURL(InetAddress address) {
+        String serverURL = address.getHostName();
+        return serverURL;
+    }
+
     /**
      * Method to convert a float value in seconds to milliseconds and return
      * as a string value.
@@ -81,5 +87,48 @@ public class Utilites {
      */
     public long getSecondsToMilliseconds(float seconds) {
         return (long) (seconds * 1000);
+    }
+
+    /**
+     * Method to build a meaningful thread name to use for scheduled jobs. Uses the thing UID and
+     * configuration values to construct a unique name.
+     *
+     * @param thing - Use Uid to build name. Assume 3 parts (1=Binding, 2=Model, 3=unique Id)
+     * @return threadName in format "binding+model+UID+"UDP-Rcvr:"
+     */
+    public String getThreadName(Thing thing) {
+        // split the thing UID into parts then add back together
+        String[] thingUid = thing.getUID().toString().split(":");
+        String threadName = "";
+        for (int i = 0; i <= (thingUid.length - 1); i++) {
+            threadName = threadName.concat(thingUid[i]).concat("-");
+        }
+        threadName = threadName.concat("UDP-Rcvr:");
+        ;
+        return threadName;
+    }
+
+    public static boolean isValidIPAddress(final String ip) {
+        String PATTERN = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+
+        return ip.matches(PATTERN);
+    }
+
+    /**
+     * @param deviceId in format "_8_d1_f9_12_2_ec_" contains the MAC address each of 6 pairs separated by an underscore
+     * @return macAddress re-formated to 12 digits and no separator
+     */
+    public String convertDeviceIdToMac(String deviceId) {
+
+        String macAddress = "";
+        String[] deviceIdArray = deviceId.split("_");
+        for (int i = 0; i <= (deviceIdArray.length - 1); i++) {
+            if (deviceIdArray[i].length() == 1) {
+                macAddress += "0".concat(deviceIdArray[i]); // append 0
+            } else {
+                macAddress += deviceIdArray[i];
+            }
+        }
+        return macAddress;
     }
 }

@@ -28,6 +28,12 @@ public class TailwindConfiguration {
     public int doorCount = 1; // 1=default (can be 1-3)
 
     /**
+     * Holds either the IP address or HTTP URL of the TailWind controller web server (API)
+     * Format for URL is tailwind-MAC address.local (i.e. tailwind-aa0b0cd0e0f0.local)
+     */
+    public String webServerAddress = ""; // Controller API IP Address or HTTP URL
+
+    /**
      * Authorization token for the local API server on the controller
      */
     public String authToken = ""; // token from TailWind mobile application
@@ -67,6 +73,20 @@ public class TailwindConfiguration {
      */
     public int getDoorCount() {
         return doorCount;
+    }
+
+    /**
+     * @return the webServerAddress
+     */
+    public String getWebServerAddress() {
+        return webServerAddress;
+    }
+
+    /**
+     * @param webServerAddress the webServerAddress to set
+     */
+    public void setWebServerAddress(String webServerAddress) {
+        this.webServerAddress = webServerAddress;
     }
 
     /**

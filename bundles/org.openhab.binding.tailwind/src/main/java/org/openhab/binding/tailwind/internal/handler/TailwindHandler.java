@@ -40,6 +40,7 @@ import org.openhab.binding.tailwind.internal.connector.TailwindUdpEventListener;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
 import org.openhab.binding.tailwind.internal.state.TailwindState;
 import org.openhab.binding.tailwind.internal.state.TailwindStateChangedListener;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -183,6 +184,37 @@ public class TailwindHandler extends BaseThingHandler
             logger.debug("Start initializing handler for thing {}", getThing().getUID());
         }
 
+        // /*
+        // * Initialize the webServer URL. If the TailWind Controller was discovered, the URL will be
+        // * found in the properties and should be added to the configuration webServerAddress value.
+        // * Otherwise, the user must enter a valid address/URL in the configuration for webServerAddress;
+        // * once validated would be added to the properties.
+        // *
+        // */
+        // Configuration twConfiguration = editConfiguration();
+        // String wA = (String) twConfiguration.get(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY);
+        // if (config.getWebServerAddress().isBlank()) {
+        // logger.debug("The webServerAddress is blank.");
+        // } else {
+        // // Check to see if the address is changed
+        // }
+        // Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
+        // String webServer = properties.get(TAILWIND_HTTP_SERVER_URL);
+        // if (webServer != null) {
+        // if (webServer.isBlank()) {
+        // try {
+        // String test = utilities.getServerURL(InetAddress.getByName(config.getWebServerAddress()));
+        //
+        // } catch (UnknownHostException e) {
+        // // Auto-generated catch block
+        // e.printStackTrace();
+        // }
+        // } else {
+        // twConfiguration.put(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY, webServer);
+        // updateConfiguration(twConfiguration);
+        // }
+        // }
+
         // Initialize partialOpenDoorStates
         initializePartialOpenStates();
         // Get configuration settings
@@ -243,7 +275,7 @@ public class TailwindHandler extends BaseThingHandler
             udpConnector = newUdpConnector;
 
             // establish connection and register listener
-            newUdpConnector.connect(this::eventReceived, true);
+            newUdpConnector.connect(this::eventReceived, true, utilities.getThreadName(thing));
 
         } catch (InterruptedException e) {
             // OH shutdown - don't log anything, Framework will call dispose()
@@ -252,6 +284,9 @@ public class TailwindHandler extends BaseThingHandler
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "Connection to '" + config
                     + "' failed unexpectedly with " + e.getClass().getSimpleName() + ": " + e.getMessage());
             dispose();
+        }
+        if (udpConnector != null && !udpConnector.isConnected()) {
+            logger.debug("****> UdpConnector was not connected on port: {}!", TAILWIND_OPENHAB_HOST_UDP_PORT);
         }
     } // End intializeConnection()
 
@@ -271,6 +306,21 @@ public class TailwindHandler extends BaseThingHandler
             return false;
         } // If the configured number of doors is out of range
 
+        /*
+         * Make sure a valid webServerAddress was specified for the TailWind controller
+         * If item was discovered, add the httpServerUrl to the configuration webServerAddress.
+         * If item was created manually, validate the address and update the properties with
+         * the address.
+         * If the configured value is different from the properties, use manual steps to validate.
+         */
+        String addressCheckResult = webServerAddressCheck();
+        if (addressCheckResult != "") {
+
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    addressCheckResult + ": Address error!");
+            return false;
+        }
+
         /**
          * Check for a valid Authorization token
          */
@@ -286,7 +336,7 @@ public class TailwindHandler extends BaseThingHandler
             /* TODO: Use response from OK device status set initial states for this thing */
             if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                        "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
+                        "Unable to verify authorization token. Please check that the Token and Web Address were entered correctly. If web address is ok, obtain another token from the mobile app and try again.");
                 return false;
             } else {
                 // Update thing properties to include number of doors connected
@@ -316,7 +366,7 @@ public class TailwindHandler extends BaseThingHandler
         /**
          * Update controller with the UDP host address to receive notifications of changes to the controller
          */
-        response = sendCommand(buildStatusReportCommand());
+        response = sendCommand(TAILWIND_CMD_DEVICE_STATUS);
         if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "The authorization token was invalid. Please check that the Token was entered correctly or obtain another one from the mobile app.");
@@ -324,6 +374,30 @@ public class TailwindHandler extends BaseThingHandler
                 logger.debug("Command to set status report URL failed with result code: {}", response.getResult());
             }
             return false;
+        } else {
+            // TODO: Get property details from response and update if there are changes
+            Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
+            String currentMacAddress = properties.get(TAILWIND_PROPERTY_MAC_ADDRESS);
+            if (currentMacAddress != null) {
+                if (currentMacAddress.isBlank()
+                        || currentMacAddress != utilities.convertDeviceIdToMac(response.getDevID())) {
+                    properties.put(TAILWIND_PROPERTY_MAC_ADDRESS, utilities.convertDeviceIdToMac(response.getDevID()));
+                }
+            } // If MAC address sent from controller is not equal to what is stored in properties
+            String currentSftwrVer = properties.get(TAILWIND_PROPERTY_SOFTWARE_VERSION);
+            if (currentSftwrVer != null) {
+                if (currentSftwrVer.isBlank() || currentSftwrVer != response.getFwVer()) {
+                    properties.put(TAILWIND_PROPERTY_SOFTWARE_VERSION, response.getFwVer());
+                }
+            } // If software address sent from controller is not equal to what is stored in properties
+            String currentModelId = properties.get(TAILWIND_PROPERTY_MODEL_ID);
+            if (currentModelId != null) {
+                if (currentModelId.isBlank() || currentModelId != response.getProduct()) {
+                    properties.put(TAILWIND_PROPERTY_MODEL_ID, response.getProduct());
+                }
+            } // If model number sent from controller is not equal to what is stored in properties
+
+            thing.setProperties(properties);
         } // If command response result was not "OK"
 
         /**
@@ -337,9 +411,53 @@ public class TailwindHandler extends BaseThingHandler
             return false;
         } // If duplicate doorName was found
 
-        // Refresh the states for items linked to the channels
+        /*
+         * No configuration errors found, refresh the states for any items linked to channels
+         */
         updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
         return true;
+    }
+
+    private String webServerAddressCheck() {
+        String addressCheckResult = "";
+        Configuration tailwindConfiguration = editConfiguration();
+        String serverAddress = (String) tailwindConfiguration.get(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY);
+        Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
+        String httpServerUrl = properties.get(TAILWIND_HTTP_SERVER_URL);
+        // Check for both blank configuration and properties values
+        if (httpServerUrl != null) {
+            // Check for blank webServerAddress, replace with httpServerUrl
+            if (serverAddress.isBlank()) {
+                if (!httpServerUrl.isBlank()) {
+                    tailwindConfiguration.put(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY,
+                            properties.get(TAILWIND_HTTP_SERVER_URL));
+                    updateConfiguration(tailwindConfiguration);
+                } else {
+                    // TODO: Error: Both serverAddress and httpServerUrl are blank
+                    addressCheckResult = "BLANK";
+                } // If httlServerUrl has a value (not blank)
+            } else {
+                // Check to see if the two are different
+                if (!serverAddress.equalsIgnoreCase(httpServerUrl)) {
+                    if (!serverAddress.isBlank()) {
+                        // Validate Server address can be an IP address or Url (ends in .local)
+                        if (Utilites.isValidIPAddress(serverAddress) || serverAddress.contains(".local")) {
+                            // Valid address to try
+                            properties.put(TAILWIND_HTTP_SERVER_URL, serverAddress);
+                            thing.setProperties(properties);
+                        } else {
+                            // TODO: Error address is not formatted correctly
+                            addressCheckResult = "ADDRESS FORMAT ERROR";
+                        }
+                    } else {
+                        // TODO: Error Server address was not entered yet.
+                        addressCheckResult = "BLANK";
+                    }
+                } // If serverAddress is not equal to httpServerUrl
+            } // If serverAddress is blank
+        }
+
+        return addressCheckResult;
     }
 
     /**
@@ -356,6 +474,8 @@ public class TailwindHandler extends BaseThingHandler
         } catch (TailwindCommunicationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "The TailWind controller did not respond to configured URL/Host address. Please ensure URL/Host address is correct.");
         }
         if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
             logger.debug("Get Status request was: {}", response.getResult());

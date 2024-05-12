@@ -168,8 +168,8 @@ public class TailwindConnectApi extends TailwindApi {
                 serverURL = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
             } else {
                 serverURL = NOT_FOUND_ERROR;
-                throw new TailwindCommunicationException("The Tailwind Thing URL for the Http server was " + serverURL
-                        + ". Check thing properties for a valid httpServerUrl!!");
+                throw new TailwindCommunicationException("The Tailwind Thing URL for the Http server " + serverURL
+                        + " was not found. Check thing properties for a valid httpServerUrl!!");
             } // If server URL has a value
         } // If server URL was found in the properties for this thing
 

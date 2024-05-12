@@ -59,6 +59,7 @@ public class TailwindUdpConnector {
 
     /** The listener that gets notified upon newly received messages. */
     private @Nullable Consumer<String> listener;
+    private String threadNamePrefix;
 
     private int receiveFailures = 0;
     private boolean listenerActive = false;
@@ -85,39 +86,54 @@ public class TailwindUdpConnector {
      * @throws SocketException Is only thrown if <code>logNotTHrowException = false</code>.
      * @throws InterruptedException Typically happens during shutdown.
      */
-    public void connect(Consumer<String> listener, boolean logNotThrowExcpetion)
+    public void connect(Consumer<String> listener, boolean logNotThrowException, String threadName)
             throws SocketException, InterruptedException {
+        // Thread.currentThread().setName("tailwind-iQ3-UDP-Listen:" + this.receivePort);
+        // logger.debug("Udp connector thread name: {}", Thread.currentThread().getName());
+        this.threadNamePrefix = threadName;
         if (receivingSocket == null) {
-            try {
-                receivingSocket = new DatagramSocket(receivePort);
-                sendingSocket = new DatagramSocket();
-                this.listener = listener;
-                listeningThreadFactory.newThread(this::listen).start();
+            Boolean connected = false;
+            Integer udpPort = receivePort;
+            while (connected == false && udpPort <= udpPort + 3) {
+                try { // try ports starting with receivePort to receivePort + 3
+                    receivingSocket = new DatagramSocket(udpPort);
+                    sendingSocket = new DatagramSocket();
+                    this.listener = listener;
+                    listeningThreadFactory.newThread(this::listen).start();
+                    // logger.debug("----> CurrentThread = {}", Thread.currentThread().getName());
 
-                // wait for the listening thread to be active
-                for (int i = 0; i < 20 && !listenerActive; i++) {
-                    Thread.sleep(100); // wait at most 20 * 100ms = 2sec for the listener to be active
-                }
-                if (!listenerActive) {
-                    logger.warn(
-                            "Listener thread started but listener is not yet active after 2sec; something seems to be wrong with the JVM thread handling?!");
-                }
-            } catch (SocketException e) {
-                if (logNotThrowExcpetion) {
-                    logger.warn(
-                            "Failed to open socket connection on port {} (maybe there is already another socket listener on that port?)",
-                            receivePort, e);
-                }
+                    // wait for the listening thread to be active
+                    for (int i = 0; i < 20 && !listenerActive; i++) {
+                        Thread.sleep(100); // wait at most 20 * 100ms = 2sec for the listener to be active
+                    }
+                    if (!listenerActive) {
+                        logger.warn(
+                                "Listener thread started but listener is not yet active after 2sec; something seems to be wrong with the JVM thread handling?!");
+                    }
+                    connected = true;
+                    // logger.debug("----> CurrentThread = {}", Thread.currentThread().getName());
+                } catch (SocketException e) {
+                    if (udpPort > udpPort + 3) {
+                        if (logNotThrowException) {
+                            logger.warn(
+                                    "Failed to open socket connection on port {} (maybe there is already another socket listener on that port?)",
+                                    udpPort, e);
+                        }
+                    }
+                    logger.debug("Failed connection on port: {}, trying next port: {}", udpPort, udpPort + 1);
+                    udpPort += 1;
 
-                disconnect();
+                    // disconnect();
 
-                if (!logNotThrowExcpetion) {
-                    throw e;
+                    if (!logNotThrowException) {
+                        throw e;
+                    }
                 }
-            }
+            } // While connected = false
         } else if (!Objects.equals(this.listener, listener)) {
             throw new IllegalStateException("A listening thread is already running");
         }
+
     } // End connect(...)
 
     private void listen() {
@@ -129,10 +145,15 @@ public class TailwindUdpConnector {
     } // End listen()
 
     private void listenUnhandledInterruption() throws InterruptedException {
-        logger.info("TailWind UPD listener started for: '{}:{}'", host, receivePort);
 
+        Integer recPortLocal = receivingSocket != null ? receivingSocket.getLocalPort() : 0;
+
+        Thread.currentThread().setName(threadNamePrefix.concat(recPortLocal.toString()));
+        logger.info("TailWind UPD listener started for: '{}:{}, thread: {}'", host, recPortLocal,
+                Thread.currentThread().getName());
         final Consumer<String> listener2 = listener;
         final DatagramSocket socket2 = receivingSocket;
+        // Integer udpPort = socket2 != null ? socket2.getLocalPort() : 0;
         while (listener2 != null && socket2 != null && receivingSocket != null) {
             try {
                 final DatagramPacket packet = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
@@ -167,7 +188,7 @@ public class TailwindUdpConnector {
                 listenerActive = false;
 
                 if (receivingSocket == null) {
-                    logger.debug("Socket closed; stopping listener on port {}.", receivePort);
+                    logger.debug("Socket closed; stopping listener on port {}.", recPortLocal);
                 } else {
                     // if we get 3 errors in a row, we should better add a delay to stop spamming the log!
                     if (receiveFailures++ > ATTEMPTS_WITH_COMMUNICATION_ERRORS) {
@@ -178,7 +199,7 @@ public class TailwindUdpConnector {
                             Thread.sleep(200); // 50 * 200ms = 10sec
                         }
                     } else {
-                        logger.warn("Unexpected error while listening on port {}", receivePort, e);
+                        logger.warn("Unexpected error while listening on port {}", recPortLocal, e);
                     }
                 }
             }
@@ -187,10 +208,10 @@ public class TailwindUdpConnector {
 
     /** Close the socket connection. */
     public void disconnect() {
-        logger.debug("Tailwind UDP listener stopped for: '{}:{}'", host, receivePort);
         listener = null;
         final DatagramSocket receivingSocket2 = receivingSocket;
         if (receivingSocket2 != null) {
+            logger.debug("Tailwind UDP listener stopped for: '{}:{}'", host, receivingSocket2.getLocalPort());
             receivingSocket = null;
             if (!receivingSocket2.isClosed()) {
                 receivingSocket2.close(); // this interrupts and terminates the listening thread

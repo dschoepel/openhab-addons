@@ -128,7 +128,8 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         properties.put(Thing.PROPERTY_MODEL_ID, modelNumber);
                         properties.put(Thing.PROPERTY_VENDOR, vendor);
                         properties.put(Thing.PROPERTY_HARDWARE_VERSION, hardwareVersion);
-                        properties.put(CHANNEL_DOOR_NUM, utilities.GetMaxDoors(modelNumber));
+                        properties.put(Thing.PROPERTY_FIRMWARE_VERSION, "");
+                        properties.put(TAILWIND_PROPERTY_MAX_DOORS, utilities.GetMaxDoors(modelNumber));
                         properties.put(TAILWIND_HTTP_SERVER_URL, serverURL);
 
                         // Suggested name of discovered device (.e.g. "TailWind iQ3")
@@ -241,41 +242,4 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
         }
         return isSupported;
     }
-
-    // private String getOHServerIP() throws UnknownHostException {
-    // InetAddress address1 = InetAddress.getLocalHost();
-    // // String hostName = address1.getHostName();
-    // String hostAddress = address1.getHostAddress();
-    // return hostAddress;
-    // }
-
-    /**
-     * Method to retrieve the maximum zone count for the model to bused in the thing properties
-     * and validating the thing configuration settings.
-     *
-     * @param model - validated from the mDNS discovery
-     * @return maxZones for the device
-     */
-    // private int getMaxDoorsForModel(String model) {
-    // int maxDoors = 1;
-    // for (TailwindModel supportedModel : TailwindModel.values()) {
-    // if (supportedModel.getId().equals(model)) {
-    // maxDoors = supportedModel.getMaxDoors();
-    // }
-    // }
-    // return maxDoors;
-    // }
-
-    /**
-     * Method to make first letter of a string upper case
-     *
-     * @param name
-     * @return Converted string
-     */
-    // private String makeFirstLetterUpperCase(String name) {
-    // String str1 = name.substring(0, 1).toUpperCase();
-    // String str2 = name.substring(1);
-    // String result = str1 + str2;
-    // return result;
-    // }
 }
