@@ -20,6 +20,9 @@ public class TailwindControllerData implements Serializable {
     @SerializedName("result")
     private String result; // Result status "OK", "xxxx fail"
 
+    @SerializedName("info")
+    private String info; // If result is fail, info explaining the failure
+
     @SerializedName("product")
     private String product; // Model number (iQ3, light)
 
@@ -39,7 +42,7 @@ public class TailwindControllerData implements Serializable {
     private String fwVer; // Firmware version
 
     @SerializedName("led_brightness")
-    private long ledBrightness; // LED Brightness (0 - 100)
+    private int ledBrightness; // LED Brightness (0 - 100)
 
     @SerializedName("router_rssi")
     private long routerRssi; // Wi-Fi signal strength
@@ -54,8 +57,16 @@ public class TailwindControllerData implements Serializable {
         return result;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
     public void setResult(String value) {
         this.result = value;
+    }
+
+    public void setInfo(String value) {
+        this.info = value;
     }
 
     public String getProduct() {
@@ -106,11 +117,11 @@ public class TailwindControllerData implements Serializable {
         this.fwVer = value;
     }
 
-    public long getLEDBrightness() {
+    public int getLEDBrightness() {
         return ledBrightness;
     }
 
-    public void setLEDBrightness(long value) {
+    public void setLEDBrightness(int value) {
         this.ledBrightness = value;
     }
 
@@ -140,9 +151,9 @@ public class TailwindControllerData implements Serializable {
 
     @Override
     public String toString() {
-        return "ControllerData [result=" + result + ", product=" + product + ", devId=" + devId + ", protoVer="
-                + protoVer + ", doorNum=" + doorNum + ", nightModeEn=" + nightModeEn + ", fwVer=" + fwVer
-                + ", ledBrightness=" + ledBrightness + ", routerRssi=" + routerRssi + ", data=" + data + ", notify="
-                + notify + "]";
+        return "ControllerData [result=" + result + ", info=" + info + ", product=" + product + ", devId=" + devId
+                + ", protoVer=" + protoVer + ", doorNum=" + doorNum + ", nightModeEn=" + nightModeEn + ", fwVer="
+                + fwVer + ", ledBrightness=" + ledBrightness + ", routerRssi=" + routerRssi + ", data=" + data
+                + ", notify=" + notify + "]";
     }
 }

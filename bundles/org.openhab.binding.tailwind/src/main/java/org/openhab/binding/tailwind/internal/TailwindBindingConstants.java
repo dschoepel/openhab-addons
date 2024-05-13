@@ -202,6 +202,39 @@ public class TailwindBindingConstants {
     }
 
     /**
+     * Static mapping of ChannelType-to-ItemLables
+     */
+    public static final Map<String, String> CHANNEL_ITEM_DESCRIPTION = new HashMap<>();
+    static {
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_INDEX, "Door number index (0-2)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_STATUS,
+                "Door status (open, partial, close, lock, enable, disable, reboot)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE, "Door control (open, partial open, close)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN,
+                "Partial door open time in seconds (0.5 - 15)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_LOCKUP, "Door lockup (0 - not locked up, 1 - locked up)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_1_CONTROLS_DISABLED, "Door is configured (0 - yes, 1 - no)");
+
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_INDEX, "Door number index (0-2)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_STATUS,
+                "Door status (open, partial, close, lock, enable, disable, reboot)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE, "Door control (open, partial open, close)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN,
+                "Partial door open time in seconds (0.5 - 15)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_LOCKUP, "Door lockup (0 - not locked up, 1 - locked up)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_2_CONTROLS_DISABLED, "Door is configured (0 - yes, 1 - no)");
+
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_INDEX, "Door number index (0-2)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_STATUS,
+                "Door status (open, partial, close, lock, enable, disable, reboot)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE, "Door control (open, partial open, close)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN,
+                "Partial door open time in seconds (0.5 - 15)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_LOCKUP, "Door lockup (0 - not locked up, 1 - locked up)");
+        CHANNEL_ITEM_DESCRIPTION.put(CHANNEL_DOOR_3_CONTROLS_DISABLED, "Door is configured (0 - yes, 1 - no)");
+    }
+
+    /**
      * TailWind device commands. To be parsed into JSON object and modified to reflect
      * the command that is to be sent to the TailWind controller's HTTP server API.
      */

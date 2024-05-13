@@ -11,8 +11,8 @@
 		<channels>
 			<channel id="doorNum" typeId="doorNum" />
 			<channel id="nightModeEnabled" typeId="nightModeEnabled" />
-			<channel id="ledBrightness" typeId="ledBrightness" />
-			<channel id="routerRssi" typeId="system.signal-strength" />
+			<channel id="ledBrightness" typeId="system.brightness" />
+			<channel id="routerRssi" typeId="routerRssi" />
 			<channel id="productID" typeId="productID" />
 			<channel id="deviceID" typeId="deviceID" />
 		</channels>

@@ -16,6 +16,7 @@ import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
@@ -32,10 +33,10 @@ public class TailwindState {
 
     private final Logger logger = LoggerFactory.getLogger(TailwindState.class);
 
-    // ----- General (Controller Specific) -----
+    // ----- General (Controller Specific) ------
     private State doorNum = DecimalType.valueOf("99");
     private State nightModeEnabled = DecimalType.valueOf("99");
-    private State ledBrightness = DecimalType.ZERO;
+    private State ledBrightness = PercentType.ZERO;
     private State routerRSSI = DecimalType.ZERO;
     private State productID = StringType.EMPTY;
     private State deviceID = StringType.EMPTY;
@@ -192,8 +193,8 @@ public class TailwindState {
      *
      * @param ledBrightness - brightness of the controller's led lamp ranges from 0 - 100,
      */
-    public void setLedBrighness(long ledBrightness) {
-        DecimalType newVal = new DecimalType(ledBrightness);
+    public void setLedBrighness(int ledBrightness) {
+        PercentType newVal = new PercentType(ledBrightness);
         if (!newVal.equals(this.ledBrightness)) {
             this.ledBrightness = newVal;
             handler.stateChanged(CHANNEL_LED_BRIGHTNESS, this.ledBrightness);

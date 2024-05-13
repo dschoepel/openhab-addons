@@ -99,58 +99,82 @@ public class TailwindHandler extends BaseThingHandler
         if (command instanceof RefreshType) {
             // response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
             updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
-        }
-
-        try {
-            String cmdBody = "";
-            switch (channelUID.getId()) {
-                /**
-                 * Door 1 Channels
-                 */
-                case CHANNEL_DOOR_1_CONTROLS_STATUS:
-                    tailwindState.setDoorStatus(0, response.getDoorData().getDoor1().getStatus());
-                case CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE:
-                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 0);
-                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
-                    tailwindState.setDoorOpenClose(0, command.toString());
-                case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
-                    tailwindState.setPartialOpen(0, config.getDoorOnePartialOpen());
-                    break;
-                /**
-                 * Door 2 Channels
-                 */
-                case CHANNEL_DOOR_2_CONTROLS_STATUS:
-                    tailwindState.setDoorStatus(1, response.getDoorData().getDoor2().getStatus());
-                case CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE:
-                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 1);
-                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
-                    tailwindState.setDoorOpenClose(1, command.toString());
-                case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
-                    tailwindState.setPartialOpen(1, config.getDoorTwoPartialOpen());
-                    break;
-                /**
-                 * Door 3 Channels
-                 */
-                case CHANNEL_DOOR_3_CONTROLS_STATUS:
-                    tailwindState.setDoorStatus(2, response.getDoorData().getDoor3().getStatus());
-                case CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE:
-                    cmdBody = buildDoorOpenCloseCommand(command.toString(), 2);
-                    response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
-                    tailwindState.setDoorOpenClose(2, command.toString());
-                case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
-                    tailwindState.setPartialOpen(2, config.getDoorThreePartialOpen());
-                    break;
-                default:
-                    throw new TailwindUnsupportedCommandTypeException();
-            }
-        } catch (TailwindUnsupportedCommandTypeException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Unsupported Command {} for channel {}", command.toString(), channelUID.getId());
-            }
-        } catch (TailwindCommunicationException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("TailWindAPI connection error sending command {} for channel {}", command.toString(),
-                        channelUID.getId());
+        } else {
+            //
+            try {
+                String cmdBody = "";
+                switch (channelUID.getId()) {
+                    /**
+                     * Controller Channels
+                     */
+                    case CHANNEL_LED_BRIGHTNESS:
+                        String test = command.toString();
+                        Integer test2 = Integer.parseInt(test);
+                        cmdBody = buildSetLEDBrightnessCommand(Integer.parseInt(command.toString()));
+                        response = tailwindApi.getTailwindControllerData(thing, config.getAuthToken(), cmdBody);
+                        if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+                            tailwindState.setLedBrighness(Integer.parseInt(command.toString()));
+                        } else {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Error updating LED brightness: {}, detail: {}", response.getResult(),
+                                        response.getInfo());
+                            }
+                        }
+                        break;
+                    /**
+                     * Door 1 Channels
+                     */
+                    case CHANNEL_DOOR_1_CONTROLS_STATUS:
+                        tailwindState.setDoorStatus(0, response.getDoorData().getDoor1().getStatus());
+                        break;
+                    case CHANNEL_DOOR_1_CONTROLS_OPEN_CLOSE:
+                        cmdBody = buildDoorOpenCloseCommand(command.toString(), 0);
+                        response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                        tailwindState.setDoorOpenClose(0, command.toString());
+                        break;
+                    case CHANNEL_DOOR_1_CONTROLS_PARTIAL_OPEN:
+                        tailwindState.setPartialOpen(0, config.getDoorOnePartialOpen());
+                        break;
+                    /**
+                     * Door 2 Channels
+                     */
+                    case CHANNEL_DOOR_2_CONTROLS_STATUS:
+                        tailwindState.setDoorStatus(1, response.getDoorData().getDoor2().getStatus());
+                        break;
+                    case CHANNEL_DOOR_2_CONTROLS_OPEN_CLOSE:
+                        cmdBody = buildDoorOpenCloseCommand(command.toString(), 1);
+                        response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                        tailwindState.setDoorOpenClose(1, command.toString());
+                        break;
+                    case CHANNEL_DOOR_2_CONTROLS_PARTIAL_OPEN:
+                        tailwindState.setPartialOpen(1, config.getDoorTwoPartialOpen());
+                        break;
+                    /**
+                     * Door 3 Channels
+                     */
+                    case CHANNEL_DOOR_3_CONTROLS_STATUS:
+                        tailwindState.setDoorStatus(2, response.getDoorData().getDoor3().getStatus());
+                        break;
+                    case CHANNEL_DOOR_3_CONTROLS_OPEN_CLOSE:
+                        cmdBody = buildDoorOpenCloseCommand(command.toString(), 2);
+                        response = tailwindApi.getTailwindControllerData(thing, config.authToken, cmdBody);
+                        tailwindState.setDoorOpenClose(2, command.toString());
+                        break;
+                    case CHANNEL_DOOR_3_CONTROLS_PARTIAL_OPEN:
+                        tailwindState.setPartialOpen(2, config.getDoorThreePartialOpen());
+                        break;
+                    default:
+                        throw new TailwindUnsupportedCommandTypeException();
+                }
+            } catch (TailwindUnsupportedCommandTypeException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Unsupported Command {} for channel {}", command.toString(), channelUID.getId());
+                }
+            } catch (TailwindCommunicationException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("TailWindAPI connection error sending command {} for channel {}", command.toString(),
+                            channelUID.getId());
+                }
             }
         }
     }
@@ -183,37 +207,6 @@ public class TailwindHandler extends BaseThingHandler
         if (logger.isDebugEnabled()) {
             logger.debug("Start initializing handler for thing {}", getThing().getUID());
         }
-
-        // /*
-        // * Initialize the webServer URL. If the TailWind Controller was discovered, the URL will be
-        // * found in the properties and should be added to the configuration webServerAddress value.
-        // * Otherwise, the user must enter a valid address/URL in the configuration for webServerAddress;
-        // * once validated would be added to the properties.
-        // *
-        // */
-        // Configuration twConfiguration = editConfiguration();
-        // String wA = (String) twConfiguration.get(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY);
-        // if (config.getWebServerAddress().isBlank()) {
-        // logger.debug("The webServerAddress is blank.");
-        // } else {
-        // // Check to see if the address is changed
-        // }
-        // Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
-        // String webServer = properties.get(TAILWIND_HTTP_SERVER_URL);
-        // if (webServer != null) {
-        // if (webServer.isBlank()) {
-        // try {
-        // String test = utilities.getServerURL(InetAddress.getByName(config.getWebServerAddress()));
-        //
-        // } catch (UnknownHostException e) {
-        // // Auto-generated catch block
-        // e.printStackTrace();
-        // }
-        // } else {
-        // twConfiguration.put(TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY, webServer);
-        // updateConfiguration(twConfiguration);
-        // }
-        // }
 
         // Initialize partialOpenDoorStates
         initializePartialOpenStates();
@@ -589,10 +582,12 @@ public class TailwindHandler extends BaseThingHandler
                 for (Entry<String, ChannelTypeUID> entry : channelsToAdd) {
                     String itemType = CHANNEL_ITEM_TYPES.get(entry.getKey());
                     String itemLabel = channelItemLabelsNew.get(entry.getKey());
-                    if (itemLabel != null) {
+                    String itemDescription = CHANNEL_ITEM_DESCRIPTION.get(entry.getKey());
+                    if (itemLabel != null && itemDescription != null) {
                         Channel channel = ChannelBuilder
                                 .create(new ChannelUID(this.getThing().getUID(), entry.getKey()), itemType)
-                                .withType(entry.getValue()).withLabel(itemLabel).build();
+                                .withType(entry.getValue()).withDescription(itemDescription).withLabel(itemLabel)
+                                .build();
                         channels.add(channel);
                         if (logger.isDebugEnabled()) {
                             logger.debug("Door channel has been added: {} and label {}", entry.getKey(), itemLabel);
@@ -933,6 +928,22 @@ public class TailwindHandler extends BaseThingHandler
         }
 
         return cmdToOpenOrClose.toString();
+    }
+
+    private String buildSetLEDBrightnessCommand(Integer command) {
+        JSONObject cmdToSetLEDBrightness = new JSONObject(TAILWIND_CMD_SET_LED_BRIGHTNESS);
+        Integer cmdKeyFound = cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA)
+                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getInt(TAILWIND_JSON_KEY_BRIGHTNESS);
+        // if (cmdKeyFound != null) {
+        cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+                .put(TAILWIND_JSON_KEY_BRIGHTNESS, command);
+        // } else {
+        // if (logger.isDebugEnabled()) {
+        // logger.debug("Command to set contoller led brightness was not formatted correctly, command: {}",
+        // cmdToSetLEDBrightness);
+        // }
+        // }
+        return cmdToSetLEDBrightness.toString();
     }
 
     private Long getPartialOpenValue(Integer doorIndex) {
