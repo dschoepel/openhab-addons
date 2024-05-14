@@ -75,6 +75,7 @@ public class TailwindState {
      */
     public TailwindState(TailwindStateChangedListener handler) {
         this.handler = handler;
+        logger.debug("Night mode enabled = {}", nightModeEnabled);
     }
 
     /**

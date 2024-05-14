@@ -50,6 +50,7 @@ public class TailwindBindingConstants {
      * Miscellaneous constants
      */
     public static final String TAILWIND_VENDOR_NAME = "tailwind";
+    public static final Integer TAILWIND_STATUS_REQUEST_JOB_INTERVAL = 300; // every xxx seconds to get updates
     public static final String TAILWIND_THING_LABEL_NAME = "TailWind";
     public static final String TAILWIND_HTTP_SERVER_URL = "httpServerUrl";
     public static final String TAILWIND_PROPERTY_MAC_ADDRESS = "macAddress";

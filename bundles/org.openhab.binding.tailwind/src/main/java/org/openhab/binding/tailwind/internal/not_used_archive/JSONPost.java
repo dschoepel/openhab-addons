@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal.connector;
+package org.openhab.binding.tailwind.internal.not_used_archive;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
@@ -28,6 +28,8 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
+import org.openhab.binding.tailwind.internal.connector.TailwindCommunicationException;
+import org.openhab.binding.tailwind.internal.connector.TailwindUnauthorizedException;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
 import org.openhab.core.thing.Thing;
 

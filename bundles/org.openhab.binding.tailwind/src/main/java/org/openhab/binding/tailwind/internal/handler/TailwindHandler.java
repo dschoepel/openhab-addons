@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -36,8 +38,8 @@ import org.openhab.binding.tailwind.internal.Utils.Utilites;
 import org.openhab.binding.tailwind.internal.connector.TailwindCommunicationException;
 import org.openhab.binding.tailwind.internal.connector.TailwindConnectApi;
 import org.openhab.binding.tailwind.internal.connector.TailwindUdpConnector;
-import org.openhab.binding.tailwind.internal.connector.TailwindUdpEventListener;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
+import org.openhab.binding.tailwind.internal.not_used_archive.TailwindUdpEventListener;
 import org.openhab.binding.tailwind.internal.state.TailwindState;
 import org.openhab.binding.tailwind.internal.state.TailwindStateChangedListener;
 import org.openhab.core.config.core.Configuration;
@@ -77,6 +79,7 @@ public class TailwindHandler extends BaseThingHandler
     private Utilites utilities = new Utilites();
     private int updateStateFailures = 0;
     private Gson gson = new Gson();
+    private @Nullable ScheduledFuture<?> requestControllerStatusJob;
 
     /**
      * Constructor for TailWind Device Handler
@@ -94,10 +97,33 @@ public class TailwindHandler extends BaseThingHandler
     }
 
     @Override
+    public void channelLinked(ChannelUID channelUID) {
+        String channel = channelUID.getId();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Channel Id: {}, linked: {}, state: {}", channel, isLinked(channel),
+                    tailwindState.getStateForChannelID(channel));
+        }
+        updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
+        State state = tailwindState.getStateForChannelID(channel);
+        updateState(channel, state);
+    }
+
+    @Override
+    public void channelUnlinked(ChannelUID channelUID) {
+        String channel = channelUID.getId();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Channel was Unlinked: {}, current state: {}", channelUID,
+                    tailwindState.getStateForChannelID(channel));
+        }
+
+    }
+
+    @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
 
         if (command instanceof RefreshType) {
-            // response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
+            String channel = channelUID.getId();
+            logger.debug("Channel Id: {}, linked: {}", channel, isLinked(channel));
             updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
         } else {
             //
@@ -229,6 +255,27 @@ public class TailwindHandler extends BaseThingHandler
 
         /* Set up number of garage doors specified for this thing in the configuration */
         configureDoorChannels(config);
+
+        /* Schedule job to update controller detail status periodically */
+        if (TAILWIND_STATUS_REQUEST_JOB_INTERVAL > 0) {
+            // To be sure job is not running, cancel it before starting a new one.
+            cancelControllerStatusJob();
+            // Start a new job to update controller status.
+            requestControllerStatusJob = scheduler.scheduleWithFixedDelay(() -> {
+                Thread.currentThread().setName("OH-binding-" + this.thing.getUID() + "-requestControllerStatusJob");
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Sending status requests to TailWind controller every {} seconds.",
+                                TAILWIND_STATUS_REQUEST_JOB_INTERVAL);
+                    }
+                    updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Error starting job to refresh controller status: {}", e);
+                    }
+                }
+            }, TAILWIND_STATUS_REQUEST_JOB_INTERVAL, TAILWIND_STATUS_REQUEST_JOB_INTERVAL, TimeUnit.SECONDS);
+        }
 
         /* Schedule job to listen for UDP messages from the TailWind controller */
         scheduler.execute(this::initializeConnection);
@@ -470,9 +517,7 @@ public class TailwindHandler extends BaseThingHandler
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "The TailWind controller did not respond to configured URL/Host address. Please ensure URL/Host address is correct.");
         }
-        if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
-            logger.debug("Get Status request was: {}", response.getResult());
-        } else {
+        if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
             logger.debug("Get Status request failed with result: {}", response.getResult());
         }
         return response;
@@ -489,6 +534,7 @@ public class TailwindHandler extends BaseThingHandler
         if (logger.isDebugEnabled()) {
             logger.debug("Disposing handler for thing {}", getThing().getUID());
         }
+        cancelControllerStatusJob();
         final TailwindUdpConnector connector = udpConnector;
         if (connector != null) {
             udpConnector = null;
@@ -653,6 +699,19 @@ public class TailwindHandler extends BaseThingHandler
         }
     }
 
+    /**
+     * Cancel the checkStatus job
+     */
+    private void cancelControllerStatusJob() {
+        ScheduledFuture<?> requestControllerStatusJob = this.requestControllerStatusJob;
+        if (requestControllerStatusJob != null) {
+            if (!requestControllerStatusJob.isCancelled()) {
+                requestControllerStatusJob.cancel(true);
+                this.requestControllerStatusJob = null;
+            }
+        }
+    }
+
     private void updateTailwindDetails(TailwindControllerData tailwindControllerData) {
         //
         // TODO: Check notify event message in response for items to update
@@ -660,6 +719,8 @@ public class TailwindHandler extends BaseThingHandler
         // for (TailwindControllerData channelState : tailwindControllerData) {
         for (Channel channel : getThing().getChannels()) {
             ChannelUID channelUID = channel.getUID();
+            // logger.debug("Channel: {}, is linked: {}, current state: {}", channelUID, isLinked(channelUID),
+            // tailwindState.getStateForChannelID(channel.getUID().getId()));
             if (ChannelKind.STATE.equals(channel.getKind()) && channelUID.isInGroup() && channelUID.getGroupId() != null
                     && isLinked(channelUID)) {
                 updateTailwindChannel(channelUID, tailwindControllerData);
@@ -828,6 +889,8 @@ public class TailwindHandler extends BaseThingHandler
         // ChannelUID channelUID = new ChannelUID(this.getThing().getUID(), channelID);
         // updateState(channelID, state);
         if (isLinked(channelID)) {
+            logger.debug("Channel Id: {}, linked: {}", channelID, isLinked(channelID));
+
             updateState(channelID, state);
         } else {
             logger.debug("Tried to update State but channel {} is not linked!", channelID);
@@ -883,7 +946,7 @@ public class TailwindHandler extends BaseThingHandler
                 doorName = "";
             }
             if (!doorName.isBlank()) {
-                channelLabels.put(entry.getKey(), String.join(" ", entry.getValue(), doorName));
+                channelLabels.put(entry.getKey(), String.join(" ", doorName, entry.getValue()));
             } // If the doorName was not blank
         }
 

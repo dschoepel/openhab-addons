@@ -10,10 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal.connector;
+package org.openhab.binding.tailwind.internal.not_used_archive;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.tailwind.internal.connector.TailwindUdpConnector;
 
 /**
  *

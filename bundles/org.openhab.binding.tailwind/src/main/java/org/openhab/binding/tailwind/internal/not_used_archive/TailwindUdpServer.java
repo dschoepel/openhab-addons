@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal.connector;
+package org.openhab.binding.tailwind.internal.not_used_archive;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

@@ -15,8 +15,8 @@
 	<channel-type id="nightModeEnabled">
 		<item-type>Number</item-type>
 		<label>Night Mode</label>
-		<description>Enable night mode (assumes you have set start and end time values in the mobile application).</description>
-		<state>
+		<description>When night mode is Enabled, ensures that, during the preset time specified in the mobile application, TailWind will automatically try to close the garage doors for you.</description>
+		<state readOnly="true">
             <options>
                 <option value="0">Disabled</option>
                 <option value="1">Enabled</option>
@@ -40,21 +40,21 @@
 		<state readOnly="true" pattern="%d dBm" />
 	</channel-type>
 
-	<channel-type id="productID">
+	<channel-type id="productID" advanced="true">
 		<item-type>String</item-type>
 		<label>Model Number</label>
 		<description>Tailwind device model number</description>
 		<state readOnly="true" />
 	</channel-type>
 
-	<channel-type id="deviceID">
+	<channel-type id="deviceID" advanced="true">
 		<item-type>String</item-type>
 		<label>Device ID</label>
 		<description>Tailwind device id (MAC address)</description>
 		<state readOnly="true" />
 	</channel-type>
 
-	<channel-type id="firmwareVersion">
+	<channel-type id="firmwareVersion" advanced="true">
 		<item-type>String</item-type>
 		<label>Firmware Version</label>
 		<description>Firmware version number</description>
@@ -65,7 +65,7 @@
 		<item-type>Number</item-type>
 		<label>Door Number</label>
 		<description>Door number index (0-2)</description>
-		<state>
+		<state readOnly="true">
 			<options>
 				<option value="0">Door 1</option>
 				<option value="1">Door 2</option>
@@ -104,11 +104,11 @@
 		</state>
 	</channel-type>
 
-	<channel-type id="lockup">
+	<channel-type id="lockup" >
 		<item-type>Number</item-type>
 		<label>Door Locked Up Status</label>
 		<description>Door lockup (0 - not locked up, 1 - locked up)</description>
-		<state>
+		<state readOnly="true">
 			<options>
 				<option value="0">Un-locked</option>
 				<option value="1">Locked</option>
@@ -120,7 +120,7 @@
 		<item-type>Number</item-type>
 		<label>Door Is Configured</label>
 		<description>Door is configured (0 - yes, 1 - no)</description>
-		<state>
+		<state readOnly="true">
 			<options>
 				<option value="0">Yes</option>
 				<option value="1">No</option>

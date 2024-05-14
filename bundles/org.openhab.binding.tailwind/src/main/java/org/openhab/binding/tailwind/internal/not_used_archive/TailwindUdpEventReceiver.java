@@ -10,15 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal.connector;
+package org.openhab.binding.tailwind.internal.not_used_archive;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.TAILWIND_OPENHAB_HOST_UDP_PORT;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openhab.binding.tailwind.internal.connector.TailwindUdpServer.Event;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
+import org.openhab.binding.tailwind.internal.not_used_archive.TailwindUdpServer.Event;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
