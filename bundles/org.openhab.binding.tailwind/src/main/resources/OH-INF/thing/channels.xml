@@ -51,7 +51,7 @@
 	<channel-type id="deviceID" advanced="true">
 		<item-type>String</item-type>
 		<label>Device ID</label>
-		<description>Tailwind device id (MAC address)</description>
+		<description>TailWind device id (MAC address)</description>
 		<state readOnly="true"/>
 	</channel-type>
 
@@ -59,6 +59,19 @@
 		<item-type>String</item-type>
 		<label>Firmware Version</label>
 		<description>Firmware version number</description>
+	</channel-type>
+
+	<channel-type id="supportCommand" advanced="true">
+		<item-type>String</item-type>
+		<label>Send Support Commands</label>
+		<description>Infrequently used support commands. Reboot (device), Blink (identify device by flashing white light three
+			times).</description>
+		<state>
+			<options>
+				<option value="identify">Blink</option>
+				<option value="reboot">Reboot</option>
+			</options>
+		</state>
 	</channel-type>
 
 	<!-- Door specific channels -->

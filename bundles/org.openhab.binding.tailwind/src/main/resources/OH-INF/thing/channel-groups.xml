@@ -15,6 +15,7 @@
 			<channel id="routerRssi" typeId="routerRssi"/>
 			<channel id="productID" typeId="productID"/>
 			<channel id="deviceID" typeId="deviceID"/>
+			<channel id="supportCommand" typeId="supportCommand"/>
 		</channels>
 	</channel-group-type>
 

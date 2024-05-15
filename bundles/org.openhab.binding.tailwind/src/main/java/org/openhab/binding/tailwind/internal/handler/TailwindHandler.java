@@ -129,12 +129,31 @@ public class TailwindHandler extends BaseThingHandler
                      * Controller Channels
                      */
                     case CHANNEL_LED_BRIGHTNESS:
-                        // String test = command.toString();
-                        // Integer test2 = Integer.parseInt(test);
                         cmdBody = buildSetLEDBrightnessCommand(Integer.parseInt(command.toString()));
                         response = tailwindApi.getTailwindControllerData(thing, config.getAuthToken(), cmdBody);
                         if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
                             tailwindState.setLedBrighness(Integer.parseInt(command.toString()));
+                        } else {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Error updating LED brightness: {}, detail: {}", response.getResult(),
+                                        response.getInfo());
+                            }
+                        }
+                        break;
+                    case CHANNEL_SUPPORT_COMMAND:
+                        String cmd = command.toString();
+                        switch (cmd) {
+                            case TAILWIND_JSON_VALUE_NAME_IDENTIFY:
+                                cmdBody = TAILWIND_CMD_IDENTIFY_DEVICE;
+                                break;
+                            case TAILWIND_JSON_VALUE_NAME_REBOOT:
+                                cmdBody = TAILWIND_CMD_REBOOT_DEVICE;
+                                break;
+                        }
+                        response = tailwindApi.getTailwindControllerData(thing, config.getAuthToken(), cmdBody);
+                        if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
+                            tailwindState.setSupportCommand(command.toString());
+                            ;
                         } else {
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Error updating LED brightness: {}, detail: {}", response.getResult(),

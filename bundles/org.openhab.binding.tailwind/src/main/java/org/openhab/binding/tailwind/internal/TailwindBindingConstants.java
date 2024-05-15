@@ -83,6 +83,7 @@ public class TailwindBindingConstants {
     public static final String CHANNEL_PRODUCT_ID = "controller#productID";
     public static final String CHANNEL_DEVICE_ID = "controller#deviceID";
     public static final String CHANNEL_FIRMWARE_VERSION = "controller#firmwareVersion";
+    public static final String CHANNEL_SUPPORT_COMMAND = "controller#supportCommand";
     public static final String PARAMETER_DOOR_NUM_CONNECTED = "numberOfDoorsConnected";
 
     // Channel Group Door One Controls

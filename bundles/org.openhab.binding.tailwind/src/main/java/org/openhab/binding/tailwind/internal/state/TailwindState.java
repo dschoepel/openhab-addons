@@ -41,6 +41,7 @@ public class TailwindState {
     private State productID = StringType.EMPTY;
     private State deviceID = StringType.EMPTY;
     private State firmwareVersion = StringType.EMPTY;
+    private State supportCommand = StringType.valueOf(TAILWIND_JSON_VALUE_NAME_IDENTIFY);
 
     // ----- Door One Specific Channels -----
     private State doorOneIndex = DecimalType.valueOf("99");
@@ -110,6 +111,8 @@ public class TailwindState {
                 return deviceID;
             case CHANNEL_FIRMWARE_VERSION:
                 return firmwareVersion;
+            case CHANNEL_SUPPORT_COMMAND:
+                return supportCommand;
             /**
              * Door One Channels
              */
@@ -170,7 +173,6 @@ public class TailwindState {
         if (!newVal.equals(this.doorNum)) {
             this.doorNum = newVal;
             handler.stateChanged(CHANNEL_DOOR_NUM, this.doorNum);
-
         } // If doorNum changed
     }
 
@@ -199,7 +201,6 @@ public class TailwindState {
         if (!newVal.equals(this.ledBrightness)) {
             this.ledBrightness = newVal;
             handler.stateChanged(CHANNEL_LED_BRIGHTNESS, this.ledBrightness);
-
         } // If led brightness changed
     }
 
@@ -213,7 +214,6 @@ public class TailwindState {
         if (!newVal.equals(this.routerRSSI)) {
             this.routerRSSI = newVal;
             handler.stateChanged(CHANNEL_ROUTER_RSSI, this.routerRSSI);
-
         } // If routerRSSI changed
     }
 
@@ -227,7 +227,6 @@ public class TailwindState {
         if (!newVal.equals(this.productID)) {
             this.productID = newVal;
             handler.stateChanged(CHANNEL_PRODUCT_ID, this.productID);
-
         } // If productID changed
     }
 
@@ -241,7 +240,6 @@ public class TailwindState {
         if (!newVal.equals(this.deviceID)) {
             this.deviceID = newVal;
             handler.stateChanged(CHANNEL_DEVICE_ID, this.deviceID);
-
         } // If deviceID changed
     }
 
@@ -255,7 +253,19 @@ public class TailwindState {
         if (!newVal.equals(this.firmwareVersion)) {
             this.firmwareVersion = newVal;
             handler.stateChanged(CHANNEL_FIRMWARE_VERSION, this.firmwareVersion);
+        } // If firmwareVersion changed
+    }
 
+    /**
+     * Method to set the support command state for the TailWind controller
+     *
+     * @param supportCommand - string containing support command selected (identify, reboot)
+     */
+    public void setSupportCommand(String supportCommand) {
+        StringType newVal = StringType.valueOf(supportCommand);
+        if (!newVal.equals(this.supportCommand)) {
+            this.supportCommand = newVal;
+            handler.stateChanged(CHANNEL_SUPPORT_COMMAND, this.supportCommand);
         } // If firmwareVersion changed
     }
 
