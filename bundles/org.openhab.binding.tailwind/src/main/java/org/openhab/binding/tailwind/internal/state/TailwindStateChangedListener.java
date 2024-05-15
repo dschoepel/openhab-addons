@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -12,12 +12,16 @@
  */
 package org.openhab.binding.tailwind.internal.state;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 
 /**
+ * The {@link TailwindStateChangedListener} receives state changes for TailWind controller
+ * channels.
  *
+ * @author Dave J Schoepel - Initial contribution
  */
+@NonNullByDefault
 public interface TailwindStateChangedListener {
     /**
      * Update was received.
@@ -25,7 +29,7 @@ public interface TailwindStateChangedListener {
      * @param channelID the channel for which its state changed
      * @param state the new state of the channel
      */
-    void stateChanged(@NonNull String channelID, @NonNull State state);
+    void stateChanged(String channelID, State state);
 
     /**
      * A connection error occurred

@@ -9,36 +9,36 @@
 		<label>TailWind Controller</label>
 		<description>Attributes associated with the TailWind controller.</description>
 		<channels>
-			<channel id="doorNum" typeId="doorNum" />
-			<channel id="nightModeEnabled" typeId="nightModeEnabled" />
-			<channel id="ledBrightness" typeId="system.brightness" />
-			<channel id="routerRssi" typeId="routerRssi" />
-			<channel id="productID" typeId="productID" />
-			<channel id="deviceID" typeId="deviceID" />
+			<channel id="doorNum" typeId="doorNum"/>
+			<channel id="nightModeEnabled" typeId="nightModeEnabled"/>
+			<channel id="ledBrightness" typeId="system.brightness"/>
+			<channel id="routerRssi" typeId="routerRssi"/>
+			<channel id="productID" typeId="productID"/>
+			<channel id="deviceID" typeId="deviceID"/>
 		</channels>
 	</channel-group-type>
 
 	<channel-group-type id="doorOneControls">
 		<label>Door One</label>
 		<channels>
-			<channel id="index" typeId="index" />
-			<channel id="status" typeId="status" />
-			<channel id="openClose" typeId="openClose" />
-			<channel id="partialOpen" typeId="partialOpen" />
-			<channel id="lockup" typeId="lockup" />
-			<channel id="disabled" typeId="disabled" />
+			<channel id="index" typeId="index"/>
+			<channel id="status" typeId="status"/>
+			<channel id="openClose" typeId="openClose"/>
+			<channel id="partialOpen" typeId="partialOpen"/>
+			<channel id="lockup" typeId="lockup"/>
+			<channel id="disabled" typeId="disabled"/>
 		</channels>
 	</channel-group-type>
 
 	<channel-group-type id="doorTwoControls">
 		<label>Door Two</label>
 		<channels>
-			<channel id="index" typeId="index" />
-			<channel id="status" typeId="status" />
-			<channel id="openClose" typeId="openClose" />
-			<channel id="partialOpen" typeId="partialOpen" />
-			<channel id="lockup" typeId="lockup" />
-			<channel id="disabled" typeId="disabled" />
+			<channel id="index" typeId="index"/>
+			<channel id="status" typeId="status"/>
+			<channel id="openClose" typeId="openClose"/>
+			<channel id="partialOpen" typeId="partialOpen"/>
+			<channel id="lockup" typeId="lockup"/>
+			<channel id="disabled" typeId="disabled"/>
 		</channels>
 
 	</channel-group-type>
@@ -46,12 +46,12 @@
 	<channel-group-type id="doorThreeControls">
 		<label>Door Three</label>
 		<channels>
-			<channel id="index" typeId="index" />
-			<channel id="status" typeId="status" />
-			<channel id="openClose" typeId="openClose" />
-			<channel id="partialOpen" typeId="partialOpen" />
-			<channel id="lockup" typeId="lockup" />
-			<channel id="disabled" typeId="disabled" />
+			<channel id="index" typeId="index"/>
+			<channel id="status" typeId="status"/>
+			<channel id="openClose" typeId="openClose"/>
+			<channel id="partialOpen" typeId="partialOpen"/>
+			<channel id="lockup" typeId="lockup"/>
+			<channel id="disabled" typeId="disabled"/>
 		</channels>
 	</channel-group-type>
 

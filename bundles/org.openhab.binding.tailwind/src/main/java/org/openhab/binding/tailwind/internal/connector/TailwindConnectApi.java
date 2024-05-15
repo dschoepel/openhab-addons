@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -35,8 +35,12 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonSyntaxException;
 
 /**
+ * The {@link TailwindConnectApi} handles sending commands to the TailWind Controller's
+ * API server.
  *
+ * @author Dave J. Schoepel - Initial contribution
  */
+@NonNullByDefault
 public class TailwindConnectApi extends TailwindApi {
     private final Logger logger = LoggerFactory.getLogger(TailwindConnectApi.class);
 
@@ -66,11 +70,6 @@ public class TailwindConnectApi extends TailwindApi {
      */
     public TailwindControllerData getTailwindControllerData(Thing thing, String authToken, String body)
             throws TailwindCommunicationException {
-
-        // JSONObject tailwindCommandString = new JSONObject(body);
-        // tailwindCommandString.put(TAILWIND_JSON_KEY_VERSION, TAILWIND_JSON_VALUE_VER_02);
-        // String server = "tailwind-08d1f91202ec.local";
-        // String url = TAILWIND_BASE_URL_PART_1 + server + TAILWIND_BASE_URL_PART_2;
         final Request request = getHttpClient().newRequest(getTailwindServerUrl(thing));
         request.method(HttpMethod.POST);
         request.header(TAILWIND_HTTP_HEADER_TOKEN, authToken);
@@ -161,7 +160,7 @@ public class TailwindConnectApi extends TailwindApi {
 
     private String getTailwindServerUrl(Thing thing) throws TailwindCommunicationException {
         String serverURL = "";
-        Map<@NonNull String, @NonNull String> thingPropertiesMap = thing.getProperties();
+        Map<String, String> thingPropertiesMap = thing.getProperties();
         if (thingPropertiesMap.containsKey(TAILWIND_HTTP_SERVER_URL)) {
             String server = thingPropertiesMap.get(TAILWIND_HTTP_SERVER_URL);
             if (server != null && !server.isBlank()) {
@@ -176,5 +175,4 @@ public class TailwindConnectApi extends TailwindApi {
         ;
         return serverURL;
     }
-
 }

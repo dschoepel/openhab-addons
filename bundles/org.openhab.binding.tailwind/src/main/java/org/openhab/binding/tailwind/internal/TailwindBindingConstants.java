@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -66,6 +66,7 @@ public class TailwindBindingConstants {
     public static final String JSON_RESPONSE_RESULT_OK = "OK";
     public static final String TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY = "webServerAddress";
     public static final double PARTIAL_OPEN_DEFAULT_SETTING = 2.5d;
+    public static final String VALID_IP_PATTERN = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
     /** Thing is set OFFLINE after so many communication errors. */
     public static final int ATTEMPTS_WITH_COMMUNICATION_ERRORS = 3;
     /** Name for thread running UDP Connection */
@@ -241,47 +242,46 @@ public class TailwindBindingConstants {
      */
 
     /* ------- Keys for JSON values ----------------- */
-    public static String TAILWIND_JSON_KEY_VERSION = "version";
-    public static String TAILWIND_JSON_KEY_PRODUCT = "product";
-    public static String TAILWIND_JSON_KEY_DATA = "data";
-    public static String TAILWIND_JSON_KEY_TYPE = "type";
-    public static String TAILWIND_JSON_KEY_NAME = "name";
-    public static String TAILWIND_JSON_KEY_VALUE = "value";
-    public static String TAILWIND_JSON_KEY_URL = "url";
-    public static String TAILWIND_JSON_KEY_PROTO = "proto";
-    public static String TAILWIND_JSON_KEY_ENABLE = "enable";
-    public static String TAILWIND_JSON_KEY_DOOR_IDX = "door_idx";
-    public static String TAILWIND_JSON_KEY_CMD = "cmd";
-    public static String TAILWIND_JSON_KEY_PARTIAL = "partial_time";
-    public static String TAILWIND_JSON_KEY_BRIGHTNESS = "brightness";
+    public static final String TAILWIND_JSON_KEY_VERSION = "version";
+    public static final String TAILWIND_JSON_KEY_PRODUCT = "product";
+    public static final String TAILWIND_JSON_KEY_DATA = "data";
+    public static final String TAILWIND_JSON_KEY_TYPE = "type";
+    public static final String TAILWIND_JSON_KEY_NAME = "name";
+    public static final String TAILWIND_JSON_KEY_VALUE = "value";
+    public static final String TAILWIND_JSON_KEY_URL = "url";
+    public static final String TAILWIND_JSON_KEY_PROTO = "proto";
+    public static final String TAILWIND_JSON_KEY_ENABLE = "enable";
+    public static final String TAILWIND_JSON_KEY_DOOR_IDX = "door_idx";
+    public static final String TAILWIND_JSON_KEY_CMD = "cmd";
+    public static final String TAILWIND_JSON_KEY_PARTIAL = "partial_time";
+    public static final String TAILWIND_JSON_KEY_BRIGHTNESS = "brightness";
 
     /* ------- JSON key values ----------------- */
-    public static String TAILWIND_JSON_VALUE_PRODUCT = "iQ3";
-    public static String TAILWIND_JSON_VALUE_VER_01 = "0.1";
-    public static String TAILWIND_JSON_VALUE_VER_02 = "0.2";
-    public static String TAILWIND_JSON_VALUE_TYPE_GET = "get";
-    public static String TAILWIND_JSON_VALUE_TYPE_SET = "set";
-    public static String TAILWIND_JSON_VALUE_NAME_DEV_ST = "dev_st";
-    public static String TAILWIND_JSON_VALUE_NAME_NOTIFY_URL = "notify_url";
-    public static String TAILWIND_JSON_VALUE_NAME_DOOR_OP = "door_op";
-    public static String TAILWIND_JSON_VALUE_NAME_STATUS_LED = "status_led";
-    public static String TAILWIND_JSON_VALUE_NAME_IDENTIFY = "identify";
-    public static String TAILWIND_JSON_VALUE_NAME_REBOOT = "reboot";
-    public static String TAILWIND_JSON_VALUE_NAME_PROTO_HTTP = "http";
-    public static String TAILWIND_JSON_VALUE_NAME_PROTPO_UDP = "udp";
-    public static int TAILWIND_JSON_VALUE_ENABLE_ON = 1;
-    public static int TAILWIND_JSON_VALUE_ENABLE_OFF = 0;
-    public static String TAILWIND_JSON_VALUE_CMD_OPEN = "open";
-    public static String TAILWIND_JSON_VALUE_CMD_CLOSE = "close";
-    public static String TAILWIND_JSON_VALUE_CMD_PARTIAL_TIME = "partial";
-    public static int TAILWIND_JSON_VALUE_DOOR_ONE_INDEX = 0;
+    public static final String TAILWIND_JSON_VALUE_PRODUCT = "iQ3";
+    public static final String TAILWIND_JSON_VALUE_VER_01 = "0.1";
+    public static final String TAILWIND_JSON_VALUE_VER_02 = "0.2";
+    public static final String TAILWIND_JSON_VALUE_TYPE_GET = "get";
+    public static final String TAILWIND_JSON_VALUE_TYPE_SET = "set";
+    public static final String TAILWIND_JSON_VALUE_NAME_DEV_ST = "dev_st";
+    public static final String TAILWIND_JSON_VALUE_NAME_NOTIFY_URL = "notify_url";
+    public static final String TAILWIND_JSON_VALUE_NAME_DOOR_OP = "door_op";
+    public static final String TAILWIND_JSON_VALUE_NAME_STATUS_LED = "status_led";
+    public static final String TAILWIND_JSON_VALUE_NAME_IDENTIFY = "identify";
+    public static final String TAILWIND_JSON_VALUE_NAME_REBOOT = "reboot";
+    public static final String TAILWIND_JSON_VALUE_NAME_PROTO_HTTP = "http";
+    public static final String TAILWIND_JSON_VALUE_NAME_PROTPO_UDP = "udp";
+    public static final int TAILWIND_JSON_VALUE_ENABLE_ON = 1;
+    public static final int TAILWIND_JSON_VALUE_ENABLE_OFF = 0;
+    public static final String TAILWIND_JSON_VALUE_CMD_OPEN = "open";
+    public static final String TAILWIND_JSON_VALUE_CMD_CLOSE = "close";
+    public static final String TAILWIND_JSON_VALUE_CMD_PARTIAL_TIME = "partial";
+    public static final int TAILWIND_JSON_VALUE_DOOR_ONE_INDEX = 0;
 
     /* ------- JSON TailWind controller command templates ---------------------- */
-    public static String TAILWIND_CMD_DEVICE_STATUS = "{\"version\": \"0.1\",\"data\": {\"type\": \"get\",\"name\": \"dev_st\"}}";
-    public static String TAILWIND_CMD_SET_STATUS_REPORT = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"notify_url\",\"value\": {\"url\": \"http://192.168.1.1:8888/report\",\"proto\": \"udp\",\"enable\": 1}}}";
-    public static String TAILWIND_CMD_DOOR_OPEN_OR_CLOSE = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"door_op\",\"value\": {\"door_idx\": 0,\"cmd\": \"open\",}}}";
-    public static String TAILWIND_CMD_SET_LED_BRIGHTNESS = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"status_led\",\"value\": {\"brightness\": 100}}}";
-    public static String TAILWIND_CMD_IDENTIFY_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"identify\"}}";
-    public static String TAILWIND_CMD_REBOOT_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"reboot\"}}";
-
+    public static final String TAILWIND_CMD_DEVICE_STATUS = "{\"version\": \"0.1\",\"data\": {\"type\": \"get\",\"name\": \"dev_st\"}}";
+    public static final String TAILWIND_CMD_SET_STATUS_REPORT = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"notify_url\",\"value\": {\"url\": \"http://192.168.1.1:8888/report\",\"proto\": \"udp\",\"enable\": 1}}}";
+    public static final String TAILWIND_CMD_DOOR_OPEN_OR_CLOSE = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"door_op\",\"value\": {\"door_idx\": 0,\"cmd\": \"open\",}}}";
+    public static final String TAILWIND_CMD_SET_LED_BRIGHTNESS = "{\"product\": \"iQ3\",\"version\": \"0.1\",\"data\": {\"type\": \"set\",\"name\": \"status_led\",\"value\": {\"brightness\": 100}}}";
+    public static final String TAILWIND_CMD_IDENTIFY_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"identify\"}}";
+    public static final String TAILWIND_CMD_REBOOT_DEVICE = "{\"product\": \"iQ3\",\"version\": \"0.2\",\"data\": {\"type\": \"set\",\"name\": \"reboot\"}}";
 }

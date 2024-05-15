@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -85,7 +85,7 @@ public class TailwindHandlerFactory extends BaseThingHandlerFactory {
             Map<String, String> properties = new HashMap<>(2);
             properties = thing.getProperties();
             logger.debug("Properties size is: {}", properties.size());
-            if (properties.size() == 0) {
+            if (properties.isEmpty()) {
                 Map<String, String> defaultProperties = new HashMap<>(2);
                 // Store the properties of the mDNS query in the thing
                 defaultProperties.put(Thing.PROPERTY_MAC_ADDRESS, "000000000000");

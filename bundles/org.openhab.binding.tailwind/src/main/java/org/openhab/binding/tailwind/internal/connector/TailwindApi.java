@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -12,14 +12,19 @@
  */
 package org.openhab.binding.tailwind.internal.connector;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
+ * The {@link TailwindApi} is an abstract class used as base for connecting to the TailWind API
+ * server hosted on the controller device.
  *
+ * @author Dave J. Schoepel - Initial contribution
  */
+@NonNullByDefault
 public abstract class TailwindApi {
     private final HttpClient httpClient;
     protected final Gson gson;

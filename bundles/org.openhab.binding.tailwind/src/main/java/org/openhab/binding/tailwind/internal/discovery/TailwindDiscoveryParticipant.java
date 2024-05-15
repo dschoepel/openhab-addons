@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -30,7 +30,7 @@ import javax.jmdns.ServiceInfo;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.tailwind.internal.TailwindModel;
-import org.openhab.binding.tailwind.internal.Utils.Utilites;
+import org.openhab.binding.tailwind.internal.utils.Utilities;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
@@ -43,6 +43,14 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link TailwindDiscoveryParticipant} is responsible for looking for TailWind
+ * controllers and adding them to the InBox. Uses mDNS to look for http servers
+ * with vendor name of "tailwind". Uses the MAC address to ensure the controller
+ * is not rediscovered it is already configured.
+ *
+ * @author Dave J. Schoepel - Initial contribution
+ */
 @NonNullByDefault
 @Component(service = MDNSDiscoveryParticipant.class)
 public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
@@ -52,7 +60,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
     // Service type for HTTP enabled TailWind garage controllers
     private static final String HTTP_SERVICE_TYPE = "_http._tcp.local.";
 
-    private Utilites utilities = new Utilites();
+    private Utilities utilities = new Utilities();
     private boolean isAutoDiscoveryEnabled;
     private Set<ThingTypeUID> supportedThingTypes;
 
@@ -129,7 +137,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         properties.put(Thing.PROPERTY_VENDOR, vendor);
                         properties.put(Thing.PROPERTY_HARDWARE_VERSION, hardwareVersion);
                         properties.put(Thing.PROPERTY_FIRMWARE_VERSION, "");
-                        properties.put(TAILWIND_PROPERTY_MAX_DOORS, utilities.GetMaxDoors(modelNumber));
+                        properties.put(TAILWIND_PROPERTY_MAX_DOORS, utilities.getMaxDoors(modelNumber));
                         properties.put(TAILWIND_HTTP_SERVER_URL, serverURL);
 
                         // Suggested name of discovered device (.e.g. "TailWind iQ3")
@@ -170,7 +178,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
         if (isAutoDiscoveryEnabled) {
             // Matcher matcher = TAILWIND_CONTROLLER_PATTERN.matcher(service.getQualifiedName());
             String vendor = service.getPropertyString("vendor");
-            if (vendor != null && vendor.equals("tailwind")) {
+            if (vendor != null && "tailwind".equals(vendor)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("This seems like a supported Taiwind Controller!");
                 }

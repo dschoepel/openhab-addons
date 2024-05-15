@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -10,19 +10,28 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.tailwind.internal.Utils;
+package org.openhab.binding.tailwind.internal.utils;
+
+import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.VALID_IP_PATTERN;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.swing.text.Utilities;
-
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.tailwind.internal.TailwindModel;
 import org.openhab.core.thing.Thing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Utilites {
+/**
+ * The {@link Utilities} class defines common methods, which are
+ * used across the whole binding.
+ *
+ * @author Dave J. Schoepel - Initial contribution
+ */
+
+@NonNullByDefault
+public class Utilities {
 
     private Logger logger = LoggerFactory.getLogger(Utilities.class);
 
@@ -33,7 +42,7 @@ public class Utilites {
      * @param model - validated from the mDNS discovery
      * @return maxDoors for the device
      */
-    public int GetMaxDoors(String model) {
+    public int getMaxDoors(String model) {
         int maxDoors = 1;
         for (TailwindModel supportedModel : TailwindModel.values()) {
             if (supportedModel.getId().equals(model)) {
@@ -121,9 +130,7 @@ public class Utilites {
     }
 
     public static boolean isValidIPAddress(final String ip) {
-        String PATTERN = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
-
-        return ip.matches(PATTERN);
+        return ip.matches(VALID_IP_PATTERN);
     }
 
     /**
@@ -131,7 +138,6 @@ public class Utilites {
      * @return macAddress re-formated to 12 digits and no separator
      */
     public String convertDeviceIdToMac(String deviceId) {
-
         String macAddress = "";
         String[] deviceIdArray = deviceId.split("_");
         for (int i = 0; i <= (deviceIdArray.length - 1); i++) {

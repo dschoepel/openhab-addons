@@ -10,11 +10,11 @@
 		<description>TailWind iQ3 Garage Door Opener</description>
 
 		<channel-groups>
-			<channel-group id="controller" typeId="tailwindController" />
+			<channel-group id="controller" typeId="tailwindController"/>
 			<channel-group id="doorOne" typeId="doorOneControls"/>
 			<channel-group id="doorTwo" typeId="doorTwoControls"/>
 			<channel-group id="doorThree" typeId="doorThreeControls"/>
-	<!-- -->
+			<!-- -->
 		</channel-groups>
 
 		<config-description-ref uri="thing-type:tailwind:config"/>

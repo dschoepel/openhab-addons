@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -14,8 +14,16 @@ package org.openhab.binding.tailwind.internal.connector;
 
 import java.io.IOException;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+/**
+ * The {@link TailwindCommunicationException} handles sending communication errors
+ * related to the UPD sever and API server connectors.
+ *
+ * @author Dave J. Schoepel - Initial contribution
+ */
+@NonNullByDefault
 public class TailwindCommunicationException extends IOException {
 
     private static final long serialVersionUID = 1L;

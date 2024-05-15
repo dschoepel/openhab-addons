@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -24,14 +24,19 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * The {@link TailwindUDPConnector} is a UDP server that runs in the background to
+ * receive status updates when the TailWind controller sends them.
  *
+ * @author Dave J. Schoepel - Initial contribution
  */
+@NonNullByDefault
 public class TailwindUdpConnector {
 
     /** Buffer for incoming UDP packages. */
@@ -59,7 +64,7 @@ public class TailwindUdpConnector {
 
     /** The listener that gets notified upon newly received messages. */
     private @Nullable Consumer<String> listener;
-    private String threadNamePrefix;
+    private String threadNamePrefix = "";
 
     private int receiveFailures = 0;
     private boolean listenerActive = false;
@@ -94,7 +99,8 @@ public class TailwindUdpConnector {
         if (receivingSocket == null) {
             Boolean connected = false;
             Integer udpPort = receivePort;
-            while (connected == false && udpPort <= udpPort + 3) {
+            Integer udpPortLimit = udpPort + 3;
+            while (!connected && udpPort <= udpPortLimit) {
                 try { // try ports starting with receivePort to receivePort + 3
                     receivingSocket = new DatagramSocket(udpPort);
                     sendingSocket = new DatagramSocket();
@@ -133,7 +139,6 @@ public class TailwindUdpConnector {
         } else if (!Objects.equals(this.listener, listener)) {
             throw new IllegalStateException("A listening thread is already running");
         }
-
     } // End connect(...)
 
     private void listen() {
@@ -145,9 +150,7 @@ public class TailwindUdpConnector {
     } // End listen()
 
     private void listenUnhandledInterruption() throws InterruptedException {
-
         Integer recPortLocal = receivingSocket != null ? receivingSocket.getLocalPort() : 0;
-
         Thread.currentThread().setName(threadNamePrefix.concat(recPortLocal.toString()));
         logger.info("TailWind UPD listener started for: '{}:{}, thread: {}'", host, recPortLocal,
                 Thread.currentThread().getName());
@@ -235,10 +238,6 @@ public class TailwindUdpConnector {
     } // End isConnected()
 
     public String getUdpConnectionName() {
-        if (host != null) {
-            return host + ":" + String.valueOf(receivePort);
-        } else {
-            return "tailwind:" + String.valueOf(receivePort);
-        }
-    }
+        return host + ":" + String.valueOf(receivePort);
+    } // End getUdpConnectionName
 }

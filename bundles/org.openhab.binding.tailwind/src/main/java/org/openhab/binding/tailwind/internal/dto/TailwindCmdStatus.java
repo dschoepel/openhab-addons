@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -17,7 +17,10 @@ import java.io.Serializable;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The {@link TailwindCmdStatus} is used to define the JSON status response from
+ * the TailWind controller API or UDP server.
  *
+ * @author Dave J. Schoepel - Initial contribution
  */
 public class TailwindCmdStatus implements Serializable {
 
@@ -27,7 +30,7 @@ public class TailwindCmdStatus implements Serializable {
     @SerializedName("data")
 
     private TailwindCmdStatusData data;
-    private final static long serialVersionUID = 9156544887706283356L;
+    private static final long serialVersionUID = 9156544887706283356L;
 
     public String getVersion() {
         return version;

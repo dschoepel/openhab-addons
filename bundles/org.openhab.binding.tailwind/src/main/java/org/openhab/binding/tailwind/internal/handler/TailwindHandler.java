@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -15,7 +15,6 @@ package org.openhab.binding.tailwind.internal.handler;
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,19 +28,17 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.openhab.binding.tailwind.internal.TailwindConfiguration;
 import org.openhab.binding.tailwind.internal.TailwindUnsupportedCommandTypeException;
-import org.openhab.binding.tailwind.internal.Utils.Utilites;
-//import org.openhab.binding.tailwind.internal.connector.JSONPost;
 import org.openhab.binding.tailwind.internal.connector.TailwindCommunicationException;
 import org.openhab.binding.tailwind.internal.connector.TailwindConnectApi;
 import org.openhab.binding.tailwind.internal.connector.TailwindUdpConnector;
+import org.openhab.binding.tailwind.internal.connector.TailwindUdpEventListener;
 import org.openhab.binding.tailwind.internal.dto.TailwindControllerData;
-import org.openhab.binding.tailwind.internal.not_used_archive.TailwindUdpEventListener;
 import org.openhab.binding.tailwind.internal.state.TailwindState;
 import org.openhab.binding.tailwind.internal.state.TailwindStateChangedListener;
+import org.openhab.binding.tailwind.internal.utils.Utilities;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -76,7 +73,7 @@ public class TailwindHandler extends BaseThingHandler
     private TailwindState tailwindState = new TailwindState(this);
     private TailwindConnectApi tailwindApi;
     private @Nullable TailwindUdpConnector udpConnector;
-    private Utilites utilities = new Utilites();
+    private Utilities utilities = new Utilities();
     private int updateStateFailures = 0;
     private Gson gson = new Gson();
     private @Nullable ScheduledFuture<?> requestControllerStatusJob;
@@ -115,12 +112,10 @@ public class TailwindHandler extends BaseThingHandler
             logger.debug("Channel was Unlinked: {}, current state: {}", channelUID,
                     tailwindState.getStateForChannelID(channel));
         }
-
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-
         if (command instanceof RefreshType) {
             String channel = channelUID.getId();
             logger.debug("Channel Id: {}, linked: {}", channel, isLinked(channel));
@@ -134,8 +129,8 @@ public class TailwindHandler extends BaseThingHandler
                      * Controller Channels
                      */
                     case CHANNEL_LED_BRIGHTNESS:
-                        String test = command.toString();
-                        Integer test2 = Integer.parseInt(test);
+                        // String test = command.toString();
+                        // Integer test2 = Integer.parseInt(test);
                         cmdBody = buildSetLEDBrightnessCommand(Integer.parseInt(command.toString()));
                         response = tailwindApi.getTailwindControllerData(thing, config.getAuthToken(), cmdBody);
                         if (response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
@@ -264,14 +259,14 @@ public class TailwindHandler extends BaseThingHandler
             requestControllerStatusJob = scheduler.scheduleWithFixedDelay(() -> {
                 Thread.currentThread().setName("OH-binding-" + this.thing.getUID() + "-requestControllerStatusJob");
                 try {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Sending status requests to TailWind controller every {} seconds.",
-                                TAILWIND_STATUS_REQUEST_JOB_INTERVAL);
-                    }
+                    // if (logger.isDebugEnabled()) {
+                    // logger.debug("Sending status requests to TailWind controller every {} seconds.",
+                    // TAILWIND_STATUS_REQUEST_JOB_INTERVAL);
+                    // }
                     updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
                 } catch (Exception e) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Error starting job to refresh controller status: {}", e);
+                        logger.debug("Error starting job to refresh controller status: {}", e.getMessage());
                     }
                 }
             }, TAILWIND_STATUS_REQUEST_JOB_INTERVAL, TAILWIND_STATUS_REQUEST_JOB_INTERVAL, TimeUnit.SECONDS);
@@ -339,7 +334,7 @@ public class TailwindHandler extends BaseThingHandler
      */
     public boolean checkConfiguration(TailwindConfiguration config) throws Exception {
         // Check that door count is within the supported range 1 - max doors for this model
-        int maxDoors = utilities.GetMaxDoors(thing.getThingTypeUID().getId());
+        int maxDoors = utilities.getMaxDoors(thing.getThingTypeUID().getId());
         if (config.getDoorCount() < 1 || config.getDoorCount() > maxDoors) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "This binding supports 1 to " + maxDoors + " garage doors. Please update the door count.");
@@ -354,8 +349,7 @@ public class TailwindHandler extends BaseThingHandler
          * If the configured value is different from the properties, use manual steps to validate.
          */
         String addressCheckResult = webServerAddressCheck();
-        if (addressCheckResult != "") {
-
+        if (!addressCheckResult.isBlank()) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     addressCheckResult + ": Address error!");
             return false;
@@ -420,19 +414,19 @@ public class TailwindHandler extends BaseThingHandler
             String currentMacAddress = properties.get(TAILWIND_PROPERTY_MAC_ADDRESS);
             if (currentMacAddress != null) {
                 if (currentMacAddress.isBlank()
-                        || currentMacAddress != utilities.convertDeviceIdToMac(response.getDevID())) {
+                        || !currentMacAddress.equals(utilities.convertDeviceIdToMac(response.getDevID()))) {
                     properties.put(TAILWIND_PROPERTY_MAC_ADDRESS, utilities.convertDeviceIdToMac(response.getDevID()));
                 }
             } // If MAC address sent from controller is not equal to what is stored in properties
             String currentSftwrVer = properties.get(TAILWIND_PROPERTY_SOFTWARE_VERSION);
             if (currentSftwrVer != null) {
-                if (currentSftwrVer.isBlank() || currentSftwrVer != response.getFwVer()) {
+                if (currentSftwrVer.isBlank() || !currentSftwrVer.equals(response.getFwVer())) {
                     properties.put(TAILWIND_PROPERTY_SOFTWARE_VERSION, response.getFwVer());
                 }
             } // If software address sent from controller is not equal to what is stored in properties
             String currentModelId = properties.get(TAILWIND_PROPERTY_MODEL_ID);
             if (currentModelId != null) {
-                if (currentModelId.isBlank() || currentModelId != response.getProduct()) {
+                if (currentModelId.isBlank() || !currentModelId.equals(response.getProduct())) {
                     properties.put(TAILWIND_PROPERTY_MODEL_ID, response.getProduct());
                 }
             } // If model number sent from controller is not equal to what is stored in properties
@@ -444,7 +438,7 @@ public class TailwindHandler extends BaseThingHandler
          * Check for duplicate door names
          */
         String doorResult = duplicateNameFound(config);
-        if (doorResult != "") {
+        if (!doorResult.isBlank()) {
             logger.debug("Duplicate door name found. The value '{}' was used more than once!", doorResult);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "Duplicate door name found. The value '" + doorResult + "' was used more than once!");
@@ -481,7 +475,7 @@ public class TailwindHandler extends BaseThingHandler
                 if (!serverAddress.equalsIgnoreCase(httpServerUrl)) {
                     if (!serverAddress.isBlank()) {
                         // Validate Server address can be an IP address or Url (ends in .local)
-                        if (Utilites.isValidIPAddress(serverAddress) || serverAddress.contains(".local")) {
+                        if (Utilities.isValidIPAddress(serverAddress) || serverAddress.contains(".local")) {
                             // Valid address to try
                             properties.put(TAILWIND_HTTP_SERVER_URL, serverAddress);
                             thing.setProperties(properties);
@@ -659,12 +653,12 @@ public class TailwindHandler extends BaseThingHandler
      * @return urlString - OpenHab host IP:Port to use for set status report URL command
      * @throws IOException
      */
-    private String buildOpenHabUdpUrl() throws IOException {
-        InetAddress address1 = InetAddress.getLocalHost();
-        String hostAddress = address1.getHostAddress();
-        String urlString = hostAddress + ":" + TAILWIND_OPENHAB_HOST_UDP_PORT;
-        return urlString;
-    }
+    // private String buildOpenHabUdpUrl() throws IOException {
+    // InetAddress address1 = InetAddress.getLocalHost();
+    // String hostAddress = address1.getHostAddress();
+    // String urlString = hostAddress + ":" + TAILWIND_OPENHAB_HOST_UDP_PORT;
+    // return urlString;
+    // }
 
     @Override
     public void eventReceived(String msg) {
@@ -869,7 +863,6 @@ public class TailwindHandler extends BaseThingHandler
     @Override
     public void connectionError(@Nullable String errorMsg) {
         // TODO Auto-generated method stub
-
     }
 
     private String getOpenHabHost() {
@@ -884,13 +877,11 @@ public class TailwindHandler extends BaseThingHandler
 
     @Override
     public void stateChanged(String channelID, State state) {
-        /* Only update channels if they are linked to an item */
-
-        // ChannelUID channelUID = new ChannelUID(this.getThing().getUID(), channelID);
-        // updateState(channelID, state);
         if (isLinked(channelID)) {
-            logger.debug("Channel Id: {}, linked: {}", channelID, isLinked(channelID));
-
+            if (logger.isDebugEnabled()) {
+                logger.debug("Updating state for Channel Id: {}, linked: {}, State: {}", channelID, isLinked(channelID),
+                        state);
+            }
             updateState(channelID, state);
         } else {
             logger.debug("Tried to update State but channel {} is not linked!", channelID);
@@ -953,16 +944,16 @@ public class TailwindHandler extends BaseThingHandler
         return channelLabels;
     }
 
-    private String buildStatusReportCommand() throws JSONException, IOException {
-        JSONObject cmdToSetStatusReportURL = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT);
-        String urlKeyFound = cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA)
-                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
-        if (urlKeyFound != null) {
-            cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
-                    .put(TAILWIND_JSON_KEY_URL, buildOpenHabUdpUrl());
-        }
-        return cmdToSetStatusReportURL.toString();
-    }
+    // private String buildStatusReportCommand() throws JSONException, IOException {
+    // JSONObject cmdToSetStatusReportURL = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT);
+    // String urlKeyFound = cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA)
+    // .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
+    // if (urlKeyFound != null) {
+    // cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
+    // .put(TAILWIND_JSON_KEY_URL, buildOpenHabUdpUrl());
+    // }
+    // return cmdToSetStatusReportURL.toString();
+    // }
 
     /**
      * @param command - String value of "open" or "close" the door
@@ -995,8 +986,8 @@ public class TailwindHandler extends BaseThingHandler
 
     private String buildSetLEDBrightnessCommand(Integer command) {
         JSONObject cmdToSetLEDBrightness = new JSONObject(TAILWIND_CMD_SET_LED_BRIGHTNESS);
-        Integer cmdKeyFound = cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA)
-                .getJSONObject(TAILWIND_JSON_KEY_VALUE).getInt(TAILWIND_JSON_KEY_BRIGHTNESS);
+        // Integer cmdKeyFound = cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA)
+        // .getJSONObject(TAILWIND_JSON_KEY_VALUE).getInt(TAILWIND_JSON_KEY_BRIGHTNESS);
         // if (cmdKeyFound != null) {
         cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
                 .put(TAILWIND_JSON_KEY_BRIGHTNESS, command);

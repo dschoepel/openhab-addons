@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,10 +16,14 @@ import java.io.Serializable;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * The {@link TailwindDoor} is used to define the JSON door subset in the
+ * status response from the TailWind controller API or UDP server.
+ *
+ * @author Dave J. Schoepel - Initial contribution
+ */
 public class TailwindDoor implements Serializable {
-    /**
-     *
-     */
+
     private static final long serialVersionUID = 4331180371949634469L;
 
     @SerializedName("index")

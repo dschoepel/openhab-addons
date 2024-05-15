@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -17,12 +17,15 @@ import java.io.Serializable;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The {@link TailwindCmdStatusData} is used to define the JSON data subset in the
+ * status response from the TailWind controller API or UDP server.
  *
+ * @author Dave J. Schoepel - Initial contribution
  */
 public class TailwindCmdStatusData implements Serializable {
 
     /**
-    * 
+    *
     */
     private static final long serialVersionUID = 6824360494931987690L;
 

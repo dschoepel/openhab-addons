@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -12,16 +12,18 @@
  */
 package org.openhab.binding.tailwind.internal;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
+ * Handles sending unsupported command error messages.
  *
+ * @author Dave J Schoepel - Initial contribution
  */
+@NonNullByDefault
 public class TailwindUnsupportedCommandTypeException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     *
-     */
     /**
      * Method to send error when an unsupported command is encountered
      */
