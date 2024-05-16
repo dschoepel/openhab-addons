@@ -160,7 +160,8 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         openHabHostIPAddress = utilities.getOHServerIP();
                     } catch (UnknownHostException e) {
                         // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        logger.warn("The was an error retrieving the IP address for the OH host server, Error msg: {}",
+                                e.getMessage());
                     } // Get OpenHab host IP address (used to set UDP client messages from TailWind
                     if (logger.isDebugEnabled()) {
                         logger.debug("ThingUID = {}", thingUID);

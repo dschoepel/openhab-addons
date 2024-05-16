@@ -261,10 +261,13 @@ public class TailwindHandler extends BaseThingHandler
             }
         } catch (TailwindCommunicationException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.warn("There was an error communicating to the TailWind controller! Error msg: {}", e.getMessage());
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.warn(
+                    "There was an unknown exception validating the configuration for the TailWind controller! Error msg: {}",
+                    e.getMessage());
+
         }
 
         /* Set up number of garage doors specified for this thing in the configuration */
@@ -526,7 +529,7 @@ public class TailwindHandler extends BaseThingHandler
             response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
         } catch (TailwindCommunicationException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.warn("There was an error communicating to the TailWind controller! Error msg: {}", e.getMessage());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "The TailWind controller did not respond to configured URL/Host address. Please ensure URL/Host address is correct.");
         }
