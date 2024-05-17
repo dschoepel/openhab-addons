@@ -52,11 +52,10 @@ Auto-discovery is enabled by default. To disable it, you can create a file in th
 # true to enable, false to disable  
 org.openhab.tailwind:enableAutoDiscovery=false
 ```
+
 This configuration parameter only controls the TailWind auto-discovery process, not the openHAB auto-discovery. Moreover, if OpenHAB's auto-discovery is disabled, the TailWind auto-discovery is disabled too.
 
 Once added as a Thing, the user can control up to three doors per controller, similar to how they are controlled using TailWind's web or smartphone app.
-
-
 
 ## Thing Configuration
 
@@ -100,6 +99,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 </br>
 
 ### Door One
+
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 1 Index | doorOne#index | Number | R | Door number index assigned by TailWind (0) |
@@ -111,6 +111,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 </br>
 
 ### Door Two
+
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 2 Index | doorTwo#index | Number | R | Door number index assigned by TailWind (1) |
@@ -122,6 +123,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 </br>
 
 ## Door Three
+
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 3 Index | doorThree#index | Number | R | Door number index assigned by TailWind (2) |
@@ -136,9 +138,11 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 
 
 ### Thing Configuration
+
 >Thing <binding_id>:<type_id>:<thing_id> "Label" @ "Location" [ \<parameters> ]
 
 Using the syntax for [defining a Thing](https://www.openhab.org/docs/configuration/things.html#defining-things-using-files):
+
 - the binding_id should always be 'tailwind'
 - the type_id should be the value for a Type in Supported Things table above (i.e iQ3)
 - the thing_id can be any unique value, best if the device MAC address is used.  See additional considerations below to find the MAC address. 
@@ -164,15 +168,16 @@ String    Tailwind_iQ3_Door_2_Status      "Door 2 Status"      {channel="tailwin
 String    Tailwind_iQ3_Door_2_Control     "Door 2 Control"     {channel="tailwind:iQ3:09d1f01202ec:doorTwo#openClose"}
 ```
 
-
 ## Additional Considerations
 
 ### Web Server URL
+
 The URL syntax is:
 
 ```xml
 tailwind-<MACAddress>.local
 ```
+
 The MAC address can be found using the TailWind smart-phone mobile application.
 
 1. Open the app and click on the "gear" icon for a controller.
