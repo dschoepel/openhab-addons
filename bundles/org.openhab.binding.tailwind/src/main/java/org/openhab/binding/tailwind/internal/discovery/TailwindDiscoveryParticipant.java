@@ -127,7 +127,6 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                                 "Tailwind mDNS properties: vendor: {}, model: {}, device_id: {}, SW ver: {}, HW ver: {}, secure_code: {}, Homekit: {}",
                                 vendor, modelNumber, deviceId, softwareVersion, hardwareVersion, secureCode, homeKit);
                     } // If debug logging is enabled
-                      // TODO getThingUID steps
                     ThingUID thingUID = getThingUID(serviceInfo);
                     if (thingUID != null) {
                         Map<String, Object> properties = new HashMap<>(2);
@@ -151,7 +150,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
                     /**
                      * Get the host IP address to use for setting the UDP server for TailWind to send status
-                     * TODO: When bringing the iQ3 Thing on line, set/check the host IP address for a
+                     * When bringing the iQ3 Thing on line, set/check the host IP address for a
                      * change. if it changed then send an update to the TailWind controller to use the
                      * new IP to send status updates to...
                      */
@@ -159,7 +158,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                     try {
                         openHabHostIPAddress = utilities.getOHServerIP();
                     } catch (UnknownHostException e) {
-                        // TODO Auto-generated catch block
+                        // Warn: Could not get OH Host IP address
                         logger.warn("The was an error retrieving the IP address for the OH host server, Error msg: {}",
                                 e.getMessage());
                     } // Get OpenHab host IP address (used to set UDP client messages from TailWind
@@ -175,9 +174,7 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
 
     @Override
     public @Nullable ThingUID getThingUID(ServiceInfo service) {
-        // TODO Auto-generated method stub
         if (isAutoDiscoveryEnabled) {
-            // Matcher matcher = TAILWIND_CONTROLLER_PATTERN.matcher(service.getQualifiedName());
             String vendor = service.getPropertyString("vendor");
             if (vendor != null && "tailwind".equals(vendor)) {
                 if (logger.isDebugEnabled()) {

@@ -2,45 +2,64 @@
 
 ![TailWind logo](doc/Tailwind-logo-250x88.png)
 
-This binding integrates the TailWind iQ3 Smart Automatic Garage Controller's internal API server with OpenHab via your local network. 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="doc/Tailwind-logo-250x88-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="doc/Tailwind-logo-250x88.png">
+</picture>
 
-_If possible, provide some resources like pictures (only PNG is supported currently), a video, etc. to give an impression of what can be done with this binding._
-_You can place such resources into a `doc` folder next to this README.md._
+This binding is used to enable communication between OpenHab and [TailWind's Smart Automatic Garage Controller](https://gotailwind.com/).
 
-_Put each sentence in a separate line to improve readability of diffs._
+
+## Overview
+
+The garage door controllers are automatically discovered.  
+
+There is a single Thing created for each controller connected to the local Ethernet-WiFi network with channels that allow control of the doors (garage, gates, doors...) connected to the controller.
+
+OpenHab linked channels will be updated regardless of whether the Tailwind's web/smarphone app, door remote or other integrations are used to configure, open or close doors.
+
+Details for connecting to the controller's API server can be found on TailWind's GitHub site here: [Tailwind Local Control API](https://github.com/Scott--R/Tailwind_Local_Control_API)
+
+## Testing
+
+#### TailWind iQ3: 
+ 
+<ul>
+<li>using auto discovery and adding thing via inbox (<b>preferred</b>)</li>
+<li>using manual configuration</li>
+<li>using file based setup </li>
+<li>via a direct Ethernet (LAN) connection with the iQ3 on same local network as the OpenHab server</li> 
+</ul>  
 
 ## Supported Things
 
-_Please describe the different supported things / devices including their ThingTypeUID within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
 
-- `bridge`: Short description of the Bridge, if any
-- `sample`: Short description of the Thing with the ThingTypeUID `sample`
+| Thing | Type | Description | Connection | Doors | Tested |
+|:-:|:-:|:--|-------|:-:|:-:|
+| ![TailWind](doc/Tailwind_iQ32.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
+
+A typical Thing UID will have three components **bindingId**_ + **model** + **unique id** (the MAC address of the device). 
+
+For example - **tailwind:iQ3:08d1f91202ec**
 
 ## Discovery
 
-_Describe the available auto-discovery features here._
-_Mention for what it works and what needs to be kept in mind when using it._
+The Tailwind binding discovers the garage controller on the **local** network and creates an inbox entry for each discovered device. 
 
-## Binding Configuration
+The binding can auto-discover the TailWind garage controllers present on your **local** network. Auto-discovery is enabled by default. To disable it, you can create a file in the services directory called tailwind.cfg with the following content:
 
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it._
-_In this section, you should link to this file and provide some information about the options._
-_The file could e.g. look like:_
-
+```ruby
+# Configuration for the nadavr binding
+# 
+# Auto discovery parameter 
+# true to enable, false to disable  
+org.openhab.tailwind:enableAutoDiscovery=false
 ```
-# Configuration for the tailwind Binding
-#
-# Default secret key for the pairing of the tailwind Thing.
-# It has to be between 10-40 (alphanumeric) characters.
-# This may be changed by the user for security reasons.
-secret=openHABSecret
-```
+This configuration parameter only controls the TailWind auto-discovery process, not the openHAB auto-discovery. Moreover, if the openHAB auto-discovery is disabled, the TailWind auto-discovery is disabled too.
 
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/OH-INF/binding``` of your binding._
+Once added as a thing, the user can control up to three doors per controller; similarly to how they are controlled using TailWind's web or smartphone app.
 
-_If your binding does not offer any generic configurations, you can remove this section completely._
+
 
 ## Thing Configuration
 
@@ -51,11 +70,13 @@ _Note that it is planned to generate some part of this based on the XML files wi
 
 ### `sample` Thing Configuration
 
-| Name            | Type    | Description                           | Default | Required | Advanced |
-|-----------------|---------|---------------------------------------|---------|----------|----------|
-| hostname        | text    | Hostname or IP address of the device  | N/A     | yes      | no       |
-| password        | text    | Password to access the device         | N/A     | yes      | no       |
-| refreshInterval | integer | Interval the device is polled in sec. | 600     | no       | yes      |
+The TailWind controller thing has the following configuration parameters:
+
+| Parameter | Parameter Id | Req/Opt | Description | Default | Type | Accepted Values |
+| :--  | :-- | :-: | :-- | :-: | :-: | :-- |
+| Refresh Interval\* | refreshInterval | Optional | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
+
+>Note: <b>*</b> items are hidden unless "Show advanced" checked on UI 
 
 ## Channels
 

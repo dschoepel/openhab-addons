@@ -231,23 +231,10 @@ public class TailwindHandler extends BaseThingHandler
      */
     @Override
     public void initialize() {
-        // TODO: Initialize the handler.
-        // The framework requires you to return from this method quickly, i.e. any network access must be done in
-        // the background initialization below.
-        // Also, before leaving this method a thing status from one of ONLINE, OFFLINE or UNKNOWN must be set. This
-        // might already be the real thing status in case you can decide it directly.
-        // In case you can not decide the thing status directly (e.g. for long running connection handshake using WAN
-        // access or similar) you should set status UNKNOWN here and then decide the real status asynchronously in the
-        // background.
-
-        // set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
-        // the framework is then able to reuse the resources from the thing handler initialization.
-        // we set this upfront to reliably check status updates in unit tests.
-
+        // Initialize the handler.
         if (logger.isDebugEnabled()) {
             logger.debug("Start initializing handler for thing {}", getThing().getUID());
         }
-
         // Initialize partialOpenDoorStates
         initializePartialOpenStates();
         // Get configuration settings
@@ -260,10 +247,10 @@ public class TailwindHandler extends BaseThingHandler
                 logger.info("tailwind:TailwindHandler using configuration: {}", config.toString());
             }
         } catch (TailwindCommunicationException e) {
-            // TODO Auto-generated catch block
+            // Error requesting state details from the TailWind controller
             logger.warn("There was an error communicating to the TailWind controller! Error msg: {}", e.getMessage());
         } catch (Exception e) {
-            // TODO Auto-generated catch block
+            // Error Catch all for any unknown errors
             logger.warn(
                     "There was an unknown exception validating the configuration for the TailWind controller! Error msg: {}",
                     e.getMessage());
@@ -389,7 +376,7 @@ public class TailwindHandler extends BaseThingHandler
             // {"result": "OK"} vs. {"result":"token fail"}
             response = sendCommand(TAILWIND_CMD_DEVICE_STATUS);
 
-            /* TODO: Use response from OK device status set initial states for this thing */
+            /* Use response from OK device status set initial states for this thing */
             if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                         "Unable to verify authorization token. Please check that the Token and Web Address were entered correctly. If web address is ok, obtain another token from the mobile app and try again.");
@@ -431,7 +418,7 @@ public class TailwindHandler extends BaseThingHandler
             }
             return false;
         } else {
-            // TODO: Get property details from response and update if there are changes
+            // Get property details from response and update if there are changes
             Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
             String currentMacAddress = properties.get(TAILWIND_PROPERTY_MAC_ADDRESS);
             if (currentMacAddress != null) {
@@ -489,7 +476,7 @@ public class TailwindHandler extends BaseThingHandler
                             properties.get(TAILWIND_HTTP_SERVER_URL));
                     updateConfiguration(tailwindConfiguration);
                 } else {
-                    // TODO: Error: Both serverAddress and httpServerUrl are blank
+                    // Error: Both serverAddress and httpServerUrl are blank
                     addressCheckResult = "BLANK";
                 } // If httlServerUrl has a value (not blank)
             } else {
@@ -502,11 +489,11 @@ public class TailwindHandler extends BaseThingHandler
                             properties.put(TAILWIND_HTTP_SERVER_URL, serverAddress);
                             thing.setProperties(properties);
                         } else {
-                            // TODO: Error address is not formatted correctly
+                            // Error address is not formatted correctly
                             addressCheckResult = "ADDRESS FORMAT ERROR";
                         }
                     } else {
-                        // TODO: Error Server address was not entered yet.
+                        // Error Server address was not entered yet.
                         addressCheckResult = "BLANK";
                     }
                 } // If serverAddress is not equal to httpServerUrl
@@ -528,7 +515,7 @@ public class TailwindHandler extends BaseThingHandler
         try {
             response = tailwindApi.getTailwindControllerData(thing, config.authToken, body);
         } catch (TailwindCommunicationException e) {
-            // TODO Auto-generated catch block
+            // Error trying to connect to the TailWind controller possible configuration settings changes needed
             logger.warn("There was an error communicating to the TailWind controller! Error msg: {}", e.getMessage());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "The TailWind controller did not respond to configured URL/Host address. Please ensure URL/Host address is correct.");
@@ -729,14 +716,8 @@ public class TailwindHandler extends BaseThingHandler
     }
 
     private void updateTailwindDetails(TailwindControllerData tailwindControllerData) {
-        //
-        // TODO: Check notify event message in response for items to update
-        //
-        // for (TailwindControllerData channelState : tailwindControllerData) {
         for (Channel channel : getThing().getChannels()) {
             ChannelUID channelUID = channel.getUID();
-            // logger.debug("Channel: {}, is linked: {}, current state: {}", channelUID, isLinked(channelUID),
-            // tailwindState.getStateForChannelID(channel.getUID().getId()));
             if (ChannelKind.STATE.equals(channel.getKind()) && channelUID.isInGroup() && channelUID.getGroupId() != null
                     && isLinked(channelUID)) {
                 updateTailwindChannel(channelUID, tailwindControllerData);
@@ -884,7 +865,9 @@ public class TailwindHandler extends BaseThingHandler
 
     @Override
     public void connectionError(@Nullable String errorMsg) {
-        // TODO Auto-generated method stub
+        if (logger.isDebugEnabled()) {
+            logger.debug("Error connecting to tailwind controller API: {}", errorMsg);
+        }
     }
 
     private String getOpenHabHost() {
@@ -955,7 +938,7 @@ public class TailwindHandler extends BaseThingHandler
             } else if (key.contains("doorThree")) {
                 doorName = config.getDoorThreeName();
             } else {
-                // TODO: handle key name not found.
+                // Key name not found.
                 doorName = "";
             }
             if (!doorName.isBlank()) {

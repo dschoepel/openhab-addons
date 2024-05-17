@@ -74,8 +74,10 @@ public class Utilities {
      */
     public String getOHServerIP() throws UnknownHostException {
         InetAddress address1 = InetAddress.getLocalHost();
-        // String hostName = address1.getHostName();
         String hostAddress = address1.getHostAddress();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Host address for the OH Server is: {}", hostAddress);
+        }
         return hostAddress;
     }
 
