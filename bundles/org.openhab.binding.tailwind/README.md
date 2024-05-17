@@ -33,26 +33,24 @@ Details for connecting to the controller's API server can be found on TailWind's
 |:-:|:-:|:--|-------|:-:|:-:|
 | ![TailWind](doc/tailwind_iQ35.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
 
-A typical Thing UID will have three components **bindingId**_ + **model** + **unique id** (the MAC address of the device). 
+A Thing UID will have three components **bindingId** + **model** + **unique id** (the MAC address of the device). 
 
 For example - **tailwind:iQ3:08d1f91202ec**
 
 ## Discovery
 
-The Tailwind binding discovers the garage controller on the **local** network and creates an inbox entry for each discovered device. 
-
 The binding can auto-discover the TailWind garage controllers present on your **local** network. Auto-discovery is enabled by default. To disable it, you can create a file in the services directory called tailwind.cfg with the following content:
 
 ```ruby
-# Configuration for the nadavr binding
+# Configuration for the tailwind binding
 # 
 # Auto discovery parameter 
 # true to enable, false to disable  
 org.openhab.tailwind:enableAutoDiscovery=false
 ```
-This configuration parameter only controls the TailWind auto-discovery process, not the openHAB auto-discovery. Moreover, if the openHAB auto-discovery is disabled, the TailWind auto-discovery is disabled too.
+This configuration parameter only controls the TailWind auto-discovery process, not the openHAB auto-discovery. Moreover, if OpenHAB's auto-discovery is disabled, the TailWind auto-discovery is disabled too.
 
-Once added as a thing, the user can control up to three doors per controller; similarly to how they are controlled using TailWind's web or smartphone app.
+Once added as a Thing, the user can control up to three doors per controller, similar to how they are controlled using TailWind's web or smartphone app.
 
 
 
@@ -62,19 +60,45 @@ The TailWind controller thing has the following configuration parameters:
 
 | Parameter | Parameter Id | Req/Opt | Description | Default | Type | Accepted Values |
 | :--  | :-- | :-: | :-- | :-: | :-: | :-- |
-| Refresh Interval\* | refreshInterval | Optional | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
+| Number of Doors Controlled | doorCount | Required | The number of doors connected to the controller | 1 | Integer | 1, 2 or 3 |
+| API Web Server Address/URL | webServerAddress | Required | Holds either the IP address or HTTP URL of the TailWind controller web server (API). Format for URL is tailwind-MAC address.local (i.e. tailwind-aa0b0cd0e0f0.local) | URL if auto-discovered, user provided if manually created. | String | Valid IP address or URL ending with .local | 
+| Authorization token for the local API server on the controller | authToken | Required | Token obtained from the TailWind [Web Application](web.gotailwind.com). Instructions can be found here: [Token Instructions](https://github.com/Scott--R/Tailwind_Local_Control_API?tab=readme-ov-file#2-token)| Placeholder (123456) | String | Must not be blank and have 6 characters |
+| <b>\*ADVANCED</b> |
+| Door 1 Name\* | doorOneName | Required | Specify custom name for door one | Door 1 | String | Must not be blank or a duplicate of the other 2 door names |
+| Door 1 Partial Open\* | doorOnePartialOpen | Required |Number of seconds to partially open this door | 2.5 seconds | Float | 0.5 - 15 seconds |
+| Door 2 Name\* | doorTwoName | Required | Specify custom name for door two | Door 2 | String | Must not be blank or a duplicate of the other 2 door names |
+| Door 2 Partial Open\* | doorTwoPartialOpen | Required |Number of seconds to partially open this door | 2.5 seconds | Float | 0.5 - 15 seconds |
+| Door 3 Name\* | doorThreeName | Required | Specify custom name for door three | Door 3 | String | Must not be blank or a duplicate of the other 2 door names |
+| Door 3 Partial Open\* | doorThreePartialOpen | Required |Number of seconds to partially open this door | 2.5 seconds | Float | 0.5 - 15 seconds |
 
->Note: <b>*</b> items are hidden unless "Show advanced" checked on UI 
+
+>Note: Stared <b>*</b> items are hidden unless "Show advanced" checked on UI 
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+TailWind Thing Channels are listed by Channel Group (group name preceeds channel with a # sign).  
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+>When manually creating these channels, always use the group prefix to ensure the UI puts them together in the correct group.
 
-| Channel | Type   | Read/Write | Description                 |
-|---------|--------|------------|-----------------------------|
-| control | Switch | RW         | This is the control channel |
+**TailWind Controller**
+
+| Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
+| controller#doorNum | Number | R | Number of doors being controlled. |
+| controller#nightModeEnabled | Number | R | Night mode is enabled (can only be changed using TailWind app). 0=disabled, 1=enabled|
+| controller#ledBrightness | Dimmer | RW | Controls the brightness of the controller LED. Values from 0% - 100% |
+|controller#routerRssi | Number | R | Wi-Fi network received signal strength in dBm.  readings between Strong(-50) and Good(-67) are ideal. |
+| <b>Advanced</b> |
+| controller#productID | String | R | TailWind device model number |
+| controller#deviceID | String | R | TailWind device ID (MAC address).  Format is unique to how TailWind stores this.  Each number pair is sepated by an underscore, if first digit of pair is zero (0) it is not included.  For example address AA:0B:0C:D0:E0:F0 would be represented as aa_b_c_d0_e0_f0. |
+|controller#supportCommand | String | RW | Infrequently used support commands. Values: 'reboot' = reboot the controller device, 'blink' = identify the controller device by flashing white light three times. |
+
+
+
+**Door One**
+
+| Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:------------------|:------------|:-----------:|:----------------------------|
 
 ## Full Example
 
