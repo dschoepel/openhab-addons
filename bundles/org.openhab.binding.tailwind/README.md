@@ -39,7 +39,11 @@ For example - **tailwind:iQ3:08d1f91202ec**
 
 ## Discovery
 
-The binding can auto-discover the TailWind garage controllers present on your **local** network. Auto-discovery is enabled by default. To disable it, you can create a file in the services directory called tailwind.cfg with the following content:
+The binding can auto-discover the TailWind garage controllers present on your **local** network. 
+
+If the TailWind device was discovered, the Thing properties will list specifications reported by the controller including vendor, firmware/hardware versions, number of doors connected, MAC address, model, and web server URL.
+
+Auto-discovery is enabled by default. To disable it, you can create a file in the services directory called tailwind.cfg with the following content:
 
 ```ruby
 # Configuration for the tailwind binding
