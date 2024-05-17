@@ -76,29 +76,56 @@ The TailWind controller thing has the following configuration parameters:
 
 ## Channels
 
-TailWind Thing Channels are listed by Channel Group (group name preceeds channel with a # sign).  
+TailWind Thing channels are listed by channel group (group name preceeds channel with a # sign).  
 
 >When manually creating these channels, always use the group prefix to ensure the UI puts them together in the correct group.
 
 **TailWind Controller**
 
-| Channel Type UID  | Item Type   | Read/Write | Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| controller#doorNum | Number | R | Number of doors being controlled. |
-| controller#nightModeEnabled | Number | R | Night mode is enabled (can only be changed using TailWind app). 0=disabled, 1=enabled|
-| controller#ledBrightness | Dimmer | RW | Controls the brightness of the controller LED. Values from 0% - 100% |
-|controller#routerRssi | Number | R | Wi-Fi network received signal strength in dBm.  readings between Strong(-50) and Good(-67) are ideal. |
+| Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:---------------|:------------------|:------------|:-----------:|:----------------------------|
+| Number of Doors | controller#doorNum | Number | R | Number of doors being controlled. |
+| Night Mode | controller#nightModeEnabled | Number | R | Night mode is enabled (can only be changed using TailWind app). 0=disabled, 1=enabled|
+| Brightness | controller#ledBrightness | Dimmer | RW | Controls the brightness of the controller LED. Values from 0% - 100% |
+| WiFi RSSI |controller#routerRssi | Number | R | Wi-Fi network received signal strength in dBm.  readings between Strong(-50) and Good(-67) are ideal. |
 | <b>Advanced</b> |
-| controller#productID | String | R | TailWind device model number |
-| controller#deviceID | String | R | TailWind device ID (MAC address).  Format is unique to how TailWind stores this.  Each number pair is sepated by an underscore, if first digit of pair is zero (0) it is not included.  For example address AA:0B:0C:D0:E0:F0 would be represented as aa_b_c_d0_e0_f0. |
-|controller#supportCommand | String | RW | Infrequently used support commands. Values: 'reboot' = reboot the controller device, 'blink' = identify the controller device by flashing white light three times. |
-
-
+| Model Number\* | controller#productID | String | R | TailWind device model number |
+| Device ID\* | controller#deviceID | String | R | TailWind device ID (MAC address).  Format is unique to how TailWind stores this.  Each number pair is sepated by an underscore, if first digit of pair is zero (0) it is not included.  For example address AA:0B:0C:D0:E0:F0 would be represented as aa_b_c_d0_e0_f0. |
+| Send Support Commands\* |controller#supportCommand | String | RW | Infrequently used support commands. Values: 'reboot' = reboot the controller device, 'blink' = identify the controller device by flashing white light three times. |
+>Note: Stared <b>*</b> items are hidden unless "Show advanced" checked on UI 
+</br>
 
 **Door One**
+| Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:---------------|:------------------|:------------|:-----------:|:----------------------------|
+| Door 1 Index | doorOne#index | Number | R | Door number index assigned by TailWind (0) |
+| Door 1 Status | doorOne#status | String | R | Door status (open, close, lock, enable, disable, reboot) |
+| Door 1 Door Control | doorOne#openClose | String | RW | Door control (open, partial, close) | 
+| Door 1 Partial Open Time | doorOne#partialOpen | Number | R | Partial door open time in seconds (0.5 - 15).  Ony updated via Thing configuration. |
+| Door 1 Locked Up Status | doorOne#lockup |Number | R | Door lockup (0 - not locked up, 1 = locked up) |
+| Door 1 Is Configured | doorOne#disabled | Number | R | Door is in disabled state (0 - enabled, 1 - disabled).  Could mean no door is wired to the controller or it is wired but it was disabled using the smartphone app. |
+</br>
 
-| Channel Type UID  | Item Type   | Read/Write | Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
+**Door Two**
+| Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:---------------|:------------------|:------------|:-----------:|:----------------------------|
+| Door 2 Index | doorTwo#index | Number | R | Door number index assigned by TailWind (1) |
+| Door 2 Status | doorTwo#status | String | R | Door status (open, close, lock, enable, disable, reboot) |
+| Door 2 Door Control | doorTwo#openClose | String | RW | Door control (open, partial, close) | 
+| Door 2 Partial Open Time | doorTwo#partialOpen | Number | R | Partial door open time in seconds (0.5 - 15).  Ony updated via Thing configuration. |
+| Door 2 Locked Up Status | doorTwo#lockup |Number | R | Door lockup (0 - not locked up, 1 = locked up) |
+| Door 2 Is Configured | doorTwo#disabled | Number | R | Door is in disabled state (0 - enabled, 1 - disabled).  Could mean no door is wired to the controller or it is wired but it was disabled using the smartphone app. |
+</br>
+
+**Door Three**
+| Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
+|:---------------|:------------------|:------------|:-----------:|:----------------------------|
+| Door 3 Index | doorThree#index | Number | R | Door number index assigned by TailWind (1) |
+| Door 3 Status | doorThree#status | String | R | Door status (open, close, lock, enable, disable, reboot) |
+| Door 3 Door Control | doorThree#openClose | String | RW | Door control (open, partial, close) | 
+| Door 3 Partial Open Time | doorThree#partialOpen | Number | R | Partial door open time in seconds (0.5 - 15).  Ony updated via Thing configuration. |
+| Door 3 Locked Up Status | doorThree#lockup |Number | R | Door lockup (0 - not locked up, 1 = locked up) |
+| Door 3 Is Configured | doorThree#disabled | Number | R | Door is in disabled state (0 - enabled, 1 - disabled).  Could mean no door is wired to the controller or it is wired but it was disabled using the smartphone app. |
 
 ## Full Example
 
