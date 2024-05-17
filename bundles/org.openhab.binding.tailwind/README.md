@@ -120,7 +120,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 **Door Three**
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
-| Door 3 Index | doorThree#index | Number | R | Door number index assigned by TailWind (1) |
+| Door 3 Index | doorThree#index | Number | R | Door number index assigned by TailWind (2) |
 | Door 3 Status | doorThree#status | String | R | Door status (open, close, lock, enable, disable, reboot) |
 | Door 3 Door Control | doorThree#openClose | String | RW | Door control (open, partial, close) | 
 | Door 3 Partial Open Time | doorThree#partialOpen | Number | R | Partial door open time in seconds (0.5 - 15).  Ony updated via Thing configuration. |
