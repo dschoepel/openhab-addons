@@ -1,11 +1,6 @@
 # TailWind Binding - Smart Garage Door Controller
 
-![TailWind logo](doc/Tailwind-logo-250x88.png)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="doc/Tailwind-logo-250x88-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="doc/Tailwind-logo-250x88.png">
-</picture>
+![TailWind logo](doc/Tailwind-logo-250x88-dark.png)
 
 This binding is used to enable communication between OpenHab and [TailWind's Smart Automatic Garage Controller](https://gotailwind.com/).
 
@@ -36,7 +31,7 @@ Details for connecting to the controller's API server can be found on TailWind's
 
 | Thing | Type | Description | Connection | Doors | Tested |
 |:-:|:-:|:--|-------|:-:|:-:|
-| ![TailWind](doc/Tailwind_iQ32.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
+| ![TailWind](doc/tailwind_iQ32.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
 
 A typical Thing UID will have three components **bindingId**_ + **model** + **unique id** (the MAC address of the device). 
 
