@@ -422,7 +422,7 @@ public class TailwindHandler extends BaseThingHandler
             Map<String, String> properties = new HashMap<String, String>(thing.getProperties());
             String currentMacAddress = properties.get(TAILWIND_PROPERTY_MAC_ADDRESS);
             if (currentMacAddress != null) {
-                if (currentMacAddress.isBlank()
+                if (currentMacAddress.isBlank() || currentMacAddress.contains("000000000000")
                         || !currentMacAddress.equals(utilities.convertDeviceIdToMac(response.getDevID()))) {
                     properties.put(TAILWIND_PROPERTY_MAC_ADDRESS, utilities.convertDeviceIdToMac(response.getDevID()));
                 }

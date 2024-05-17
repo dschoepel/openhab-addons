@@ -72,7 +72,7 @@ The TailWind controller thing has the following configuration parameters:
 | Door 3 Partial Open\* | doorThreePartialOpen | Required |Number of seconds to partially open this door | 2.5 seconds | Float | 0.5 - 15 seconds |
 
 
->Note: Stared <b>*</b> items are hidden unless "Show advanced" checked on UI 
+>Note: Starred <b>*</b> items are hidden unless "Show advanced" checked on UI 
 
 ## Channels
 
@@ -80,7 +80,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 
 >When manually creating these channels, always use the group prefix to ensure the UI puts them together in the correct group.
 
-**TailWind Controller**
+### TailWind Controller
 
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
@@ -92,10 +92,10 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 | Model Number\* | controller#productID | String | R | TailWind device model number |
 | Device ID\* | controller#deviceID | String | R | TailWind device ID (MAC address).  Format is unique to how TailWind stores this.  Each number pair is sepated by an underscore, if first digit of pair is zero (0) it is not included.  For example address AA:0B:0C:D0:E0:F0 would be represented as aa_b_c_d0_e0_f0. |
 | Send Support Commands\* |controller#supportCommand | String | RW | Infrequently used support commands. Values: 'reboot' = reboot the controller device, 'blink' = identify the controller device by flashing white light three times. |
->Note: Stared <b>*</b> items are hidden unless "Show advanced" checked on UI 
+>Note: Starred <b>*</b> items are hidden unless "Show advanced" checked on UI 
 </br>
 
-**Door One**
+### Door One
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 1 Index | doorOne#index | Number | R | Door number index assigned by TailWind (0) |
@@ -106,7 +106,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 | Door 1 Is Configured | doorOne#disabled | Number | R | Door is in disabled state (0 - enabled, 1 - disabled).  Could mean no door is wired to the controller or it is wired but it was disabled using the smartphone app. |
 </br>
 
-**Door Two**
+### Door Two
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 2 Index | doorTwo#index | Number | R | Door number index assigned by TailWind (1) |
@@ -117,7 +117,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 | Door 2 Is Configured | doorTwo#disabled | Number | R | Door is in disabled state (0 - enabled, 1 - disabled).  Could mean no door is wired to the controller or it is wired but it was disabled using the smartphone app. |
 </br>
 
-**Door Three**
+## Door Three
 | Label | Channel Type UID  | Item Type   | Read/Write | Description                  |
 |:---------------|:------------------|:------------|:-----------:|:----------------------------|
 | Door 3 Index | doorThree#index | Number | R | Door number index assigned by TailWind (2) |
@@ -129,29 +129,60 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 
 ## Full Example
 
-_Provide a full usage example based on textual configuration files._
-_*.things, *.items examples are mandatory as textual configuration is well used by many users._
-_*.sitemap examples are optional._
+
 
 ### Thing Configuration
+>Thing <binding_id>:<type_id>:<thing_id> "Label" @ "Location" [ \<parameters> ]
+
+Using the syntax for [defining a Thing](https://www.openhab.org/docs/configuration/things.html#defining-things-using-files):
+- the binding_id should always be 'tailwind'
+- the type_id should be the value for a Type in Supported Things table above (i.e iQ3)
+- the thing_id can be any unique value, best if the device MAC address is used. 
+
+The webServer Address can either be the IP Address of the controller or the URL.  Using the URL is best approach as you dont have to worry about the controller device IP address changing.
 
 ```java
-Example thing configuration goes here.
+Thing tailwind:iQ3:09d1f01202ec "Tailwind iQ3" [doorCount=2, webServerAddress="tailwind-09d1f01202ec.local", authToken="138952", doorOneName="Door 1", doorOnePartialOpen=2.75, doorTwoName="Door 2", doorTwoPartialOpen=3.0]
 ```
 
 ### Item Configuration
 
 ```java
-Example item configuration goes here.
+// TailWind Controller - Grouping
+Number    Tailwind_iQ3_Number_of_Doors    "Number Of Doors"    {channel="tailwind:iQ3:09d1f01202ec:controller#doorNum"}
+Dimmer    Tailwind_iQ3_Brightness         "Brightness"         {channel="tailwind:iQ3:09d1f01202ec:controller#ledBrightness"}
+Number    Tailwind_iQ3_WiFi_RSSI          "WiFi RSSI"          {channel="tailwind:iQ3:09d1f01202ec:controller#routerRssi"}
+// Door 1 - Grouping
+String    Tailwind_iQ3_Door_1_Status      "Door 1 Status"      {channel="tailwind:iQ3:09d1f01202ec:doorOne#status"}
+String    Tailwind_iQ3_Door_1_Control     "Door 1 Control"     {channel="tailwind:iQ3:09d1f01202ec:doorOne#openClose"}
+// Door 1 - Grouping
+String    Tailwind_iQ3_Door_2_Status      "Door 2 Status"      {channel="tailwind:iQ3:09d1f01202ec:doorTwo#status"}
+String    Tailwind_iQ3_Door_2_Control     "Door 2 Control"     {channel="tailwind:iQ3:09d1f01202ec:doorTwo#openClose"}
 ```
 
-### Sitemap Configuration
 
-```perl
-Optional Sitemap configuration goes here.
-Remove this section, if not needed.
+## Additional Considerations
+
+### Web Server URL
+The URL syntax is:
+
+```xml
+tailwind-<MACAddress>.local
 ```
+The MAC address can be found using the tailwind smartphone movbile app.
 
-## Any custom content here!
+1. Open the app and click on the "gear" icon for a controller.
+2. At the top of the screen, upper right side the MAC is listed in a format similar to this: 09:d1:f0:12:02:ec
+3. The corresponding URL would be tailwind-09d1f01202ec.local.  
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+### Authentication Token
+
+The Token is called the "local control key" and can be found on the TailWind web application (this cannot be found on the smartphone/movile app).  
+
+1. Login to the web application here: [Web Application](web.gotailwind.com)
+2. The top menu on this screen should list an options called "Local Control Key". If its not visible, there will be a "Hamburger" icon on the upper left side of the screen.
+3. Click on "Local Control Key" to see the token or generate one if it has not already been created.
+4. Copy this token and use it to configure the authToken configuration parameter.
+
+The instructions can also be found here: [Token Instructions](https://github.com/Scott--R/Tailwind_Local_Control_API?tab=readme-ov-file#2-token)
+
