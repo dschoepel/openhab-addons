@@ -137,7 +137,7 @@ TailWind Thing channels are listed by channel group (group name preceeds channel
 Using the syntax for [defining a Thing](https://www.openhab.org/docs/configuration/things.html#defining-things-using-files):
 - the binding_id should always be 'tailwind'
 - the type_id should be the value for a Type in Supported Things table above (i.e iQ3)
-- the thing_id can be any unique value, best if the device MAC address is used. 
+- the thing_id can be any unique value, best if the device MAC address is used.  See additional considerations below to find the MAC address. 
 
 The webServer Address can either be the IP Address of the controller or the URL.  Using the URL is best approach as you dont have to worry about the controller device IP address changing.
 
@@ -169,20 +169,20 @@ The URL syntax is:
 ```xml
 tailwind-<MACAddress>.local
 ```
-The MAC address can be found using the tailwind smartphone movbile app.
+The MAC address can be found using the TailWind smart-phone mobile application.
 
 1. Open the app and click on the "gear" icon for a controller.
-2. At the top of the screen, upper right side the MAC is listed in a format similar to this: 09:d1:f0:12:02:ec
+2. At the top of the screen, upper right side, the MAC is listed in a format similar to this: 09:d1:f0:12:02:ec
 3. The corresponding URL would be tailwind-09d1f01202ec.local.  
 
 ### Authentication Token
 
-The Token is called the "local control key" and can be found on the TailWind web application (this cannot be found on the smartphone/movile app).  
+The Token is called the "local control key" and can be found on the TailWind web application (this cannot be found on the smart-phone/mobile application).  
 
 1. Login to the web application here: [Web Application](web.gotailwind.com)
-2. The top menu on this screen should list an options called "Local Control Key". If its not visible, there will be a "Hamburger" icon on the upper left side of the screen.
+2. The top menu on this screen should list an option called "Local Control Key". If its not visible, there will be a "Hamburger" icon on the upper left side of the screen.
 3. Click on "Local Control Key" to see the token or generate one if it has not already been created.
-4. Copy this token and use it to configure the authToken configuration parameter.
+4. Copy this token and use it to configure the 'authToken' configuration parameter.
 
 The instructions can also be found here: [Token Instructions](https://github.com/Scott--R/Tailwind_Local_Control_API?tab=readme-ov-file#2-token)
 
