@@ -31,7 +31,7 @@ Details for connecting to the controller's API server can be found on TailWind's
 
 | Thing | Type | Description | Connection | Doors | Tested |
 |:-:|:-:|:--|-------|:-:|:-:|
-| ![TailWind](doc/tailwind_iQ34.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
+| ![TailWind](doc/tailwind_iQ35.png) | iQ3 | Smart Automatic Garage Controller | Ethernet / WiFi | 3 | &#9989; Yes |
 
 A typical Thing UID will have three components **bindingId**_ + **model** + **unique id** (the MAC address of the device). 
 
@@ -57,13 +57,6 @@ Once added as a thing, the user can control up to three doors per controller; si
 
 
 ## Thing Configuration
-
-_Describe what is needed to manually configure a thing, either through the UI or via a thing-file._
-_This should be mainly about its mandatory and optional configuration parameters._
-
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
-
-### `sample` Thing Configuration
 
 The TailWind controller thing has the following configuration parameters:
 
