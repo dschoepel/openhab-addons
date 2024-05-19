@@ -14,7 +14,6 @@ package org.openhab.binding.tailwind.internal.handler;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -288,7 +287,6 @@ public class TailwindHandler extends BaseThingHandler
 
         updateStatus(ThingStatus.UNKNOWN);
 
-        // Example for background initialization:
         scheduler.execute(() -> {
             boolean thingReachable = true; // <background task with long running initialization here>
             // when done do:
@@ -299,19 +297,6 @@ public class TailwindHandler extends BaseThingHandler
             }
         });
 
-        // These logging types should be primarily used by bindings
-        // logger.trace("Example trace message");
-        // logger.debug("Example debug message");
-        // logger.warn("Example warn message");
-        //
-        // Logging to INFO should be avoided normally.
-        // See https://www.openhab.org/docs/developer/guidelines.html#f-logging
-
-        // Note: When initialization can NOT be done set the status with more details for further
-        // analysis. See also class ThingStatusDetail for all available status details.
-        // Add a description to give user information to understand why thing does not work as expected. E.g.
-        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-        // "Can not access device as username and/or password are invalid");
     } // End initialize()
 
     private void initializeConnection() {
@@ -331,8 +316,10 @@ public class TailwindHandler extends BaseThingHandler
                     + "' failed unexpectedly with " + e.getClass().getSimpleName() + ": " + e.getMessage());
             dispose();
         }
-        if (udpConnector != null && !udpConnector.isConnected()) {
-            logger.debug("****> UdpConnector was not connected on port: {}!", TAILWIND_OPENHAB_HOST_UDP_PORT);
+        if (udpConnector != null) {
+            if (!udpConnector.isConnected()) {
+                logger.debug("****> UdpConnector was not connected on port: {}!", TAILWIND_OPENHAB_HOST_UDP_PORT);
+            }
         }
     } // End intializeConnection()
 
@@ -658,19 +645,6 @@ public class TailwindHandler extends BaseThingHandler
         }
     }
 
-    /**
-     * Method to set the URL used by the TailWind controller to send notifications
-     *
-     * @return urlString - OpenHab host IP:Port to use for set status report URL command
-     * @throws IOException
-     */
-    // private String buildOpenHabUdpUrl() throws IOException {
-    // InetAddress address1 = InetAddress.getLocalHost();
-    // String hostAddress = address1.getHostAddress();
-    // String urlString = hostAddress + ":" + TAILWIND_OPENHAB_HOST_UDP_PORT;
-    // return urlString;
-    // }
-
     @Override
     public void eventReceived(String msg) {
         if (logger.isDebugEnabled()) {
@@ -950,17 +924,6 @@ public class TailwindHandler extends BaseThingHandler
 
         return channelLabels;
     }
-
-    // private String buildStatusReportCommand() throws JSONException, IOException {
-    // JSONObject cmdToSetStatusReportURL = new JSONObject(TAILWIND_CMD_SET_STATUS_REPORT);
-    // String urlKeyFound = cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA)
-    // .getJSONObject(TAILWIND_JSON_KEY_VALUE).getString(TAILWIND_JSON_KEY_URL);
-    // if (urlKeyFound != null) {
-    // cmdToSetStatusReportURL.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
-    // .put(TAILWIND_JSON_KEY_URL, buildOpenHabUdpUrl());
-    // }
-    // return cmdToSetStatusReportURL.toString();
-    // }
 
     /**
      * @param command - String value of "open" or "close" the door

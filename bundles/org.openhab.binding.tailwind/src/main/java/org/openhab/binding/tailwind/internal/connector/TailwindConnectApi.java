@@ -111,14 +111,14 @@ public class TailwindConnectApi extends TailwindApi {
     }
 
     /**
-     * Method used to extract the device/observations from the BloomSky API response from a string to
+     * Method used to extract the device/observations from the TailWind API response from a string to
      * a JSON object.
      *
-     * @param <T> - Placeholder for return type (DTO class used to parse the response from the BloomSky rest API)
-     * @param response - from the HTTP GET request to the BloomSky API
+     * @param <T> - Placeholder for return type (DTO class used to parse the response from the TailWind rest API)
+     * @param response - from the HTTP GET request to the TailWind API
      * @param type - name of DTO class to use for the gson.fromJson method call
      * @return A parsed response in JSON format if no errors, otherwise throw an exception with error code
-     * @throws BloomSkyCommunicationException indicating the type of communication error in the API response header
+     * @throws TailwindCommunicationException indicating the type of communication error in the API response header
      */
     private <T> T parseResponse(ContentResponse response, Class<T> type) throws TailwindCommunicationException {
         int statusCode = response.getStatus();

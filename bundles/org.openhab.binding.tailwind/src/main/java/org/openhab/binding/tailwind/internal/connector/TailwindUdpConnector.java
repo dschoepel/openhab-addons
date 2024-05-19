@@ -150,7 +150,10 @@ public class TailwindUdpConnector {
     } // End listen()
 
     private void listenUnhandledInterruption() throws InterruptedException {
-        Integer recPortLocal = receivingSocket != null ? receivingSocket.getLocalPort() : 0;
+        Integer recPortLocal = 0;
+        if (receivingSocket != null) {
+            recPortLocal = receivingSocket.getLocalPort();
+        }
         Thread.currentThread().setName(threadNamePrefix.concat(recPortLocal.toString()));
         if (logger.isDebugEnabled()) {
             logger.debug("TailWind UPD listener started for: '{}:{}, thread: {}'", host, recPortLocal,
