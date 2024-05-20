@@ -170,6 +170,11 @@ String    Tailwind_iQ3_Door_2_Control     "Door 2 Control"     {channel="tailwin
 
 ## Additional Considerations
 
+### Limitations
+The TailWind controller can only be cofigured to send status update messages to one host (OpenHab server) listening for them.  
+
+This will not be a problem unless you try to run this binding on more than one OpenHab server at the same time.
+
 ### Web Server URL
 
 The URL syntax is:
