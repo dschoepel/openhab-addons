@@ -131,7 +131,6 @@ public class TailwindUdpConnector {
         } else if (!Objects.equals(this.listener, listener)) {
             throw new IllegalStateException("A listening thread is already running");
         }
-
     } // End connect(...)
 
     private void listen() {
@@ -193,7 +192,7 @@ public class TailwindUdpConnector {
                     // if we get 3 errors in a row, we should better add a delay to stop spamming the log!
                     if (receiveFailures++ > ATTEMPTS_WITH_COMMUNICATION_ERRORS) {
                         logger.debug(
-                                "Unexpected error while listening on port {}; waiting 10sec before the next attempt to listen on that port.",
+                                "Unexpected error while listening on port {}; waiting 10sec before the next attempt to listen on that port. Error: {}",
                                 recPortLocal, e.getMessage());
                         for (int i = 0; i < 50 && receivingSocket != null; i++) {
                             Thread.sleep(200); // 50 * 200ms = 10sec

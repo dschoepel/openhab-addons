@@ -290,8 +290,10 @@ public class TailwindHandler extends BaseThingHandler
         });
     } // End initialize()
 
+    /**
+     * Initialize the UPD connection that listens for status updates from the TailWind controller
+     */
     private void initializeConnection() {
-
         try {
             final TailwindUdpConnector newUdpConnector = new TailwindUdpConnector(thing, config, scheduler,
                     tailwindApi);
@@ -321,7 +323,6 @@ public class TailwindHandler extends BaseThingHandler
      * @throws Exception
      */
     public boolean checkConfiguration(TailwindConfiguration config) throws Exception {
-
         /**
          * Check that door count is within the supported range 1 - max doors for this model
          */
