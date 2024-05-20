@@ -350,7 +350,7 @@ public class TailwindHandler extends BaseThingHandler
         /**
          * Check for OH Server IPV4 non-blank IP address
          */
-        // Get default OH Server IP if the configuration is blan
+        // Get default OH Server IP if the configuration is blank
         List<String> openHabHostIPAddresses = new ArrayList<>(utilities.getOHServerIP());
         String addressList = "";
         String[] addresses = openHabHostIPAddresses.toArray(new String[0]);
@@ -364,8 +364,7 @@ public class TailwindHandler extends BaseThingHandler
         }
         if (config.getOpenHabHostAddress().isBlank()) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    "The OH Server IPV4 Address " + config.getOpenHabHostAddress()
-                            + " is blank! Valid addresses for the OH server are " + addressList
+                    "The OH Server IPV4 Address is blank! Valid addresses for the OH server are " + addressList
                             + ". Please use the Primary address in Settings, Network Settings.");
             return false;
         }
