@@ -85,11 +85,7 @@ public class TailwindHandler extends BaseThingHandler
      */
     public TailwindHandler(Thing thing, HttpClient httpClient) {
         super(thing);
-        // this.httpClient = httpClient;
         this.tailwindApi = new TailwindConnectApi(httpClient);
-        // if (httpClient.isRunning()) {
-        // logger.debug("Http client is running");
-        // }
     }
 
     @Override
@@ -137,7 +133,7 @@ public class TailwindHandler extends BaseThingHandler
                                 logger.debug("Error updating LED brightness: {}, detail: {}", response.getResult(),
                                         response.getInfo());
                             }
-                        }
+                        } // If response from TailWind was OK
                         break;
                     case CHANNEL_SUPPORT_COMMAND:
                         String cmd = command.toString();
@@ -269,10 +265,6 @@ public class TailwindHandler extends BaseThingHandler
             requestControllerStatusJob = scheduler.scheduleWithFixedDelay(() -> {
                 Thread.currentThread().setName("OH-binding-" + this.thing.getUID() + "-requestControllerStatusJob");
                 try {
-                    // if (logger.isDebugEnabled()) {
-                    // logger.debug("Sending status requests to TailWind controller every {} seconds.",
-                    // TAILWIND_STATUS_REQUEST_JOB_INTERVAL);
-                    // }
                     updateTailwindDetails(sendCommand(TAILWIND_CMD_DEVICE_STATUS));
                 } catch (Exception e) {
                     if (logger.isDebugEnabled()) {
@@ -296,18 +288,16 @@ public class TailwindHandler extends BaseThingHandler
                 updateStatus(ThingStatus.OFFLINE);
             }
         });
-
     } // End initialize()
 
     private void initializeConnection() {
-        try {
-            final TailwindUdpConnector newUdpConnector = new TailwindUdpConnector(
-                    Integer.parseInt(TAILWIND_OPENHAB_HOST_UDP_PORT), scheduler);
-            udpConnector = newUdpConnector;
 
+        try {
+            final TailwindUdpConnector newUdpConnector = new TailwindUdpConnector(thing, config, scheduler,
+                    tailwindApi);
+            udpConnector = newUdpConnector;
             // establish connection and register listener
             newUdpConnector.connect(this::eventReceived, true, utilities.getThreadName(thing));
-
         } catch (InterruptedException e) {
             // OH shutdown - don't log anything, Framework will call dispose()
         } catch (Exception e) {
@@ -331,7 +321,10 @@ public class TailwindHandler extends BaseThingHandler
      * @throws Exception
      */
     public boolean checkConfiguration(TailwindConfiguration config) throws Exception {
-        // Check that door count is within the supported range 1 - max doors for this model
+
+        /**
+         * Check that door count is within the supported range 1 - max doors for this model
+         */
         int maxDoors = utilities.getMaxDoors(thing.getThingTypeUID().getId());
         if (config.getDoorCount() < 1 || config.getDoorCount() > maxDoors) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -354,6 +347,29 @@ public class TailwindHandler extends BaseThingHandler
         }
 
         /**
+         * Check for OH Server IPV4 non-blank IP address
+         */
+        // Get default OH Server IP if the configuration is blan
+        List<String> openHabHostIPAddresses = new ArrayList<>(utilities.getOHServerIP());
+        String addressList = "";
+        String[] addresses = openHabHostIPAddresses.toArray(new String[0]);
+        Integer lastElement = openHabHostIPAddresses.size() - 1;
+        for (int i = 0; i <= lastElement; i++) {
+            if (i != lastElement) {
+                addressList = addressList + addresses[i] + ", ";
+            } else {
+                addressList = addressList + addresses[i];
+            }
+        }
+        if (config.getOpenHabHostAddress().isBlank()) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "The OH Server IPV4 Address " + config.getOpenHabHostAddress()
+                            + " is blank! Valid addresses for the OH server are " + addressList
+                            + ". Please use the Primary address in Settings, Network Settings.");
+            return false;
+        }
+
+        /**
          * Check for a valid Authorization token
          */
         if (logger.isDebugEnabled()) {
@@ -368,7 +384,7 @@ public class TailwindHandler extends BaseThingHandler
             /* Use response from OK device status set initial states for this thing */
             if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                        "Unable to verify authorization token. Please check that the Token and Web Address were entered correctly. If web address is ok, obtain another token from the mobile app and try again.");
+                        "Unable to verify authorization token. Please check that the Token and Web Address were entered correctly. If web address is ok, obtain another token from the web app (web.gotailwind.com) and try again.");
                 return false;
             } else {
                 // Update thing properties to include number of doors connected
@@ -396,7 +412,9 @@ public class TailwindHandler extends BaseThingHandler
         } // If the authorization token length is equal to 6
 
         /**
-         * Update controller with the UDP host address to receive notifications of changes to the controller
+         * Verify the authorization token is valid by sending a status request to the controller.
+         * If OK is returned, use the values to update the thing properties if this thing was manually
+         * created.
          */
         response = sendCommand(TAILWIND_CMD_DEVICE_STATUS);
         if (!response.getResult().contentEquals(JSON_RESPONSE_RESULT_OK)) {
@@ -431,6 +449,38 @@ public class TailwindHandler extends BaseThingHandler
 
             thing.setProperties(properties);
         } // If command response result was not "OK"
+
+        /**
+         * Update controller with the UDP host address to receive notifications of changes to the controller
+         * If it is blank, get a suggested address. If not blank, make sure it is a valid IP.
+         * Once a valid IP address is found, send an update to the TailWind controller to use the
+         * openHabHostAddress to send status updates to..
+         */
+
+        if (Utilities.isValidIPAddress(config.getOpenHabHostAddress())) {
+            if (openHabHostIPAddresses.contains(config.getOpenHabHostAddress())) {
+                logger.info("Initializing TailWind handler for thingUID {} using {} for the OH Server IPV4 Address.",
+                        thing.getUID(), config.getOpenHabHostAddress());
+            } else {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "The OH Server IPV4 Address " + config.getOpenHabHostAddress()
+                                + " was not found in the list of the servers available IP addresses " + addressList
+                                + "! Please use the Primary address in Settings, Network Settings.");
+                return false;
+            } // If configured IP address is found in list of OH servers network interface addresses
+
+            // Ensure the configuration address for the OH server is in list of server IP addresses
+            logger.debug("Configured address {} was found in list: {} is: {}", config.getOpenHabHostAddress(),
+                    openHabHostIPAddresses.toString(), openHabHostIPAddresses.contains(config.getOpenHabHostAddress()));
+        } else {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "The OH Server IPV4 Address " + config.getOpenHabHostAddress()
+                            + " is not in a valid IPV4 address format! Valid addresses for the OH server are "
+                            + addressList + ". Please use the Primary address in Settings, Network Settings.");
+            return false;
+        } // If configured IP address is valid format
+        logger.debug("number of IP addresses assigned to openHab host: {}, address list: {}",
+                openHabHostIPAddresses.size(), openHabHostIPAddresses.toString());
 
         /**
          * Check for duplicate door names
@@ -956,17 +1006,8 @@ public class TailwindHandler extends BaseThingHandler
 
     private String buildSetLEDBrightnessCommand(Integer command) {
         JSONObject cmdToSetLEDBrightness = new JSONObject(TAILWIND_CMD_SET_LED_BRIGHTNESS);
-        // Integer cmdKeyFound = cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA)
-        // .getJSONObject(TAILWIND_JSON_KEY_VALUE).getInt(TAILWIND_JSON_KEY_BRIGHTNESS);
-        // if (cmdKeyFound != null) {
         cmdToSetLEDBrightness.getJSONObject(TAILWIND_JSON_KEY_DATA).getJSONObject(TAILWIND_JSON_KEY_VALUE)
                 .put(TAILWIND_JSON_KEY_BRIGHTNESS, command);
-        // } else {
-        // if (logger.isDebugEnabled()) {
-        // logger.debug("Command to set contoller led brightness was not formatted correctly, command: {}",
-        // cmdToSetLEDBrightness);
-        // }
-        // }
         return cmdToSetLEDBrightness.toString();
     }
 

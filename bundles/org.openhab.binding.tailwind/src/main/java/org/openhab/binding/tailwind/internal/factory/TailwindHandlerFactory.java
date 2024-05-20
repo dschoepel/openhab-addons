@@ -55,11 +55,6 @@ public class TailwindHandlerFactory extends BaseThingHandlerFactory {
 
     @Deactivate
     public void deactivate() {
-        // try {
-        // httpClient.stop();
-        // } catch (Exception e) {
-        // logger.warn("Failed to stop HttpClient: {}", e.getMessage());
-        // }
     }
 
     @Override
@@ -97,10 +92,8 @@ public class TailwindHandlerFactory extends BaseThingHandlerFactory {
                 defaultProperties.put(TAILWIND_HTTP_SERVER_URL, "");
                 thing.setProperties(defaultProperties);
             }
-
             return new TailwindHandler(thing, httpClient);
         }
-
         return null;
     }
 }

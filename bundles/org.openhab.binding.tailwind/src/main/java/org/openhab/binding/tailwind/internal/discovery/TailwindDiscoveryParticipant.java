@@ -15,7 +15,6 @@ package org.openhab.binding.tailwind.internal.discovery;
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.*;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -147,25 +146,6 @@ public class TailwindDiscoveryParticipant implements MDNSDiscoveryParticipant {
                         return result;
 
                     } // If thingUID is not null
-
-                    /**
-                     * Get the host IP address to use for setting the UDP server for TailWind to send status
-                     * When bringing the iQ3 Thing on line, set/check the host IP address for a
-                     * change. if it changed then send an update to the TailWind controller to use the
-                     * new IP to send status updates to...
-                     */
-                    String openHabHostIPAddress = "";
-                    try {
-                        openHabHostIPAddress = utilities.getOHServerIP();
-                    } catch (UnknownHostException e) {
-                        // Warn: Could not get OH Host IP address
-                        logger.warn("The was an error retrieving the IP address for the OH host server, Error msg: {}",
-                                e.getMessage());
-                    } // Get OpenHab host IP address (used to set UDP client messages from TailWind
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("ThingUID = {}", thingUID);
-                        logger.debug("Host IP address: {}", openHabHostIPAddress);
-                    }
                 } // If this vendor is TailWind
             } // If vendor is not null
         } // If ServiceInfo does not, else, does have data

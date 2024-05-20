@@ -61,7 +61,7 @@ public class TailwindBindingConstants {
     public static final String TAILWIND_BASE_URL_PART_1 = "http://";
     public static final String TAILWIND_BASE_URL_PART_2 = "/json";
     public static final String TAILWIND_HTTP_HEADER_TOKEN = "TOKEN";
-    public static final String TAILWIND_OPENHAB_HOST_UDP_PORT = "50904";
+    public static final Integer TAILWIND_OPENHAB_HOST_UDP_PORT = 50904;
     public static final String NOT_FOUND_ERROR = "Not_Found";
     public static final String JSON_RESPONSE_RESULT_OK = "OK";
     public static final String TAILWIND_CONFIG_WEB_SERVER_ADDRESSS_KEY = "webServerAddress";

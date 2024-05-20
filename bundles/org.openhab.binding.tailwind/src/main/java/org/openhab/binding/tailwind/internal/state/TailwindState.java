@@ -186,8 +186,6 @@ public class TailwindState {
         if (!newVal.equals(this.nightModeEnabled)) {
             this.nightModeEnabled = newVal;
             handler.stateChanged(CHANNEL_NIGHT_MODE_ENABLED, this.nightModeEnabled);
-            // } else {
-            // handler.stateChanged(CHANNEL_NIGHT_MODE_ENABLED, this.nightModeEnabled);
         } // If nightModeEnabled changed
     }
 

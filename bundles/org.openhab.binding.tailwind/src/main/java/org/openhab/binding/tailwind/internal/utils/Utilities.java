@@ -14,8 +14,14 @@ package org.openhab.binding.tailwind.internal.utils;
 
 import static org.openhab.binding.tailwind.internal.TailwindBindingConstants.VALID_IP_PATTERN;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.tailwind.internal.TailwindModel;
@@ -66,25 +72,41 @@ public class Utilities {
     }
 
     /**
-     * Retrieve the IP address for the OpenHab Host Server to be used
-     * by the TailWind device's UDP client to send UDP status updates
+     * Retrieve the IP addresses for the OpenHab Host Server that could be used
+     * by the TailWind device's UDP client to send UDP status updates. Look
+     * at the network interfaces, ignoring the loop back address.
      *
-     * @return IP Address of the OpenHab host server
+     * @return ArrayList of IP Addresses configured for the OpenHab host server
      * @throws UnknownHostException - host not found
      */
-    public String getOHServerIP() throws UnknownHostException {
-        InetAddress address1 = InetAddress.getLocalHost();
-        String hostAddress = address1.getHostAddress();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Host address for the OH Server is: {}", hostAddress);
+    public List<String> getOHServerIP() throws UnknownHostException {
+        List<String> ipArray = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (!address.isLoopbackAddress() && address instanceof Inet4Address) {
+                        ipArray.add(address.getHostAddress());
+                        if (logger.isDebugEnabled()) {
+                            logger.info("Local IP Address found: {}", address.getHostAddress());
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            logger.warn("The was an error retrieving the IP address for the OH host server, Error msg: {}",
+                    e.getMessage());
         }
-        return hostAddress;
+        return ipArray;
     }
 
     /**
-     * Remove training dot in server url it it has one...
+     * Remove trailing dot in server URL it it has one...
      *
-     * @return Clean server url
+     * @return Clean server URL
      */
     public String getServerURL(String server) {
         // Remove last period from server name if it is there, 0 based index
@@ -96,6 +118,12 @@ public class Utilities {
         }
     }
 
+    /**
+     * Method to get the serverURL using the IP Address
+     *
+     * @param address - IP address to use for getting host name
+     * @return
+     */
     public String getServerURL(InetAddress address) {
         String serverURL = address.getHostName();
         return serverURL;

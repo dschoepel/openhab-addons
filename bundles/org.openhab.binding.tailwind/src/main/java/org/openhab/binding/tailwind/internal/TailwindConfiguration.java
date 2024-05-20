@@ -39,6 +39,11 @@ public class TailwindConfiguration {
     public String authToken = ""; // token from TailWind mobile application
 
     /**
+     * OpenHab Host primary IP address
+     */
+    public String openHabHostAddress = ""; // primary IP address for OH server used for UDP connection listener
+
+    /**
      * Door one partial open time in seconds
      */
     public float doorOnePartialOpen = 2.5f; // 2.5 is default (can be 0.5-15)
@@ -94,6 +99,14 @@ public class TailwindConfiguration {
      */
     public String getAuthToken() {
         return authToken;
+    }
+
+    public String getOpenHabHostAddress() {
+        return openHabHostAddress;
+    }
+
+    public void setOpenHabHostAddress(String openHabHostAddress) {
+        this.openHabHostAddress = openHabHostAddress;
     }
 
     /**
