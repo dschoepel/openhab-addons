@@ -149,7 +149,7 @@ Using the syntax for [defining a Thing](https://www.openhab.org/docs/configurati
 The webServer Address can either be the IP Address of the controller or the URL. Using the URL is best approach as you dont have to worry about the controller device IP address changing.
 
 ```java
-Thing tailwind:iQ3:09d1f01202ec "Tailwind iQ3" [doorCount=2, webServerAddress="tailwind-09d1f01202ec.local", authToken="138952", doorOneName="Door 1", doorOnePartialOpen=2.75, doorTwoName="Door 2", doorTwoPartialOpen=3.0]
+Thing tailwind:iQ3:09d1f01202ec "Tailwind iQ3" [doorCount=2, webServerAddress="tailwind-09d1f01202ec.local", authToken="138952", openHabHostAddress="192.168.1.129", doorOneName="Door 1", doorOnePartialOpen=2.75, doorTwoName="Door 2", doorTwoPartialOpen=3.0]
 ```
 
 ### Item Configuration
