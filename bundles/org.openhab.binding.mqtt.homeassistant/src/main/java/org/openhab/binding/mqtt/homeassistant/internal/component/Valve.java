@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010-2024 Contributors to the openHAB project
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -61,6 +61,8 @@ public class Valve extends AbstractComponent<Valve.ChannelConfiguration> impleme
     private static final String POSITION_KEY = "position";
     private static final String STATE_KEY = "state";
 
+    private static final String FORMAT_INTEGER = "%.0f";
+
     private final Logger logger = LoggerFactory.getLogger(Valve.class);
 
     /**
@@ -108,8 +110,8 @@ public class Valve extends AbstractComponent<Valve.ChannelConfiguration> impleme
     private final ChannelStateUpdateListener channelStateUpdateListener;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Valve(ComponentFactory.ComponentConfiguration componentConfiguration, boolean newStyleChannels) {
-        super(componentConfiguration, ChannelConfiguration.class, newStyleChannels);
+    public Valve(ComponentFactory.ComponentConfiguration componentConfiguration) {
+        super(componentConfiguration, ChannelConfiguration.class);
         this.channelStateUpdateListener = componentConfiguration.getUpdateListener();
 
         AutoUpdatePolicy autoUpdatePolicy = null;
@@ -121,7 +123,7 @@ public class Valve extends AbstractComponent<Valve.ChannelConfiguration> impleme
         onOffValue = new OnOffValue(channelConfiguration.stateOpen, channelConfiguration.stateClosed,
                 channelConfiguration.payloadOpen, channelConfiguration.payloadClose);
         positionValue = new PercentageValue(BigDecimal.valueOf(channelConfiguration.positionClosed),
-                BigDecimal.valueOf(channelConfiguration.positionOpen), null, null, null);
+                BigDecimal.valueOf(channelConfiguration.positionOpen), null, null, null, FORMAT_INTEGER);
 
         if (channelConfiguration.reportsPosition) {
             buildChannel(VALVE_CHANNEL_ID, ComponentChannelType.DIMMER, positionValue, getName(), this)
