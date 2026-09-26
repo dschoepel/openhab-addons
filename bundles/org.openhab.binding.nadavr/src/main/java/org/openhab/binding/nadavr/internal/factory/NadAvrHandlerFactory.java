@@ -42,12 +42,6 @@ public class NadAvrHandlerFactory extends BaseThingHandlerFactory {
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        // logger.debug("supportsThingType is using thingTypeUID: {}", thingTypeUID);
-        if (SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
-            if (logger.isDebugEnabled()) {
-                // logger.debug("supportsThingType found thingTypeUID: {} in SUPPORTED_THING_TYPE_UIDS.", thingTypeUID);
-            }
-        }
         return SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID);
     }
 
