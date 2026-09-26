@@ -45,6 +45,7 @@ import org.openhab.binding.nadavr.internal.state.NadAvrStateDescriptionProvider;
 import org.openhab.binding.nadavr.internal.state.NadPopulateInputs;
 import org.openhab.binding.nadavr.internal.state.NadTunerPresetNameList;
 import org.openhab.binding.nadavr.internal.xml.NadTunerPresets;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -87,6 +88,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
     private NadTunerMonitor tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, "OH-Binding-nadavr");
 
     private Object sequenceLock = new Object();
+
+    // FM RDS stability check: publish text only after two identical reads in a row
+    private String lastRdsRead = "";
+    private String publishedRds = "";
 
     /**
      * Constructor for NAD Audio Receiver Handler
@@ -683,9 +688,28 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                             nadavrState.setSourceName(msg.getPrefix().toString(), sourceName);
                         }
                         break;
-                    case POWER_SET:
-                        nadavrState.setPower(msg.getPrefix(), NAD_ON.equalsIgnoreCase(msg.getValue()));
+                    case POWER_SET: {
+                        boolean powerOn = NAD_ON.equalsIgnoreCase(msg.getValue());
+                        boolean wasOn = OnOffType.ON
+                                .equals(nadavrState.getStateForChannelID(powerChannelFor(msg.getPrefix())));
+                        nadavrState.setPower(msg.getPrefix(), powerOn);
+                        // Only act on a real change, not on repeated replies from refresh queries
+                        if (config.enableTunerSupport && powerOn != wasOn) {
+                            if (powerOn) {
+                                // Give the tuner a moment to start, then read band, frequency, preset and RDS
+                                scheduler.schedule(() -> {
+                                    refreshTunerDetails();
+                                    tunerMonitor.setTunerStatus();
+                                }, 2, TimeUnit.SECONDS);
+                            } else {
+                                tunerMonitor.setTunerStatus(); // pauses the RDS thread right away
+                            }
+                        }
                         break;
+                    }
+                    // case POWER_SET:
+                    // nadavrState.setPower(msg.getPrefix(), NAD_ON.equalsIgnoreCase(msg.getValue()));
+                    // break;
                     case MODEL_NAME:
                         nadavrState.setModelName(msg.getPrefix(), msg.getValue());
                         break;
@@ -728,9 +752,21 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
                         }
                         nadavrState.setTunerPreset(commandPrefix, msg.getValue().toString(), fileName);
                         break;
-                    case TUNER_FM_RDS_TEXT_SET:
-                        nadavrState.setTunerFMRdsText(commandPrefix, msg.getValue().toString());
+                    case TUNER_FM_RDS_TEXT_SET: {
+                        String rdsText = msg.getValue().toString();
+                        if (rdsText.contains("  ")) {
+                            // Gap of missing segments: text is still being received
+                            lastRdsRead = rdsText;
+                            break;
+                        }
+                        boolean rdsStable = rdsText.equals(lastRdsRead);
+                        lastRdsRead = rdsText;
+                        if (rdsStable && !rdsText.equals(publishedRds)) {
+                            publishedRds = rdsText;
+                            nadavrState.setTunerFMRdsText(commandPrefix, rdsText);
+                        }
                         break;
+                    }
                     case TUNER_XM_CHANNEL_SET:
                         String xmChannel = "0";
                         if (msg.getValue().equals("None")) {
@@ -975,6 +1011,23 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
         /* Update the tuner preset channel options with preset descriptions */
         stateDescriptionProvider.setStateOptions(new ChannelUID(this.getThing().getUID(), CHANNEL_TUNER_PRESET),
                 options);
+    }
+
+    /**
+     * Method to find the power channel for a message prefix (Main, Zone2, Zone3, Zone4)
+     *
+     * @param prefix - message prefix from the NAD device
+     * @return channel ID of the power channel for that zone
+     */
+    private String powerChannelFor(String prefix) {
+        if (Prefix.Zone2.toString().equals(prefix)) {
+            return CHANNEL_ZONE2_POWER;
+        } else if (Prefix.Zone3.toString().equals(prefix)) {
+            return CHANNEL_ZONE3_POWER;
+        } else if (Prefix.Zone4.toString().equals(prefix)) {
+            return CHANNEL_ZONE4_POWER;
+        }
+        return CHANNEL_MAIN_POWER;
     }
 
     /**

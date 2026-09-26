@@ -125,6 +125,9 @@ public class NadFMRdsTextStream {
             logger.debug("getRdsStream is resumed...");
         }
         isRdsPaused = false;
+        if (!rdsExecutor.isShutdown()) {
+            rdsExecutor.execute(rdsFMStreamThread); // query now instead of waiting for the next tick
+        }
     }
 
     /**
@@ -165,11 +168,13 @@ public class NadFMRdsTextStream {
 
     /**
      * Method to set the scheduling delay for the thread {@link rdsFMStreamThread}
+     * Setting to 3 seconds to poll every three seconds ( was 25 seconds but delay was too long to get the RDS text
+     * stream updates in a timely manner)
      *
      * @return Time to pause between running the {@link getRdsStream} in {@link getRDSTimeUnits}
      */
     public int getRdsPeriodDelay() {
-        return 25;
+        return 3;
     }
 
     /**

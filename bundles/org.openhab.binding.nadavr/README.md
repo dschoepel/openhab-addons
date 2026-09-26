@@ -9,7 +9,7 @@ Integration details can be found in the NAD Electronics command protocol documen
 ## Testing
 
 #### NAD T-787 AVR: 
- 
+
 <ul>
 <li>using auto discovery and adding thing via inbox</li>
 <li>via a direct Ethernet (LAN) connection on the receiver via Telnet(TCP)</li> <li> and with an [XM Direct Home Tuner](https://shop.siriusxm.com/support/xm-direct-home-tuner.html) connected to the T-787</li>
@@ -25,36 +25,35 @@ Integration details can be found in the NAD Electronics command protocol documen
 </ul>  
 
 #### NAD C-427 AM/FM Tuner: 
- 
+
 <ul>
 <li>manually added the tuner thing using the binding</li>
 <li>via a USR-TCP232-302 IP to Serial converter set up as a TCP Server to enable a direct Ethernet (LAN) connection to the Tuner via Telnet(TCP)</li>
 <li><mark>Note: </mark>All NAD RS232 connections require a straight through RS232 cable.  The USR converter has a built-in null modem.  To override this, you will need to connect with a null modem RS232 cable - effectively canceling out the internal null modem and becoming a straight through connection expected by NAD.</li> 
 </ul>  
 
-
 ## Supported Things
 
-| Thing | Type | Description | Connection | Zones | Tested |
-|:-:|:-:|:--|-------|:-:|:-:|
-| ![C-427](doc/NAD-C-427.svg) | C427 | Connection to NAD C-427 AM/FM Tuner | Serial RS232 | 1 | &#9989; Yes |
-| ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-775](doc/NAD-T-775.svg) | T775 | Connection to NAD T-775 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver | Serial RS232 | 4 | &#10060; No |
-| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Preamp Processor | Ethernet | 4 |&#10060; No |
-| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver | Ethernet | 4 | &#10060; No |
-| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-778 Surround Sound Receiver | Ethernet | 2 | &#9989; Yes |
-| ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver | Ethernet | 4 | &#9989; Yes |
+| Thing                       | Type | Description                                             | Connection   | Zones | Tested      |
+| :-------------------------: | :--: | :------------------------------------------------------ | ------------ | :---: | :---------: |
+| ![C-427](doc/NAD-C-427.svg) | C427 | Connection to NAD C-427 AM/FM Tuner                     | Serial RS232 | 1     | &#9989; Yes |
+| ![T-765](doc/NAD-T-765.svg) | T765 | Connection to NAD T-765 Surround Sound Receiver         | Serial RS232 | 4     | &#10060; No |
+| ![T-775](doc/NAD-T-775.svg) | T775 | Connection to NAD T-775 Surround Sound Receiver         | Serial RS232 | 4     | &#10060; No |
+| ![T-785](doc/NAD-T-785.svg) | T785 | Connection to NAD T-778 Surround Sound Receiver         | Serial RS232 | 4     | &#10060; No |
+| ![T-187](doc/NAD-T-187.svg) | T187 | Connection to NAD T-187 Surround Sound Preamp Processor | Ethernet     | 4     | &#10060; No |
+| ![T-777](doc/NAD-T-777.svg) | T777 | Connection to NAD T-777 Surround Sound Receiver         | Ethernet     | 4     | &#10060; No |
+| ![T-778](doc/NAD-T-778.svg) | T778 | Connection to NAD T-778 Surround Sound Receiver         | Ethernet     | 2     | &#9989; Yes |
+| ![T-787](doc/NAD-T-787.svg) | T787 | Connection to NAD T-787 Surround Sound Receiver         | Ethernet     | 4     | &#9989; Yes |
 
 ## Discovery
 
-The binding will auto-discover "supported-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.  
+The binding will auto-discover "supported-things" (via mDNS) that are IP connected to the same network as the Open-Hab server.
 
->The binding will not discover NAD RS232 devices connected via an IP to Serial converter - those will have to be manually installed/configured.
+> The binding will not discover NAD RS232 devices connected via an IP to Serial converter - those will have to be manually installed/configured.
 
 Auto discovered things will list the device details in the thing configuration "properties" section in the OpenHab UI.
-<ul><li>Host name</li><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
 
+<ul><li>Host name</li><li>Serial number (used to create unique thing UID)</li><li>The maximum number of zones the receiver supports</li><li>Model Id ("Type" in supported things)</li><li>Vendor</li></ul>
 
 ## Binding Configuration
 
@@ -75,13 +74,23 @@ This configuration parameter only controls the NAD AVR auto-discovery process, n
 The NAD AVR thing has the following configuration parameters:
 
 | Parameter | Parameter Id | Req/Opt | Description | Default | Type | Accepted Values |
+
 | :--  | :-- | :-: | :-- | :-: | :-: | :-- |
+
 | Refresh Interval\* | refreshInterval | Optional | The refresh interval in **seconds** for polling the receiver settings (0=disabled) to update item details. | 0 | Integer | 0 = disabled, Greater Than 0 = enabled |
-| Zone Count of the Receiver | zoneCount | Required | User can configure number of zones. For example: If the receiver has 4 zones, but your only using Main and Zone2, setting this at 2 reduces the number of channels the binding needs to keep track of.  | 1 | Integer | 1 up to maxZones listed in Thing properties |  
+
+==Refresh Interval== is optional and normally not needed; 0 is the recommended setting. The binding already reads the receiver's state when it connects, and again whenever a zone powers on. FM RDS text is read every 3 seconds while a powered-on zone is using the tuner, independently of this setting.
+
+| Zone Count of the Receiver | zoneCount | Required | User can configure number of zones. For example: If the receiver has 4 zones, but your only using Main and Zone2, setting this at 2 reduces the number of channels the binding needs to keep track of.  | 1 | Integer | 1 up to maxZones listed in Thing properties |
+
 | IP Address | ipAddress   | Required | The IPv4 address assigned the the NAD Receiver | | String | Any valid IPv4 address |
+
 | Port      | telnetPort   | Required | The network port for Telnet connection | 23 | Integer | Any valid TCP port number |
+
 | Enable Preset Detail\* | enablePresetNames | Optional | User has provided an xml file listing details for tuner presets | false | Boolean | true or false |
+
 | Preset Names File\* | presetNamesFilePath | Optional, <br />Required if enablePresetNames = true | File Name containing preset name details including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` | | String | Valid path and file name |
+
 \* hidden unless "Show advanced" checked on UI 
 
 Since the NAD control protocol does not provide a means to retrieve the descriptive information for tuner presets, this binding provides the option to let the user create a file that can be used to give more meaning to the tuner preset channel.
@@ -93,6 +102,7 @@ Since the NAD control protocol does not provide a means to retrieve the descript
 Tuner preset descriptions can be stored in an xml file that is then used to override the default (P01 - P40) options you're provided when selecting the tuner preset channel. 
 
 **Steps to create file:**
+
 <table>
 <tr>
 <th> Step </th> <th> Instructions </th>
@@ -110,6 +120,7 @@ Tuner preset descriptions can be stored in an xml file that is then used to over
 <td>
 
 Decide where you will store the two files you will create.  Recommend you save them in ```/etc/openhab/scripts/``` folder on your OpenHab system.
+
 </td>
 </tr>
 <tr>
@@ -125,6 +136,7 @@ Open a new file, name it ```Preset_Names``` saving it with the .xml extension. <
 <td>
 
 Click on the link for the Schema file, copy and paste the entire contents of the file into your ```NAD_Preset_Names.xsd``` file and save it.
+
 </td>
 </tr>
 <tr>
@@ -132,6 +144,7 @@ Click on the link for the Schema file, copy and paste the entire contents of the
 <td>
 
 Click on the link for the Template file, copy and paste the entire contents of the file into your ```Preset_Names.xml``` file and save it.
+
 </td>
 </tr>
 <tr>
@@ -139,6 +152,7 @@ Click on the link for the Template file, copy and paste the entire contents of t
 <td>
 
 Edit the ```Preset_Names.xml``` file with your preset details, replacing the template examples with your details. <br> Depending on the editor, you may or may not have to define where to find the schema to validate your entries.
+
 </td>
 </tr>
 <tr>
@@ -194,6 +208,7 @@ The basic XML format should have at the minimum, one or more presets (i.e. child
 <td>10</td><td>
 
 Update the NAD Thing configuration with the preset name file including path e.g. ```/etc/openhab/scripts/Preset_Names.xml``` by clicking on the _Show advanced_ checkbox to display prompts for the tuner preset details.<ul><li>Toggle the Enable Preset Detail switch to On</li><li>Enter the preset name file including path in the Preset Name File prompt</li><li>Save the configuration; the file will be validated by the binding; and check for any error messages</li><li>If the file was found and is a valid format, the binding will be in an Online state</li></ul> 
+
 </td>
 </tr>
 </table>
@@ -203,69 +218,76 @@ Update the NAD Thing configuration with the preset name file including path e.g.
 NAD AVR Thing Channels are listed by Group
 
 **Zone 1 (Main)**
-| Channel Type UID  | Item Type   | Access Mode| Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| zone1#power  | Switch | RW | Main power on/off | 
-| zone1#source | String | RW | Input source for the Main zone ("1" - "10")|
-| zone1#volume | Dimmer| RW | Volume level for the main zone (1% - 100%) |
-| zone1#volumeDB | Number | RW | Volume level of the main zone (-99 to +19 dB) |
-| zone1#mute | Switch| RW | Main volume mute on/off |
-| zone1#listeningMode\* | String | RW | The main listening mode for this AVR |
-\* hidden unless "Show advanced" checked on UI  
+
+| Channel Type UID      | Item Type | Access Mode | Description                                   |
+| :-------------------- | :-------- | :---------: | :-------------------------------------------- |
+| zone1#power           | Switch    | RW          | Main power on/off                             |
+| zone1#source          | String    | RW          | Input source for the Main zone ("1" - "10")   |
+| zone1#volume          | Dimmer    | RW          | Volume level for the main zone (1% - 100%)    |
+| zone1#volumeDB        | Number    | RW          | Volume level of the main zone (-99 to +19 dB) |
+| zone1#mute            | Switch    | RW          | Main volume mute on/off                       |
+| zone1#listeningMode\* | String    | RW          | The main listening mode for this AVR          |
+
+\* hidden unless "Show advanced" checked on UI
 
 **Zone 2**
-| Channel Type UID  | Item Type   | Access Mode| Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| zone2#power  | Switch | RW | Zone 2 power on/off |
-| zone2#source | String | RW | Input source for zone 2 ("1" - "11") |
-| zone2#volume | Dimmer | RW |Variable volume level for zone 2 (1% - 100%) |
-| zone2#volumeDB | Number | RW |Variable volume level for zone 2 (-99 to +19 dB) |
-| zone2#mute | Switch| RW | Zone 2 volume mute on/off|
-| zone2#volumeFixedDB | Number | RW | Fixed volume level for zone 2 (-99 to +19 dB) |
-| zone2#volumeFixed | Dimmer | RW | Fixed volume level for zone 2 (1% - 100%) |
-| zone2#volumeControl | String | RW | Volume control setting for zone 2 (Fixed/Variable)|
+
+| Channel Type UID    | Item Type | Access Mode | Description                                        |
+| :------------------ | :-------- | :---------: | :------------------------------------------------- |
+| zone2#power         | Switch    | RW          | Zone 2 power on/off                                |
+| zone2#source        | String    | RW          | Input source for zone 2 ("1" - "11")               |
+| zone2#volume        | Dimmer    | RW          | Variable volume level for zone 2 (1% - 100%)       |
+| zone2#volumeDB      | Number    | RW          | Variable volume level for zone 2 (-99 to +19 dB)   |
+| zone2#mute          | Switch    | RW          | Zone 2 volume mute on/off                          |
+| zone2#volumeFixedDB | Number    | RW          | Fixed volume level for zone 2 (-99 to +19 dB)      |
+| zone2#volumeFixed   | Dimmer    | RW          | Fixed volume level for zone 2 (1% - 100%)          |
+| zone2#volumeControl | String    | RW          | Volume control setting for zone 2 (Fixed/Variable) |
 
 **Zone 3**
-| Channel Type UID  | Item Type   | Access Mode| Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| zone3#power  | Switch | RW | Zone 3 power on/off |
-| zone3#source | String | RW | Input source for zone 3 ("1" - "11")|
-| zone3#volume | Dimmer | RW |Variable volume level for zone 3 (1% - 100%) |
-| zone3#volumeDB | Number | RW |Variable volume level for zone 3 (-99 to +19 dB) |
-| zone3#mute | Switch| RW | Zone 3 volume mute on/off|
-| zone3#volumeFixedDB | Number | RW | Fixed volume level for zone 3 (-99 to +19 dB) |
-| zone3#volumeFixed | Dimmer | RW | Fixed volume level for zone 3 (1% - 100%) |
-| zone3#volumeControl | String | RW | Volume control setting for zone 3 (Fixed/Variable)|
+
+| Channel Type UID    | Item Type | Access Mode | Description                                        |
+| :------------------ | :-------- | :---------: | :------------------------------------------------- |
+| zone3#power         | Switch    | RW          | Zone 3 power on/off                                |
+| zone3#source        | String    | RW          | Input source for zone 3 ("1" - "11")               |
+| zone3#volume        | Dimmer    | RW          | Variable volume level for zone 3 (1% - 100%)       |
+| zone3#volumeDB      | Number    | RW          | Variable volume level for zone 3 (-99 to +19 dB)   |
+| zone3#mute          | Switch    | RW          | Zone 3 volume mute on/off                          |
+| zone3#volumeFixedDB | Number    | RW          | Fixed volume level for zone 3 (-99 to +19 dB)      |
+| zone3#volumeFixed   | Dimmer    | RW          | Fixed volume level for zone 3 (1% - 100%)          |
+| zone3#volumeControl | String    | RW          | Volume control setting for zone 3 (Fixed/Variable) |
 
 **Zone 4**
-| Channel Type UID  | Item Type   | Access Mode| Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| zone4#power  | Switch | RW | Zone 4 power on/off |
-| zone4#source | String | RW | Input source for zone 4 ("1" - "11")|
-| zone4#volume | Dimmer | RW |Variable volume level for zone 4 (1% - 100%) |
-| zone4#volumeDB | Number | RW |Variable volume level for zone 4 (-99 to +19 dB) |
-| zone4#mute | Switch| RW | Zone 4 volume mute on/off|
-| zone4#volumeFixedDB | Number | RW | Fixed volume level for zone 4 (-99 to +19 dB) |
-| zone4#volumeFixed | Dimmer | RW | Fixed volume level for zone 4 (1% - 100%) |
-| zone4#volumeControl | String | RW | Volume control setting for zone 4 (Fixed/Variable)|
+
+| Channel Type UID    | Item Type | Access Mode | Description                                        |
+| :------------------ | :-------- | :---------: | :------------------------------------------------- |
+| zone4#power         | Switch    | RW          | Zone 4 power on/off                                |
+| zone4#source        | String    | RW          | Input source for zone 4 ("1" - "11")               |
+| zone4#volume        | Dimmer    | RW          | Variable volume level for zone 4 (1% - 100%)       |
+| zone4#volumeDB      | Number    | RW          | Variable volume level for zone 4 (-99 to +19 dB)   |
+| zone4#mute          | Switch    | RW          | Zone 4 volume mute on/off                          |
+| zone4#volumeFixedDB | Number    | RW          | Fixed volume level for zone 4 (-99 to +19 dB)      |
+| zone4#volumeFixed   | Dimmer    | RW          | Fixed volume level for zone 4 (1% - 100%)          |
+| zone4#volumeControl | String    | RW          | Volume control setting for zone 4 (Fixed/Variable) |
 
 **Tuner**
-| Channel Type UID  | Item Type   | Access Mode| Description                  |
-|:------------------|:------------|:-----------:|:----------------------------|
-| tuner#band  | String | RW | Tuner broadcast band (AM, FM, XM, or DAB) |
-| tuner#amFrequency | Number | RW | Tuner AM Frequency setting (540 kHz - 1700 kHz) |
-| tuner#fmFrequency | Number | RW | Tuner FM Frequency setting (88.1 mHz - 108.1 mHz) |
-| tuner#fmMute | Switch | RW | Tuner FM Mute mode filters weak signals when set to On |
-| tuner#preset | String | RW | Recall a tuner preset ("1" - "40").  If a preset has not been defined on the AVR, sending that value will be ignored when sent to the AVR. |
-| tuner#presetDetail | String | R | Tuner preset detail (requires user defined file to supply details) format will be "Band-Freq/Channel-Name" (.e.g. FM 105.7 WAPL, XM 26 Classic Vinyl) |
-| tuner#fmRdsText | String | R | Tuner FM Radio Data System Radio text readout |
-| tuner#xmChannel\* | String | RW | XM Channel number (None, "0"-"255") |
-| tuner#xmChannelName\* | String | R | XM Channel Name assigned to channel |
-| tuner#xmName\* | String | R | XM Performing Artist Name currently playing |
-| tuner#xmSongTitle\* | String | R | XM Song Title currently playing |
-| tuner#dabServiceName\* | String | R | DAB Broadcast station service name or id |
-| tuner#dabDlsText\* | String | R | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station |
-\* hidden unless "Show advanced" checked on UI  
+
+| Channel Type UID       | Item Type | Access Mode | Description                                                                                          |
+| :--------------------- | :-------- | :---------: | :--------------------------------------------------------------------------------------------------- |
+| tuner#band             | String    | RW          | Tuner broadcast band (AM, FM, XM, or DAB)                                                            |
+| tuner#amFrequency      | Number    | RW          | Tuner AM Frequency setting (540 kHz - 1700 kHz)                                                      |
+| tuner#fmFrequency      | Number    | RW          | Tuner FM Frequency setting (88.1 mHz - 108.1 mHz)                                                    |
+| tuner#fmMute           | Switch    | RW          | Tuner FM Mute mode filters weak signals when set to On                                               |
+| tuner#preset           | String    | RW          | Recall a tuner preset ("1" - "40").  If a preset has not been defined on the AVR, sending that value will be ignored when sent to the AVR. |
+| tuner#presetDetail     | String    | R           | Tuner preset detail (requires user defined file to supply details) format will be "Band-Freq/Channel-Name" (.e.g. FM 105.7 WAPL, XM 26 Classic Vinyl) |
+| tuner#fmRdsText        | String    | R           | Tuner FM Radio Data System Radio text readout                                                        |
+| tuner#xmChannel\*      | String    | RW          | XM Channel number (None, "0"-"255")                                                                  |
+| tuner#xmChannelName\*  | String    | R           | XM Channel Name assigned to channel                                                                  |
+| tuner#xmName\*         | String    | R           | XM Performing Artist Name currently playing                                                          |
+| tuner#xmSongTitle\*    | String    | R           | XM Song Title currently playing                                                                      |
+| tuner#dabServiceName\* | String    | R           | DAB Broadcast station service name or id                                                             |
+| tuner#dabDlsText\*     | String    | R           | Tuner DAB Dynamic Label Segment (DLS) text feed for information on music titles, program or station  |
+
+\* hidden unless "Show advanced" checked on UI
 
 ## Full Example
 

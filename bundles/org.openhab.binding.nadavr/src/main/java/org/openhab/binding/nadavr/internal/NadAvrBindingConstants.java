@@ -231,6 +231,7 @@ public class NadAvrBindingConstants {
     public static final String C427 = "C427";
     public static final StringType FM = StringType.valueOf("FM");
     public static final StringType XM = StringType.valueOf("XM");
+    public static final StringType DAB = StringType.valueOf("DAB");
     public static final String NOT_SET = "Not Set";
     public static final String NAD_EQUALS_OPERATOR = "=";
     public static final String NAD_QUERY = "?";

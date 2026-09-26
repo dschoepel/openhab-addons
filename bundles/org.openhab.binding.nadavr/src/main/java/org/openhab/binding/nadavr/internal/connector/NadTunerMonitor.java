@@ -86,6 +86,7 @@ public class NadTunerMonitor {
             Thread.currentThread().setName(threadNamePrefix + "-TunerMonitor");
             tunerBandIsFM = FM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             tunerBandIsXM = XM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
+            tunerBandIsDAB = DAB.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             try {
                 connection.sendCommand(new NadMessage.MessageBuilder().prefix(Prefix.Tuner.toString())
                         .variable(NadCommand.TUNER_BAND_QUERY.getVariable().toString())
@@ -138,7 +139,7 @@ public class NadTunerMonitor {
      * When found, depending on the band (FM, XM or DAB) a thread is started to capture additional details streamed to
      * the Tuner.
      */
-    public void setTunerStatus() {
+    public synchronized void setTunerStatus() {
         tunerIsActive = false;
         /*
          * Check to see which zone sources are set to the tuner
@@ -189,7 +190,7 @@ public class NadTunerMonitor {
                         tunerIsActive = OnOffType.ON.equals(nadavrState.getStateForChannelID(CHANNEL_ZONE3_POWER));
                         break;
                     case CHANNEL_ZONE4_SOURCE:
-                        tunerIsActive = OnOffType.ON.equals(nadavrState.getStateForChannelID(CHANNEL_ZONE3_POWER));
+                        tunerIsActive = OnOffType.ON.equals(nadavrState.getStateForChannelID(CHANNEL_ZONE4_POWER));
                         break;
                 }
             }
@@ -308,10 +309,14 @@ public class NadTunerMonitor {
     }
 
     /**
+     * Check every 5 seconds to see if the tuner is active and the band is set to FM, XM or DAB.
+     * If so, start/resume the appropriate thread. If not, pause the appropriate thread.
+     * 
      * @return The tunerMonitor thread scheduler delay between executions in seconds.
+     * 
      */
     public int getTmPeriodDelay() {
-        return 20;
+        return 5;
     }
 
     /**
