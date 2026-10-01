@@ -67,8 +67,8 @@ public class NadPopulateInputs {
      * @param scheduler - the thing handler's scheduler that runs the queries
      */
     public NadPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadIpConnector connection,
-            NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery,
-            int numberOfInputSources, ScheduledExecutorService scheduler) {
+            NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery, int numberOfInputSources,
+            ScheduledExecutorService scheduler) {
         this.scheduler = scheduler;
         this.thingUID = thingUID;
         this.config = config;
