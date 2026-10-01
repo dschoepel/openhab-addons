@@ -12,11 +12,12 @@
  */
 package org.openhab.binding.nadavr.internal.connector;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
@@ -33,8 +34,8 @@ import org.slf4j.LoggerFactory;
 public class NadDABDlsTextStream {
 
     Logger logger = LoggerFactory.getLogger(NadDABDlsTextStream.class);
-    private ScheduledExecutorService dlsExecutor = Executors.newSingleThreadScheduledExecutor();
-    private String threadHostName = "";
+    private final ScheduledExecutorService scheduler;
+    private @Nullable ScheduledFuture<?> dlsJob;
     private volatile boolean isDlsPaused;
     private volatile boolean isDlsStarted;
     NadIpConnector connection;
@@ -43,9 +44,11 @@ public class NadDABDlsTextStream {
      * Constructor for DAB DLS Text Stream thread
      *
      * @param connection to NAD Device to retrieve the DLS text stream from the tuner
+     * @param scheduler - the thing handler's scheduler that runs the queries
      */
-    public NadDABDlsTextStream(NadIpConnector connection) {
+    public NadDABDlsTextStream(NadIpConnector connection, ScheduledExecutorService scheduler) {
         this.connection = connection;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -66,12 +69,11 @@ public class NadDABDlsTextStream {
     }
 
     /**
-     * Runnable used by the scheduler to give the thread a name and start the {@link getDlsStream}
+     * Runnable used by the scheduler to run the {@link getDlsStream}
      */
     Runnable dlsDABStreamThread = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(threadHostName + "-DlsTextStream");
             if (!isDlsPaused) {
                 try {
                     getDlsStream();
@@ -91,14 +93,13 @@ public class NadDABDlsTextStream {
      */
     public void start(String threadHost) {
         boolean isDlsShutdown = false;
-        threadHostName = threadHost;
         if (!isDlsStarted()) {
             isDlsShutdown = true;
         }
 
         if (isDlsShutdown) {
             logger.debug("getDlsStream is starting...");
-            dlsExecutor.scheduleWithFixedDelay(dlsDABStreamThread, getDlsInitialDelay(), getDlsPeriodDelay(),
+            dlsJob = scheduler.scheduleWithFixedDelay(dlsDABStreamThread, getDlsInitialDelay(), getDlsPeriodDelay(),
                     getDlsTimeUnits());
             isDlsStarted = true;
         } else {
@@ -132,7 +133,11 @@ public class NadDABDlsTextStream {
      */
     public void stopDls() {
         isDlsStarted = false;
-        dlsExecutor.shutdownNow();
+        ScheduledFuture<?> job = dlsJob;
+        if (job != null) {
+            job.cancel(true);
+            dlsJob = null;
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("getDlsStream is stopped...");
         }

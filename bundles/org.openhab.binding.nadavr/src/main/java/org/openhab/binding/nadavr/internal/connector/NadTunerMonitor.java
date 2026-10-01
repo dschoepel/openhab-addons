@@ -16,11 +16,12 @@ import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NadAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
@@ -41,7 +42,8 @@ import org.slf4j.LoggerFactory;
 public class NadTunerMonitor {
 
     Logger logger = LoggerFactory.getLogger(NadTunerMonitor.class);
-    private ScheduledExecutorService tmExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduler;
+    private @Nullable ScheduledFuture<?> tmJob;
     private String threadNamePrefix = "";
     private volatile boolean isTmPaused;
     private volatile boolean isTmStarted;
@@ -63,15 +65,17 @@ public class NadTunerMonitor {
      * @param config - configuration details for the NAD AVR thing
      * @param nadavrState - channel state details for the NAD AVR thing
      * @param threadNamePrefix - Thread name prefix to match NAD AVR thing
+     * @param scheduler - the thing handler's scheduler that runs the monitor and the text stream queries
      */
     public NadTunerMonitor(NadIpConnector connection, NadAvrConfiguration config, NadAvrState nadavrState,
-            String threadNamePrefix) {
+            String threadNamePrefix, ScheduledExecutorService scheduler) {
         this.connection = connection;
         this.config = config;
         this.nadavrState = nadavrState;
-        this.rdsText = new NadFMRdsTextStream(connection);
-        this.xmInfo = new NadXmRefreshChannelInfo(connection);
-        this.dlsText = new NadDABDlsTextStream(connection);
+        this.scheduler = scheduler;
+        this.rdsText = new NadFMRdsTextStream(connection, scheduler);
+        this.xmInfo = new NadXmRefreshChannelInfo(connection, scheduler);
+        this.dlsText = new NadDABDlsTextStream(connection, scheduler);
         this.threadNamePrefix = threadNamePrefix;
     }
 
@@ -83,7 +87,6 @@ public class NadTunerMonitor {
     Runnable tunerMonitorThread = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(threadNamePrefix + "-TunerMonitor");
             tunerBandIsFM = FM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             tunerBandIsXM = XM.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
             tunerBandIsDAB = DAB.equals(nadavrState.getStateForChannelID(CHANNEL_TUNER_BAND));
@@ -248,7 +251,7 @@ public class NadTunerMonitor {
      */
     public void startTm() {
         if (!isTmStarted) { // If the monitor is not running, schedule it and mark it as started.
-            tmExecutor.scheduleWithFixedDelay(tunerMonitorThread, getTmInitialDelay(), getTmPeriodDelay(),
+            tmJob = scheduler.scheduleWithFixedDelay(tunerMonitorThread, getTmInitialDelay(), getTmPeriodDelay(),
                     getTimeUnits());
             isTmStarted = true;
         } else if (isTmPaused) { // If the monitor is started, but paused, then resume
@@ -277,7 +280,11 @@ public class NadTunerMonitor {
      */
     public void stopTm() {
         isTmStarted = false;
-        tmExecutor.shutdownNow();
+        ScheduledFuture<?> job = tmJob;
+        if (job != null) {
+            job.cancel(true);
+            tmJob = null;
+        }
         logger.debug("TunerMonitor is stopped!");
         rdsText.stopRds();
         logger.debug("RdsTextStream is stopping");

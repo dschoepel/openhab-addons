@@ -12,11 +12,12 @@
  */
 package org.openhab.binding.nadavr.internal.connector;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
@@ -34,8 +35,8 @@ import org.slf4j.LoggerFactory;
 public class NadXmRefreshChannelInfo {
 
     Logger logger = LoggerFactory.getLogger(NadXmRefreshChannelInfo.class);
-    private ScheduledExecutorService xmExecutor = Executors.newSingleThreadScheduledExecutor();
-    private String threadHostName = "";
+    private final ScheduledExecutorService scheduler;
+    private @Nullable ScheduledFuture<?> xmJob;
     private volatile boolean isXmPaused;
     private volatile boolean isXmStarted;
     NadIpConnector connection;
@@ -44,9 +45,11 @@ public class NadXmRefreshChannelInfo {
      * Constructor for XM Refresh Channel Info thread
      *
      * @param connection - to NAD Device to retrieve the XM Channel Info from the tuner
+     * @param scheduler - the thing handler's scheduler that runs the queries
      */
-    public NadXmRefreshChannelInfo(NadIpConnector connection) {
+    public NadXmRefreshChannelInfo(NadIpConnector connection, ScheduledExecutorService scheduler) {
         this.connection = connection;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -77,12 +80,11 @@ public class NadXmRefreshChannelInfo {
     }
 
     /**
-     * Runnable used by the scheduler to give the thread a name and start the {@link getXmChannelInfo}
+     * Runnable used by the scheduler to run the {@link getXmChannelInfo}
      */
     Runnable xmRefreshChannelInfoThread = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(threadHostName + "-NadXmRefreshChannelInfo");
             if (!isXmPaused) {
                 try {
                     getXmChannelInfo();
@@ -102,14 +104,13 @@ public class NadXmRefreshChannelInfo {
      */
     public void start(String threadHost) {
         boolean isXmShutdown = false;
-        threadHostName = threadHost;
         if (!isXmStarted()) {
             isXmShutdown = true;
         }
         if (isXmShutdown) {
             logger.debug("xmRefreshChannelInfo is starting...");
-            xmExecutor.scheduleWithFixedDelay(xmRefreshChannelInfoThread, getXmInitialDelay(), getXmPeriodDelay(),
-                    getXmTimeUnits());
+            xmJob = scheduler.scheduleWithFixedDelay(xmRefreshChannelInfoThread, getXmInitialDelay(),
+                    getXmPeriodDelay(), getXmTimeUnits());
             isXmStarted = true;
         } else {
             logger.debug("Resumed getXmChannelInfo...");
@@ -142,7 +143,11 @@ public class NadXmRefreshChannelInfo {
      */
     public void stopXmRefreshChannelInfo() {
         isXmStarted = false;
-        xmExecutor.shutdownNow();
+        ScheduledFuture<?> job = xmJob;
+        if (job != null) {
+            job.cancel(true);
+            xmJob = null;
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("getXmChannelInfo is stopped...");
         }

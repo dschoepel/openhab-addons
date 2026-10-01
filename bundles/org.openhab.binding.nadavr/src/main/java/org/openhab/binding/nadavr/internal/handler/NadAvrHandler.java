@@ -83,9 +83,10 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
 
     private NadIpConnector connector = new NadIpConnector("127.0.0.1", 23, "OH-Binding-nadavr");
     private NadPopulateInputs populateInputs = new NadPopulateInputs(thing.getUID(), config, connector,
-            stateDescriptionProvider, true, 10);
+            stateDescriptionProvider, true, 10, scheduler);
     private NadAvrState nadavrState = new NadAvrState(this);
-    private NadTunerMonitor tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, "OH-Binding-nadavr");
+    private NadTunerMonitor tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, "OH-Binding-nadavr",
+            scheduler);
 
     private Object sequenceLock = new Object();
 
@@ -157,14 +158,14 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             int numberOfInputSources = getNumberOfInputSources(thing.getThingTypeUID().getId());
             if (numberOfInputSources > 0) {
                 populateInputs = new NadPopulateInputs(thing.getUID(), config, connector, stateDescriptionProvider,
-                        true, numberOfInputSources);
+                        true, numberOfInputSources, scheduler);
                 populateInputs.startPi();
             }
         } // end if populatInputs
 
         // Start thread to capture state of the tuner input and capture RDS Stream if band is FM
         if (config.enableTunerSupport && !tunerMonitor.isTmStarted()) {
-            tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, threadNamePrefix);
+            tunerMonitor = new NadTunerMonitor(connector, config, nadavrState, threadNamePrefix, scheduler);
             tunerMonitor.startTm();
         }
         if (logger.isDebugEnabled()) {
@@ -176,7 +177,6 @@ public class NadAvrHandler extends BaseThingHandler implements NadAvrStateChange
             cancelRequestDeviceDetailsJob();
             // Start state refresh updater
             requestDeviceDetailsJob = scheduler.scheduleWithFixedDelay(() -> {
-                Thread.currentThread().setName("OH-binding-" + this.thing.getUID() + "-reqeustDeviceDetailsJob");
                 try {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Send item state requests to NAD Receiver @{}", connector.getConnectionName());

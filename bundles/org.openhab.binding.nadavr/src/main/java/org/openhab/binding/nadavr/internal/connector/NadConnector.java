@@ -197,12 +197,14 @@ public abstract class NadConnector {
     }
 
     /**
-     * Method to send a command in the NAD command protocol format to the NAD Device
+     * Method to send a command in the NAD command protocol format to the NAD Device.
+     * Synchronized because the handler, the tuner monitor and the text stream jobs all send on this connection
+     * from different scheduler threads, and their messages must not interleave.
      *
      * @param msg - NAD formated message to be sent
      * @throws NadException - details of any errors resulting from sending the command message to the NAD device
      */
-    public void sendCommand(NadMessage msg) throws NadException {
+    public synchronized void sendCommand(NadMessage msg) throws NadException {
         String data = NadProtocol.createNADCommand(msg);
         byte[] message = new byte[0];
         message = data.getBytes(StandardCharsets.US_ASCII);

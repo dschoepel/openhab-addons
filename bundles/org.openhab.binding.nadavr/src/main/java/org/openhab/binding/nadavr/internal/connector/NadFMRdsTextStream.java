@@ -12,11 +12,12 @@
  */
 package org.openhab.binding.nadavr.internal.connector;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand;
 import org.openhab.binding.nadavr.internal.nadcp.NadCommand.Prefix;
@@ -33,8 +34,8 @@ import org.slf4j.LoggerFactory;
 public class NadFMRdsTextStream {
 
     Logger logger = LoggerFactory.getLogger(NadFMRdsTextStream.class);
-    private ScheduledExecutorService rdsExecutor = Executors.newSingleThreadScheduledExecutor();
-    private String threadHostName = "";
+    private final ScheduledExecutorService scheduler;
+    private @Nullable ScheduledFuture<?> rdsJob;
     private volatile boolean isRdsPaused;
     private volatile boolean isRdsStarted;
     NadIpConnector connection;
@@ -43,9 +44,11 @@ public class NadFMRdsTextStream {
      * Constructor for FM RDS Text Stream thread
      *
      * @param connection to NAD Device to retrieve the text stream from the tuner
+     * @param scheduler - the thing handler's scheduler that runs the queries
      */
-    public NadFMRdsTextStream(NadIpConnector connection) {
+    public NadFMRdsTextStream(NadIpConnector connection, ScheduledExecutorService scheduler) {
         this.connection = connection;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -66,12 +69,11 @@ public class NadFMRdsTextStream {
     }
 
     /**
-     * Runnable used by the scheduler to give the thread a name and start the {@link getRdsStream}
+     * Runnable used by the scheduler to run the {@link getRdsStream}
      */
     Runnable rdsFMStreamThread = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName(threadHostName + "-RdsTextStream");
             if (!isRdsPaused) {
                 try {
                     getRdsStream();
@@ -91,14 +93,13 @@ public class NadFMRdsTextStream {
      */
     public void start(String threadHost) {
         boolean isRdsShutdown = false;
-        threadHostName = threadHost;
         if (!isRdsStarted()) {
             isRdsShutdown = true;
         }
 
         if (isRdsShutdown) {
             logger.debug("getRdsStream is starting...");
-            rdsExecutor.scheduleWithFixedDelay(rdsFMStreamThread, getRdsInitialDelay(), getRdsPeriodDelay(),
+            rdsJob = scheduler.scheduleWithFixedDelay(rdsFMStreamThread, getRdsInitialDelay(), getRdsPeriodDelay(),
                     getRdsTimeUnits());
             isRdsStarted = true;
         } else {
@@ -125,8 +126,8 @@ public class NadFMRdsTextStream {
             logger.debug("getRdsStream is resumed...");
         }
         isRdsPaused = false;
-        if (!rdsExecutor.isShutdown()) {
-            rdsExecutor.execute(rdsFMStreamThread); // query now instead of waiting for the next tick
+        if (isRdsStarted) {
+            scheduler.execute(rdsFMStreamThread); // query now instead of waiting for the next tick
         }
     }
 
@@ -135,7 +136,11 @@ public class NadFMRdsTextStream {
      */
     public void stopRds() {
         isRdsStarted = false;
-        rdsExecutor.shutdownNow();
+        ScheduledFuture<?> job = rdsJob;
+        if (job != null) {
+            job.cancel(true);
+            rdsJob = null;
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("getRdsStream is stopped...");
         }

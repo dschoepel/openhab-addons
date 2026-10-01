@@ -16,11 +16,12 @@ import static org.openhab.binding.nadavr.internal.NadAvrBindingConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nadavr.internal.NadAvrConfiguration;
 import org.openhab.binding.nadavr.internal.NadException;
 import org.openhab.binding.nadavr.internal.connector.NadIpConnector;
@@ -43,9 +44,11 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class NadPopulateInputs {
     private final Logger logger = LoggerFactory.getLogger(NadPopulateInputs.class);
-    private ScheduledExecutorService piExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduler;
+    private volatile @Nullable ScheduledFuture<?> piJob;
     private volatile boolean sendSourceQuery = false;
     private volatile boolean isRunning = false;
+    private volatile boolean isStopped = false;
     private int numberOfInputSources = 5;
     ThingUID thingUID;
     NadAvrConfiguration config;
@@ -61,10 +64,12 @@ public class NadPopulateInputs {
      * @param stateDescriptionProvider - used to dynamically update the channel options with input source names
      * @param sendSourceQuery - flag to indicate if a source query has been sent to prevent sending too many requests
      * @param numberOfInputSources - number of input sources associated with the things model
+     * @param scheduler - the thing handler's scheduler that runs the queries
      */
     public NadPopulateInputs(ThingUID thingUID, NadAvrConfiguration config, NadIpConnector connection,
             NadAvrStateDescriptionProvider stateDescriptionProvider, boolean sendSourceQuery,
-            int numberOfInputSources) {
+            int numberOfInputSources, ScheduledExecutorService scheduler) {
+        this.scheduler = scheduler;
         this.thingUID = thingUID;
         this.config = config;
         this.connection = connection;
@@ -148,10 +153,9 @@ public class NadPopulateInputs {
     /**
      * Scheduled thread to poll for source input names and populate channel options with source names
      */
-    Runnable scheduler = new Runnable() {
+    Runnable populateInputsTask = new Runnable() {
         @Override
         public void run() {
-            Thread.currentThread().setName("OH-binding-" + thingUID.getAsString() + "-PopulateInputs");
             try {
                 populateInputs();
             } catch (NadException e) {
@@ -159,24 +163,14 @@ public class NadPopulateInputs {
                         "Error requesting input source name information from the NAD device @{}, check for connection issues.  Error: {}",
                         connection.getConnectionName(), e.getLocalizedMessage());
             }
-            if (sendSourceQuery) {
+            if (sendSourceQuery && !isStopped) {
+                // Run once more after the device has answered the source queries, without blocking a shared thread
                 sendSourceQuery = false;
-                try {
-                    logger.debug("polulateInputs - Sleeping 2 seconds...");
-                    TimeUnit.SECONDS.sleep(2);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-                try {
-                    populateInputs();
-                } catch (NadException e) {
-                    logger.error(
-                            "Error requesting input source name information from the NAD device @{}, check for connection issues.  Error: {}",
-                            connection.getConnectionName(), e.getLocalizedMessage());
-                }
+                logger.debug("populateInputs - running again in 2 seconds...");
+                piJob = scheduler.schedule(this, 2, TimeUnit.SECONDS);
+                return;
             }
             isRunning = false;
-            return;
         }
     };
 
@@ -187,7 +181,8 @@ public class NadPopulateInputs {
         if (logger.isDebugEnabled()) {
             logger.debug("PopulateInputs started...");
         }
-        piExecutor.schedule(scheduler, 3, TimeUnit.SECONDS);
+        isStopped = false;
+        piJob = scheduler.schedule(populateInputsTask, 3, TimeUnit.SECONDS);
     }
 
     /**
@@ -197,7 +192,13 @@ public class NadPopulateInputs {
         if (logger.isDebugEnabled()) {
             logger.debug("PopulateInputs stopped...");
         }
-        piExecutor.shutdown();
+        isStopped = true;
+        ScheduledFuture<?> job = piJob;
+        if (job != null) {
+            job.cancel(false);
+            piJob = null;
+        }
+        isRunning = false;
     }
 
     /**
